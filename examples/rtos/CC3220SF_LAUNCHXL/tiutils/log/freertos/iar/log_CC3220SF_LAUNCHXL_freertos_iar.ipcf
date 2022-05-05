@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- IAR Project Connection File -->
+
+<iarProjectConnection version="1.2" name="Log Instrumentation" oneShot="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="IarProjectConnection_1.2.xsd">
+
+    <device>
+        <name>CC3220SF</name>
+    </device>
+
+    <asmIncludePath>
+        <path>$PROJ_DIR$</path>
+        <path>$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/kernel/freertos/builds/cc32xx/release</path>
+    </asmIncludePath>
+
+    <includePath>
+        <path>$PROJ_DIR$</path>
+        <path>$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/source</path>
+        <path>$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/source/ti/posix/iar</path>
+        <path>$FREERTOS_INSTALL_DIR$/FreeRTOS/Source/include</path>
+        <path>$FREERTOS_INSTALL_DIR$/FreeRTOS/Source/portable/IAR/ARM_CM3</path>
+        <path>$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/kernel/freertos/builds/cc32xx/release</path>
+    </includePath>
+
+    <defines>
+        <define>ti_utils_runtime_Log_ENABLE_PPO</define>
+        <define>ti_utils_runtime_Log_ENABLE_INFO1</define>
+        <define>ti_utils_runtime_Log_ENABLE_INFO2</define>
+        <define>ti_utils_runtime_Log_ENABLE_Log_ERROR</define>
+        <define>DeviceFamily_CC3220</define>
+    </defines>
+
+    <extraOptions>
+        <args>
+            <arg>--debug</arg>
+            <arg>--silent</arg>
+            <arg>-e</arg>
+            <arg>--aeabi</arg>
+            <arg>--thumb</arg>
+            <arg>--diag_suppress=Pa050</arg>
+        </args>
+    </extraOptions>
+
+    <linkerFile>
+        <override>true</override>
+        <path>$PROJ_DIR$/cc32xxsf_freertos.icf</path>
+    </linkerFile>
+
+    <linkerExtraOptions>
+        <args>
+            <arg>-L$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/source</arg>
+            <arg>-f$PROJ_DIR$/ti_utils_runtime_LogSite.cmd.genlibs</arg>
+            <arg>--threaded_lib</arg>
+            <arg>-f$PROJ_DIR$/ti_utils_build_linker.cmd.genlibs</arg>
+            <arg>$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/kernel/freertos/builds/cc32xx/release/iar/freertos.lib</arg>
+            <arg>$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/source/ti/devices/cc32xx/driverlib/iar/Release/driverlib.a</arg>
+            <arg>--silent</arg>
+            <arg>--cpu=Cortex-M4</arg>
+        </args>
+    </linkerExtraOptions>
+
+    <customBuildTools>
+        <customBuildTool atRoot="true" name="SysConfig"> <!-- Custom build tool for entire project-->
+            <fileExtensions>.syscfg</fileExtensions>
+            <command>$SYSCONFIG_ROOT$/sysconfig_cli.bat -o $PROJ_DIR$ -s "$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/.metadata/product.json" --compiler iar $FILE_PATH$
+            </command>
+            <output>
+                <path>SysConfig_Generated_Files.ipcf</path>
+            </output>
+            <hasPrio>true</hasPrio> <!-- true: run this tool before all other tools-->
+        </customBuildTool>
+    </customBuildTools>
+
+    <heaps>
+        <heap> <!-- If omitted, id="0" -->
+            <size>0</size>
+        </heap>
+        <heap id="1">
+            <size>0</size>
+        </heap>
+    </heaps>
+    <stacks>
+        <stack> <!-- If omitted, id="0" -->
+            <size>512</size>
+        </stack>
+    </stacks>
+
+    <preBuild>
+        <command>iarbuild.exe $SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/kernel/freertos/builds/cc32xx/release/iar/freertos_builds_cc32xx_release.ewp Debug</command>
+    </preBuild>
+
+    <postBuild>
+        <command>ielftool --bin --verbose $TARGET_BPATH$.out $TARGET_BPATH$.bin</command>
+    </postBuild>
+
+    <files>
+        <path reference="$PROJ_DIR$/Board.html">$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/source/ti/boards/CC3220SF_LAUNCHXL/Board.html</path>
+        <path copyTo="$PROJ_DIR$/cc32xxsf_freertos.icf">$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/examples/rtos/CC3220SF_LAUNCHXL/tiutils/log/freertos/iar/cc32xxsf_freertos.icf</path>
+        <path copyTo="$PROJ_DIR$/log.c">$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/examples/rtos/CC3220SF_LAUNCHXL/tiutils/log/log.c</path>
+        <path copyTo="$PROJ_DIR$/log.syscfg">$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/examples/rtos/CC3220SF_LAUNCHXL/tiutils/log/freertos/log.syscfg</path>
+        <path copyTo="$PROJ_DIR$/main_freertos.c">$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/examples/rtos/CC3220SF_LAUNCHXL/tiutils/log/freertos/main_freertos.c</path>
+        <path copyTo="$PROJ_DIR$/README.html">$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/examples/rtos/CC3220SF_LAUNCHXL/tiutils/log/README.html</path>
+        <path copyTo="$PROJ_DIR$/README.md">$SIMPLELINK_CC32XX_SDK_INSTALL_DIR$/examples/rtos/CC3220SF_LAUNCHXL/tiutils/log/README.md</path>
+    </files>
+</iarProjectConnection>

@@ -1,0 +1,139 @@
+SIMPLELINK_CC32XX_SDK_INSTALL_DIR ?= $(abspath ../../../../../../..)
+
+include $(SIMPLELINK_CC32XX_SDK_INSTALL_DIR)/imports.mak
+
+KERNEL_BUILD := $(SIMPLELINK_CC32XX_SDK_INSTALL_DIR)/kernel/freertos/builds/cc32xx/release
+
+CC = "$(TICLANG_ARMCOMPILER)/bin/tiarmclang"
+LNK = "$(TICLANG_ARMCOMPILER)/bin/tiarmclang"
+HEX = "$(TICLANG_ARMCOMPILER)/bin/tiarmobjcopy"
+
+SYSCFG_CMD_STUB = $(SYSCONFIG_TOOL) --compiler ticlang --product $(SIMPLELINK_CC32XX_SDK_INSTALL_DIR)/.metadata/product.json
+SYSCFG_GEN_FILES := $(shell $(SYSCFG_CMD_STUB) --listGeneratedFiles --output . ../../freertos/common.syscfg)
+SYSCFG_REF_FILES := $(shell $(SYSCFG_CMD_STUB) --listReferencedFiles --output . ../../freertos/common.syscfg)
+
+ifeq ($(OS),Windows_NT)
+	SYSCFG_FILES = $(subst \,/,$(SYSCFG_REF_FILES) $(SYSCFG_GEN_FILES))
+else
+	SYSCFG_FILES = $(SYSCFG_REF_FILES) $(SYSCFG_GEN_FILES)
+endif
+SYSCFG_C_FILES = $(filter %.c,$(SYSCFG_FILES))
+SYSCFG_H_FILES = $(filter %.h,$(SYSCFG_FILES))
+
+OBJECTS = netapp_cmd.obj network_terminal.obj radio_tool.obj socket_cmd.obj str.obj transceiver_cmd.obj wlan_cmd.obj cmd_parser.obj uart_term.obj freertos_main_freertos.obj $(patsubst %.c,%.obj,$(notdir $(SYSCFG_C_FILES)))
+NAME = network_terminal
+
+CFLAGS = -I../.. \
+    -I. \
+    -DCC32XX \
+    -DDeviceFamily_CC3220 \
+    -Oz \
+    "-I$(SIMPLELINK_CC32XX_SDK_INSTALL_DIR)/source" \
+    "-I$(SIMPLELINK_CC32XX_SDK_INSTALL_DIR)/source/ti/posix/ticlang" \
+    "-I$(FREERTOS_INSTALL_DIR)/FreeRTOS/Source/include" \
+    "-I$(FREERTOS_INSTALL_DIR)/FreeRTOS/Source/portable/GCC/ARM_CM3" \
+    "-I$(KERNEL_BUILD)" \
+    -gdwarf-3 \
+    -mcpu=cortex-m4 \
+    -march=armv7e-m \
+    -mthumb \
+    -mfloat-abi=soft \
+    -mfpu=none
+
+LFLAGS = "-L$(SIMPLELINK_CC32XX_SDK_INSTALL_DIR)/source" \
+    "-L$(SIMPLELINK_CC32XX_SDK_INSTALL_DIR)/source/ti/drivers/net/wifi" \
+    ti_utils_build_linker.cmd.genlibs \
+    "-l$(KERNEL_BUILD)/ticlang/freertos.lib" \
+    -lti/devices/cc32xx/driverlib/ticlang/Release/driverlib.a \
+    ../../freertos/ticlang/cc32xxsf_freertos.cmd \
+    "-Wl,-m,$(NAME).map" \
+    -Wl,-c \
+    -Wl,-w \
+    "-L$(TICLANG_ARMCOMPILER)/lib" \
+    -llibc.a
+all: $(NAME).bin
+
+$(KERNEL_BUILD)/ticlang/freertos.lib:
+	@ $(ECHOBLANKLINE)
+	@ echo $@ is not built.
+	@ echo You can build it by issuing $(MAKE) in $(dir $@).
+	@ $(ECHOBLANKLINE)
+
+.INTERMEDIATE: syscfg
+$(SYSCFG_FILES): syscfg
+	@ echo generation complete
+
+syscfg: ../../freertos/common.syscfg
+	@ echo Generating configuration files...
+	@ $(SYSCFG_CMD_STUB) --output $(@D) $<
+
+define C_RULE
+$(basename $(notdir $(1))).obj: $(1) $(SYSCFG_H_FILES)
+	@ echo Building $$@
+	@ $(CC) $(CFLAGS) -c $$< -o $$@
+endef
+
+$(foreach c_file,$(SYSCFG_C_FILES),$(eval $(call C_RULE,$(c_file))))
+
+netapp_cmd.obj: ../../netapp_cmd.c $(SYSCFG_H_FILES)
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+network_terminal.obj: ../../network_terminal.c $(SYSCFG_H_FILES)
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+radio_tool.obj: ../../radio_tool.c $(SYSCFG_H_FILES)
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+socket_cmd.obj: ../../socket_cmd.c $(SYSCFG_H_FILES)
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+str.obj: ../../str.c $(SYSCFG_H_FILES)
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+transceiver_cmd.obj: ../../transceiver_cmd.c $(SYSCFG_H_FILES)
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+wlan_cmd.obj: ../../wlan_cmd.c $(SYSCFG_H_FILES)
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+cmd_parser.obj: ../../cmd_parser.c $(SYSCFG_H_FILES)
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+uart_term.obj: ../../uart_term.c $(SYSCFG_H_FILES)
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+freertos_main_freertos.obj: ../../freertos/main_freertos.c $(SYSCFG_H_FILES)
+	@ echo Building $@
+	@ $(CC) $(CFLAGS) -c $< -o $@
+
+$(NAME).out: $(OBJECTS) $(KERNEL_BUILD)/ticlang/freertos.lib
+	@ echo linking $@
+	@ $(LNK) -Wl,-u,_c_int00 $(OBJECTS)  $(LFLAGS) -o $(NAME).out
+
+$(NAME).bin: $(NAME).out
+	@ echo building $@
+	@ $(HEX) -O binary --only-section .text --only-section .const --only-section .cinit --only-section .rodata --only-section .resetVecs $? $@
+
+clean:
+	@ echo Cleaning...
+	@ $(RM) $(OBJECTS) > $(DEVNULL) 2>&1
+	@ $(RM) $(NAME).out > $(DEVNULL) 2>&1
+	@ $(RM) $(NAME).map > $(DEVNULL) 2>&1
+# Possible intermediate files for hex generation
+	@ $(RM) $(NAME).a* > $(DEVNULL) 2>&1
+	@ $(RM) $(NAME).i* > $(DEVNULL) 2>&1
+	@ $(RM) $(NAME).m* > $(DEVNULL) 2>&1
+	@ $(RM) $(NAME).t* > $(DEVNULL) 2>&1
+	@ $(RM) $(NAME).x* > $(DEVNULL) 2>&1
+# End of intermediate files
+	@ $(RM) $(NAME).bin > $(DEVNULL) 2>&1
+	@ $(RM) $(SYSCFG_GEN_FILES)> $(DEVNULL) 2>&1
