@@ -100,41 +100,43 @@
         </file>
         <file path="../../README.html" openOnCreation="false" excludeFromBuild="false" action="copy">
         </file>
+        <file path="../../debug_settings.h" openOnCreation="false" excludeFromBuild="false" action="copy">
+        </file>
         <file path="../../wifi_settings.h" openOnCreation="false" excludeFromBuild="false" action="copy">
         </file>
         <file path="../../ota_settings.h" openOnCreation="false" excludeFromBuild="false" action="copy">
         </file>
-        <file path="../../ifmod/mqtt_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/mqtt_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/mqtt_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/mqtt_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/debug_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/debug_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/wifi_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/wifi_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/wifi_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/wifi_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/httpsrv_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/httpsrv_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/httpsrv_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/httpsrv_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/utils_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/utils_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/utils_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/utils_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/uart_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/uart_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/uart_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/uart_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/ota_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/ota_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/ota_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/ota_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/ota_vendors.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/ota_vendors.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/ota_vendor_github.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/ota_vendor_github.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
-        <file path="../../ifmod/ota_vendor_dropbox.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../common/ifmod/ota_vendor_dropbox.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
         </file>
         <file path="../../tirtos/main_tirtos.c" openOnCreation="false" excludeFromBuild="false" action="copy">
         </file>

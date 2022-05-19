@@ -66,7 +66,6 @@
  */
 #define WIFI_IF_DEBUG_LEVEL         E_INFO
 
-
 /*
  * Defines Provisioning (initial) Parameters:
  * Mode can be:  WifiProvMode_OFF, WifiProvMode_ON, WifiProvMode_ONE_SHOT
@@ -111,5 +110,9 @@
 #define AP_CFG_TOKEN                12345678      // config file read access token
 #define AP_CFG_MAX_SIZE             100           // config file Maximum file length
 
+/* Define (if-needed) the external handle for TI Driver's LED for wi-fi status:
+ * off: disconnected, blinking: provisionig, on: connected 
+ * Comment the definition in case the auto control is not required */
+//#define WIFI_LED_HANDLE 
 
 #endif // WIFI_SETTINGS_H

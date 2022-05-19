@@ -85,7 +85,7 @@ static void StartInternalUpdate();
 
 pthread_t gSlNetConnThread;
 bool gNewImageLoaded = false;
-#define SLNETCONN_TIMEOUT               10 // 10 Second Timeout
+#define SLNETCONN_TIMEOUT               60 // 60 Second Timeout
 #define SLNETCONN_TASK_STACK_SIZE       (1200)
 
 
