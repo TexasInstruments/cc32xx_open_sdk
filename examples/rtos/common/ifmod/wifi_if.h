@@ -156,7 +156,4 @@ int WIFI_IF_reset();
 */
 int WIFI_IF_deinit();
 
-
-
-
 #endif // WIFI_IF_H

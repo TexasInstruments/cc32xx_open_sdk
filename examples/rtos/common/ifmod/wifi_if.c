@@ -649,7 +649,7 @@ int WIFI_IF_init()
        {
            wifiConnSettings.provisioningSC_key = PROVISIONING_SC_KEY;
        }
-        wifiConnSettings.connectTimeout = 10;
+       wifiConnSettings.connectTimeout = 10; 
        wifiConnSettings.ipTimeout = 10;
        SlWifiConn_setConfiguration(&wifiConnSettings);
    }

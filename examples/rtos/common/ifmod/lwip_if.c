@@ -64,6 +64,7 @@
 #include <ti/drivers/net/wifi/slwificonn.h>
 
 #include "wifi_if.h"
+#include "lwip_if.h"
 #include <ti/net/slnet.h>
 #include <ti/net/slnetconn.h>
 #include <ti/net/slnetif.h>
@@ -97,27 +98,372 @@
 #define TCP 16
 #define UDP 17
 
+#define WIFI_BUFF_SIZE 1544
+#define CHIP_DEVICE_CONFIG_SL_WIFI_MTU 1280
+
 /****************************************************************************
-              LOCAL FUNCTION PROTOTYPES
+              TYPE DEFINITIONS
  ****************************************************************************/
-static void * RecievePacketTask(void * hParam);
+
+
 /****************************************************************************
               GLOBAL VARIABLES
  ****************************************************************************/
+
+/* Simplelink Raw Ethernet Socket */
+static _i16 		sl_rawSocket;
+
 /* dhcp struct for the ethernet netif */
-static struct dhcp netif_dhcp;
+static struct dhcp 	netif_dhcp;
+
 /* autoip struct for the ethernet netif */
-static struct autoip netif_autoip;
+static struct autoip 	netif_autoip;
+
+/* TX buffer */
+static _u8 txBuff[WIFI_BUFF_SIZE];
+
+/* User Callback */
+static UserCallback_f m_fUserCallback = NULL;
+
+static bool m_bLinkUp = false;
+
 //*****************************************************************************
 //                 Local Functions
 //*****************************************************************************
 
-#define WIFI_BUFF_SIZE 1544
-static _u8 txBuff[WIFI_BUFF_SIZE];
-static _i16 RawEthernetSocket;
+static err_t LwipInit_Callback(struct netif *pNetif);
+static void LinkStatusChanged_Callback(struct netif *pNetif);
+static void InterfaceStatusChanged_Callback(struct netif *pNetif);
+static void InterfaceUp_Callback(void *hNewif);
+static void LinkUp_Callback(void *hNewif);
+static err_t SendPacket_Callback(struct netif *pNetif, struct pbuf * pktPBuf);
+static void *ReceivePacket_Task(void * hParam);
+static int EnableNetworkBypass();
+static int DisableNetworkBypass();
 
-#define CHIP_DEVICE_CONFIG_SL_WIFI_MTU 1280
-static struct netif mNetIf;
+
+#if (DEBUG_IF_SEVERITY == E_TRACE)
+static void LogFrame(char *str, uint32_t nBytes, uint8_t * p);
+#else
+#define LogFrame(p)
+#endif
+
+
+static err_t LwipInit_Callback(struct netif *pNetif)
+{
+    LOG_DEBUG("%s", __func__); 
+    netif_set_status_callback(pNetif, InterfaceStatusChanged_Callback);
+    netif_set_link_callback(pNetif, LinkStatusChanged_Callback);
+    autoip_set_struct(pNetif, &netif_autoip);
+    dhcp_set_struct(pNetif, &netif_dhcp);
+
+    pNetif->output     = etharp_output;
+    pNetif->linkoutput = SendPacket_Callback;
+    pNetif->flags |= (NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP);
+
+    pNetif->mtu = ETH_FRAME_SIZE - ETHHDR_SIZE - VLAN_TAG_SIZE;
+    return ERR_OK;
+}
+
+
+static void LinkStatusChanged_Callback(struct netif *pNetif)
+{
+    err_t err;
+    NetIfStatus_e status;
+    if (netif_is_link_up(pNetif))
+    {
+        err = dhcp_start(pNetif);
+        LOG_INFO("LINK UP:: DHCP started(%d)", err);
+        status = E_NETIF_STATUS_LINK_UP;
+    }
+    else
+    {
+        dhcp_stop(pNetif);
+        LOG_INFO("LINK DOWN:: DHCP stopped");
+        status = E_NETIF_STATUS_LINK_DOWN;
+    }
+    if(m_fUserCallback)
+    	m_fUserCallback (pNetif, status, NULL);
+}
+
+
+
+static void InterfaceStatusChanged_Callback(struct netif *pNetif)
+{
+    NetIfStatus_e status = E_NETIF_STATUS_MAX;
+    const ip4_addr_t *ipv4;
+    if (netif_is_up(pNetif))
+    {
+       uint16_t macAddressLen = 6;
+       uint16_t ConfigOpt = 0;
+       sl_NetCfgGet(SL_NETCFG_MAC_ADDRESS_GET,&ConfigOpt,&macAddressLen,(_u8 *)pNetif->hwaddr);
+
+       pNetif->hwaddr_len = 6;
+       ipv4 = netif_ip4_addr(pNetif);
+       if(ipv4->addr)
+       {
+           LOG_INFO("STATUS:: I/F UP, IPv4: %s", ip4addr_ntoa(ipv4));
+           status = E_NETIF_STATUS_IP_ACQUIRED;
+       }
+       
+    }
+    else
+    {
+        LOG_INFO("STATUS:: I/F DOWN\r\n");
+        status = E_NETIF_STATUS_IP_LOST;
+    }
+    if(m_fUserCallback && status < E_NETIF_STATUS_MAX)
+    	m_fUserCallback (pNetif, status, NULL);
+}
+
+static void InterfaceUp_Callback(void *hNewif)
+{
+    struct netif *pNetif = hNewif;
+    LOG_DEBUG("%s", __func__); 
+    netif_set_up(pNetif);
+    pNetif->mtu = ETH_FRAME_SIZE - ETHHDR_SIZE - VLAN_TAG_SIZE;
+
+    OS_createTask(1, 0x400, ReceivePacket_Task, hNewif, PTHREAD_CREATE_DETACHED); // thread is terminated upon exit
+}
+
+static void LinkUp_Callback(void *hNewif)
+{
+    struct netif *pNetif = hNewif;
+    LOG_DEBUG("%s:: ", __func__); 
+
+
+    sl_rawSocket = sl_Socket(SL_AF_PACKET, SL_SOCK_RAW, 0);
+    if(sl_rawSocket >= 0)
+    {
+        netif_set_link_up(pNetif);
+    }
+}
+
+static void LinkDown_Callback(void *hNewif)
+{
+    LOG_DEBUG("%s:: ", __func__); 
+    struct netif *pNetif = hNewif;
+    
+    
+    sl_Close(sl_rawSocket);
+    netif_set_link_down(pNetif);
+
+}
+
+static err_t SendPacket_Callback(struct netif *pNetif, struct pbuf * pktPBuf)
+{
+    int rc = 0;
+    struct pbuf * partialPkt;
+    int offset = 0;
+
+    for (partialPkt = pktPBuf; partialPkt != NULL; partialPkt = partialPkt->next)
+    {
+        if (offset + partialPkt->len > WIFI_BUFF_SIZE)
+        {
+            while (1)
+                ;
+        }
+        memcpy(txBuff + offset, partialPkt->payload, partialPkt->len);
+        offset += partialPkt->len;
+    }
+
+    rc = sl_Send(sl_rawSocket, txBuff, offset, 0);
+    if (0 > rc)
+    {
+        LOG_ERROR("Sl_Send = %d", rc);
+        return ERR_BUF;
+    }
+    else
+    {       
+        LogFrame("SENT", offset, txBuff);
+        if(rc < offset)
+        {
+            LOG_WARNING("Sl_Send = %d", rc);
+        }
+    }
+    return (err_t) ERR_OK;
+}
+
+static void *ReceivePacket_Task(void * hParam)
+{
+    err_t lwipErr      = ERR_OK;
+    int rc = 0;
+    struct netif *pNetif = (struct netif *)hParam;
+    
+    /* Start listening */
+    LOG_INFO("%s:: starting Rx Task",  __func__);
+    
+    
+    while (1) 
+    {
+        while (m_bLinkUp) 
+        {
+           struct pbuf * pbuf = NULL;
+           // Allocate an LwIP pbuf to hold the inbound packet.
+           pbuf = pbuf_alloc(PBUF_LINK, WIFI_BUFF_SIZE, PBUF_POOL);
+           if (pbuf)
+           {
+               rc = sl_Recv(sl_rawSocket, pbuf->payload, WIFI_BUFF_SIZE, 0);
+               if (0 > rc)
+               {
+                   pbuf_free(pbuf);
+                   LOG_ERROR("SL Receive Error (%d)", rc);
+              }
+              else
+              {
+                   LogFrame("RCVD", rc, pbuf->payload);
+                   lwipErr = pNetif->input(pbuf, pNetif);
+                   if (lwipErr != ERR_OK)
+                   {
+	               // If an error occurred, make sure the pbuf gets freed.
+                       pbuf_free(pbuf);
+                       LOG_ERROR("LWIP Receive Error (%d)", lwipErr);
+                   }
+               }
+           }
+       }
+       usleep(100);
+    }
+    pthread_exit(NULL);
+    return NULL;
+}
+
+
+
+
+static int EnableNetworkBypass()
+{
+    int rc;
+    
+    /* The following will set IP Address to 0.0.0.0 - for bypass mode */
+    SlNetCfgIpV4Args_t ipAddr = { 0 };
+    memset(&ipAddr, 0, sizeof(SlNetCfgIpV4Args_t));
+    rc = sl_NetCfgSet(SL_NETCFG_IPV4_STA_ADDR_MODE, SL_NETCFG_ADDR_STATIC, sizeof(SlNetCfgIpV4Args_t), (_u8 *) &ipAddr);
+
+#if 0
+    if (rc >= 0)
+    {
+        // disable network applications
+        rc = sl_NetAppStop(SL_NETAPP_HTTP_SERVER_ID | SL_NETAPP_DHCP_SERVER_ID | SL_NETAPP_MDNS_ID);
+        rc = sl_NetAppStart(SL_NETAPP_MDNS_ID);
+    }
+    if (rc >= 0)
+    {
+        // restart NWP by calling stop then start to init with static IP 0.0.0.0
+        rc = WIFI_IF_reset(1000);
+    }
+#endif
+    if(rc == 0)
+    {
+        SlWlanRxFilterIdMask_t FilterIdMask;
+        _u16 len = sizeof(SlWlanRxFilterIdMask_t);
+        memset(FilterIdMask, 0, sizeof(FilterIdMask));
+        rc = sl_WlanSet(SL_WLAN_RX_FILTERS_ID, SL_WLAN_RX_FILTER_STATE, len, (_u8 *) FilterIdMask);
+    }
+
+    LOG_INFO("Configure N/W Bypass mode (%d)", rc);
+    return rc;
+}
+
+static int DisableNetworkBypass()
+{
+    int rc;
+    
+    rc = sl_NetCfgSet(SL_NETCFG_IPV4_STA_ADDR_MODE,SL_NETCFG_ADDR_DHCP_LLA,0,0);
+    
+    return rc;
+}
+
+int LWIP_IF_init(UserCallback_f fUserCallback, bool bStackInit)
+{
+    int rc = 0;
+
+
+    if(bStackInit)
+    {
+    	tcpip_init(NULL, NULL);
+    }
+    m_fUserCallback = fUserCallback;
+
+    return rc;
+}
+
+struct netif * LWIP_IF_addInterface()
+{
+
+    struct netif *pNetif = NULL;
+    
+    if(m_fUserCallback)
+    {
+        pNetif = malloc(sizeof(struct netif));
+        
+        if(pNetif) 
+        {
+            ip4_addr_t ipaddr  = { 0 };
+            ip4_addr_t netmask = { 0 };
+            ip4_addr_t gw      = { 0 };
+
+            memset(pNetif, 0, sizeof(struct netif));
+
+            pNetif->name[0] = 's';
+            pNetif->name[1] = 'l';
+
+            pNetif = netif_add(pNetif, &ipaddr, &netmask, &gw, NULL, LwipInit_Callback, tcpip_input);
+    
+            if(pNetif)
+            {
+    	        int rc;
+                uint16_t hwaddrlen = 6;
+                _u16 ConfigOpt = 0;
+                rc = sl_NetCfgGet(SL_NETCFG_MAC_ADDRESS_GET, &ConfigOpt, &hwaddrlen, (_u8 *) pNetif->hwaddr);
+                LOG_INFO("%s:: %02x:%02x:%02x:%02x:%02x:%02x", __func__, 
+                pNetif->hwaddr[0], pNetif->hwaddr[1], pNetif->hwaddr[2], 
+                pNetif->hwaddr[3], pNetif->hwaddr[4], pNetif->hwaddr[5]);
+                pNetif->hwaddr_len = (uint8_t) hwaddrlen;
+                if(rc == 0)
+                {
+                    tcpip_callback(InterfaceUp_Callback, pNetif); 
+                }
+                else
+                {
+                    netif_remove(pNetif);
+                    pNetif = NULL;
+                    LOG_ERROR("%s:: (%d)",  __func__, rc);
+                }
+            }
+       }
+    }
+    return pNetif;
+}
+
+int LWIP_IF_setLinkUp(struct netif *pNetif)
+{
+    /* Set Simplelink to n/w bypass (Ethernet level i/F) */
+    int rc = EnableNetworkBypass();
+    if(rc == 0)
+    {
+    	/* trigger LWIP link-up (from LWIP context) */
+        tcpip_callback(LinkUp_Callback, pNetif);
+    }
+    m_bLinkUp = true;
+    return rc;
+}
+
+int LWIP_IF_setLinkDown(struct netif *pNetif)
+{
+    /* Set Simplelink to n/w bypass (Ethernet level i/F) */
+    int rc = DisableNetworkBypass();
+    if(rc == 0)
+    {
+    	/* trigger LWIP link-up (from LWIP context) */
+        tcpip_callback(LinkDown_Callback, pNetif);
+    }
+    m_bLinkUp = true;
+    return rc;
+}
+
+
+
 
 #if (DEBUG_IF_SEVERITY == E_TRACE)
 #define NTOS(ptr) (((uint16_t)(ptr)[0])*256+(ptr)[1])
@@ -125,7 +471,7 @@ static struct netif mNetIf;
 /* frequency (# packet received/sent) of heap log, 0 to disable logs */
 #define HEAP_LOG_THRESHOLD 0  
 
-void log_frame(char *str, uint32_t nBytes, uint8_t * p)
+static void LogFrame(char *str, uint32_t nBytes, uint8_t * p)
 {
     uint16_t prot;
     uint8_t *ethhdr = p;
@@ -202,232 +548,5 @@ void log_frame(char *str, uint32_t nBytes, uint8_t * p)
     }
 #endif
 }
-#else
-#define log_frame(p)
 #endif
 
-void status_callback(struct netif *pNetif)
-{
-  if (netif_is_up(pNetif))
-  {
-    const ip4_addr_t *ipv4;
-    uint16_t macAddressLen = 6;
-    uint16_t ConfigOpt = 0;
-    sl_NetCfgGet(SL_NETCFG_MAC_ADDRESS_GET,&ConfigOpt,&macAddressLen,(_u8 *)pNetif->hwaddr);
-
-    pNetif->hwaddr_len = 6;
-    ipv4 = netif_ip4_addr(pNetif);
-    LOG_INFO("STATUS:: I/F UP, IP: %s", ip4addr_ntoa(ipv4));
-  }
-  else
-  {
-    LOG_INFO("STATUS:: I/F DOWN\r\n");
-  }
-}
-
-
-err_t ReceivePacket()
-{
-    err_t lwipErr      = ERR_OK;
-    struct pbuf * pbuf = NULL;
-    // Allocate an LwIP pbuf to hold the inbound packet.
-    pbuf = pbuf_alloc(PBUF_LINK, WIFI_BUFF_SIZE, PBUF_POOL);
-    if (pbuf)
-    {
-        int rc = sl_Recv(RawEthernetSocket, pbuf->payload, WIFI_BUFF_SIZE, 0);
-        if (0 > rc)
-        {
-            LOG_ERROR("receive error (%d) \r\n", rc);
-        }
-        else
-        {
-            log_frame("RCVD", rc, pbuf->payload);
-            lwipErr = mNetIf.input(pbuf, &mNetIf);
-        }
-        if (lwipErr != ERR_OK)
-        {
-            // If an error occurred, make sure the pbuf gets freed.
-            if (pbuf != NULL)
-            {
-                pbuf_free(pbuf);
-            }
-            LOG_ERROR("mNetIf.input = %d", lwipErr);    
-        }
-    }
-    return lwipErr;
-}
-
-err_t SendPacket(struct netif * netif, struct pbuf * pktPBuf)
-{
-    int rc = 0;
-    struct pbuf * partialPkt;
-    int offset = 0;
-
-    for (partialPkt = pktPBuf; partialPkt != NULL; partialPkt = partialPkt->next)
-    {
-        if (offset + partialPkt->len > WIFI_BUFF_SIZE)
-        {
-            while (1)
-                ;
-        }
-        memcpy(txBuff + offset, partialPkt->payload, partialPkt->len);
-        offset += partialPkt->len;
-    }
-
-    rc = sl_Send(RawEthernetSocket, txBuff, offset, 0);
-    if (0 > rc)
-    {
-        LOG_ERROR("Sl_Send = %d", rc);
-        return ERR_BUF;
-    }
-    else
-    {       
-        log_frame("SENT", offset, txBuff);
-        if(rc < offset)
-        {
-            LOG_WARNING("Sl_Send = %d", rc);
-        }
-    }
-    return (err_t) ERR_OK;
-}
-
-void link_callback(struct netif * state_netif)
-{
-    err_t err;
-    if (netif_is_link_up(state_netif))
-    {
-        err = dhcp_start(state_netif);
-        LOG_INFO("link_callback==UP starting DHCP (%d)", err);
-    }
-    else
-    {
-        dhcp_stop(state_netif);
-        LOG_INFO("LINK DOWN:: DHCP stopped");
-    }
-}
-
-err_t lwipNetIfInit(struct netif * netif)
-{
-    netif_set_status_callback(netif, status_callback);
-    netif_set_link_callback(netif, link_callback);
-    autoip_set_struct(netif, &netif_autoip);
-    dhcp_set_struct(netif, &netif_dhcp);
-
-    netif->output     = etharp_output;
-    netif->linkoutput = SendPacket;
-    netif->flags |= (NETIF_FLAG_ETHARP | NETIF_FLAG_IGMP);
-
-    netif->mtu = ETH_FRAME_SIZE - ETHHDR_SIZE - VLAN_TAG_SIZE;
-    return ERR_OK;
-}
-
-int enable_netif(void)
-{
-    uint16_t hwaddrlen;
-
-    ip4_addr_t ipaddr  = { 0 };
-    ip4_addr_t netmask = { 0 };
-    ip4_addr_t gw      = { 0 };
-
-    mNetIf.name[0] = 's';
-    mNetIf.name[1] = 'l';
-
-    netif_add(&mNetIf, &ipaddr, &netmask, &gw, NULL, lwipNetIfInit, tcpip_input);
-
-    _u16 ConfigOpt = 0;
-    sl_NetCfgGet(SL_NETCFG_MAC_ADDRESS_GET, &ConfigOpt, &hwaddrlen, (_u8 *) mNetIf.hwaddr);
-
-    cc32xxLog("%2x:%2x:%2x:%2x:%2x:%2x", mNetIf.hwaddr[0], mNetIf.hwaddr[1], mNetIf.hwaddr[2], mNetIf.hwaddr[3], mNetIf.hwaddr[4],
-              mNetIf.hwaddr[5]);
-
-    mNetIf.hwaddr_len = (uint8_t) hwaddrlen;
-    return 0;
-}
-
-void LWIP_IF_enableInterface()
-{
-    /* set IpV6 Address(es) */
-    int rc;
-
-    rc = enable_netif();
-    while (rc != 0)
-        ;
-}
-
-void tcpinternal_network_set_up(void * newif)
-{
-    struct netif * nif = newif;
-    netif_set_up(nif);
-    nif->mtu = ETH_FRAME_SIZE - ETHHDR_SIZE - VLAN_TAG_SIZE;
-    netif_set_link_up(nif);
-}
-
-void network_set_up(void * newif)
-{
-    tcpip_callback(tcpinternal_network_set_up, newif);
-}
-
-int NetworkBypassInit()
-{
-    int rc;
-
-    SlNetCfgIpV4Args_t ipAddr = { 0 };
-    memset(&ipAddr, 0, sizeof(SlNetCfgIpV4Args_t));
-    rc = sl_NetCfgSet(SL_NETCFG_IPV4_STA_ADDR_MODE, SL_NETCFG_ADDR_STATIC, sizeof(SlNetCfgIpV4Args_t), (_u8 *) &ipAddr);
-
-    if (rc >= 0)
-    {
-        // disable network applications
-        rc = sl_NetAppStop(SL_NETAPP_HTTP_SERVER_ID | SL_NETAPP_DHCP_SERVER_ID | SL_NETAPP_MDNS_ID);
-        rc = sl_NetAppStart(SL_NETAPP_MDNS_ID);
-    }
-    if (rc >= 0)
-    {
-        // restart NWP by calling stop then start to init with static IP 0.0.0.0
-        rc = WIFI_IF_reset(1000);
-    }
-    LOG_INFO("Configure N/W Bypass mode (%d)", rc);
-    return rc;
-}
-
-
-
-int LWIP_IF_start()
-{
-    /* set IpV6 Address(es) */
-    int rc;
-    
-    rc = NetworkBypassInit();
-    rc = enable_netif();
-    network_set_up(&mNetIf);
-    if (rc < 0)
-    {
-        return rc;
-    }
-
-    {
-        SlWlanRxFilterIdMask_t FilterIdMask;
-        _u16 len = sizeof(SlWlanRxFilterIdMask_t);
-        memset(FilterIdMask, 0, sizeof(FilterIdMask));
-        rc = sl_WlanSet(SL_WLAN_RX_FILTERS_ID, SL_WLAN_RX_FILTER_STATE, len, (_u8 *) FilterIdMask);
-        if (rc < 0)
-        {
-            return rc;
-        }
-    }
-
-    /* Create raw socket */
-    RawEthernetSocket = sl_Socket(SL_AF_PACKET, SL_SOCK_RAW, 0);
-    OS_createTask(1, 0x400, RecievePacketTask, NULL, PTHREAD_CREATE_DETACHED); // thread is terminated upon exit
-    return rc;
-}
-
-void * RecievePacketTask(void * hParam)
-{
-    /* Start listening */
-    while (1)
-    {
-        ReceivePacket();
-    }
-    return NULL;
-}
