@@ -51,7 +51,7 @@
  * Upon successful init (WIFI_IF_init()), the system enables the NWP for any
  * SL commands.
  * The NWP will be in a low power state (AUTO-CONNECT will be disabled) waiting
- * for connection request (SlNetConn_Start()).
+ * for connection request (WIFI_IF_Start()).
  * User should not call sl_Start/sl_Stop when using this module. Please use
  * WIFI_IF_restart() (for reseting the NWP) or WIFI_IF_deinit() instead.
  */
@@ -78,12 +78,38 @@ typedef void (*ExtProv_stop_f)(void*);
 #define EXT_PROV_TASK_PRIORITY      (9)
 #define EXT_PROV_STACK_SIZE         (2048)
 
+typedef enum
+{
+    WIFI_SERVICE_LVL_MAC                = 0,
+    WIFI_SERVICE_LVL_IP                 = 1,
+//  WIFI_SERVICE_LVL_INTERNET           = 2, /* TODO - not supported currently */
+    WIFI_SERVICE_LVL_MAX
+} WifiServiceLevel_e;
 
+/* Note: SLNETCONN_STATUS_CONNECTED serves as a baseline for the CONNECTED statuses.
+ * It is equal to SLNETCONN_STATUS_CONNECTED_MAC (as SLNETCONN_SERVICE_LVL_MAC = 0).
+ * Note: Internet Connection is not maintained - it will be checked only upon the first
+ *       connection, but the system will not identify if the access-point loses the Internet access.
+ *       Users may check the connection periodically using SlNetConn_getStatus() (with
+ *       bCheckInternetConnection set to true).
+ *       User can also use socket error indication as the trigger for Internet access check.
+ */
+typedef enum
+{
+    WIFI_STATUS_DISCONNECTED            = 1,
+    WIFI_STATUS_WAITING_FOR_CONNECTION  = 2,
+    WIFI_STATUS_PROV_IN_PROCESS         = 3,
+    WIFI_STATUS_CONNECTED               = 4,
+    WIFI_STATUS_CONNECTED_MAC           = WIFI_STATUS_CONNECTED + WIFI_SERVICE_LVL_MAC,
+    WIFI_STATUS_CONNECTED_IP            = WIFI_STATUS_CONNECTED + WIFI_SERVICE_LVL_IP,
+    //WIFI_STATUS_CONNECTED_INTERNET      = WIFI_STATUS_CONNECTED + WIFI_SERVICE_LVL_INTERNET, /* TODO - not supported currently */
+} WifiConnStatus_e;
+
+typedef void (*WifiEventHandler_f)(WifiConnStatus_e wifiConnStatus);
 
 //*****************************************************************************
 //                 WIFI_IF Function Prototypes
 //*****************************************************************************
-extern bool  gIsProvsioning;
 
 /*!
 
@@ -110,34 +136,66 @@ extern bool  gIsProvsioning;
     \sa    WIFI_IF_deinit(), WIFI_IF_reset(), SlNetConn_Start(), SlNetConn_Stop()
 
 */
-int WIFI_IF_init();
+int WIFI_IF_init(unsigned char bNetworkStackInit);
 
 /*!
 
-    \brief     Register Start and Stop callbacks and application handle that will
-               be invoked whenever external provisioning is enabled
+    \brief     try to connect to an AP (based on provisioning, stored profiles
+               or hard-coded setting)
+    \param[in] level - request service-level (MAC, IP or Internet connection), 
+                            see WifiServiceLevel_e 
+    \param[in] timeout_ms - timeout waiting for the connection 
+                            0 - for non blocking  
+    \param[in] hConnReq - (upon success) handle for connection reuest  
 
-    \param[in] fStart      Callback that will start the external provisioning
-    \param[in] fStop       Callback that will stop the external provisioning
-    \param[in] pHandle     Application context to be passed with both callbacks
+    \return    status of the request:
+                   0 - connected, 
+                   1 - timeout (connection status will be nitified through event handler) 
+                   negative - for error
+*/
+int WIFI_IF_start(WifiEventHandler_f handler, WifiServiceLevel_e level, 
+                    unsigned long timeout_ms, void **hConnReq);
 
+/*!
+
+    \brief     disconnect from the AP 
+
+    \param[in] hConnReq - handle (As received from WIFI_IF_start()) for the 
+                         connection request to be stopped
     \return    0 upon success or a negative error code
 */
-int WIFI_IF_registerExtProvCallbacks(ExtProv_start_f fStart, ExtProv_stop_f fStop, void *pHandle);
+int WIFI_IF_stop(void *hConnReq);
 
 /*!
 
-    \brief      A request to reset the NWP (sl_Stop + sl_Start + update SlWifiConnSM).
+    \brief      Add network profile (to be used when interface is up)
 
-    \param[in]  none
+    \param[in]  params - see Wlan_Connect
+
+    \return     index of profile or a negative error code
+
+    \note  This should be called only when no connection is active i.e. when Wi-Fi is IDLE
+
+    \sa    WIFI_IF_start(), WIFI_IF_stop(), WIFI_IF_delProfile()
+*/
+int WIFI_IF_addProfile(const signed char *pName, const int NameLen, 
+			const unsigned char *pMacAddr, char SecType, 
+			const char *pPass, const char PassLen);
+
+/*!
+
+    \brief      Delete a network profile 
+
+    \param[in]  profId - profile index (as received in addProfile) or 0xffffffff to delete all profile.
 
     \return     0 upon success or a negative error code
 
     \note  This should be called only when no connection is active i.e. when Wi-Fi is IDLE
 
-    \sa    WIFI_IF_init(), WIFI_IF_init()
+    \sa    WIFI_IF_start(), WIFI_IF_stop(), WIFI_IF_addProfile
 */
-int WIFI_IF_reset();
+int WIFI_IF_deleteProfile(int profId);
+
 
 /*!
 

@@ -35,69 +35,98 @@
 //*****************************************************************************
 // Standard includes
 
-#ifndef LWIP_IF_H
-#define LWIP_IF_H
-#include "lwip/netif.h"
+#ifndef TCPIP_IF_H
+#define TCPIP_IF_H
 
 /****************************************************************************
               TYPE DEFINITIONS
  ****************************************************************************/
+ //#define TCPIP_IF_ZERO_COPY 
+ 
+/* interface states */
 typedef enum 
 {
-    E_NETIF_STATUS_LINK_UP,
-    E_NETIF_STATUS_LINK_DOWN,
-    E_NETIF_STATUS_IP_ACQUIRED,
-    E_NETIF_STATUS_IP_LOST,
-    E_NETIF_STATUS_MAX
-} NetIfStatus_e;
+    E_TCPIP_IF_DOWN,
+    E_TCPIP_IF_UP,
+} TcpipInterfaceState_e;
+
+/* link states */
+typedef enum 
+{
+    E_TCPIP_LINK_DOWN,
+    E_TCPIP_LINK_UP,
+} TcpipLinkState_e;
+
+/* tcpip_status enumeration */
+typedef enum 
+{
+    E_TCPIP_STATUS_IP_ACQUIRED,
+    E_TCPIP_STATUS_IP_LOST,
+    E_TCPIP_STATUS_PROV_STARTED,
+    E_TCPIP_STATUS_PROV_STOPPED,
+    E_TCPIP_STATUS_MAX
+} TcpipStatue_e;
+
  
-typedef void (*UserCallback_f)(struct netif *pNetIf, NetIfStatus_e status, void *pParams);
+typedef void (*EvtCallback_f)(void *hNetif, TcpipStatue_e tcpip_status, void *pParams);
+typedef int (*SendCallback_f)(void *hNetif, uint8_t *pPkt, int16_t payloadLen, uint32_t flags);
 
 /****************************************************************************
              PUBLIC API
  ****************************************************************************/
+typedef uint32_t ip4addr_t;
 
 
 /*!
 
-    \brief     LWIP init (dhould be called once before any other API)
-
+    \brief     Network-Stack init (should be called once before any other API)
     \param[in] fUserCallback - user callback for state change inidcation
     \param[in] bStackInit - flag indicating whether to initialize LWIP stack 
- 
     \return    0 upon success or negative error code 
 */
-int LWIP_IF_init(UserCallback_f fUserCallback, bool bStackInit);
+int TCPIP_IF_init(EvtCallback_f fEvtCallback, unsigned char bStackInit);
 
 /*!
 
-    \brief     User request to register and enable an interface 
-               This will be used to enbale the interface both at 
-               simplelink and LWIP.
-
-    \return    pointer to netif or NULL in case of failure 
+    \brief     User request to register The WIFI Interface 
+    		at the network stack 
+    \return    pointer (handle) to the network interface or NULL in case of failure 
 */
-struct netif * LWIP_IF_addInterface();
+
+#define TCPIP_IF_FLAGS_DHCPC 	0x00000001 /* DHCP CLIENT */
+void * TCPIP_IF_addInterface(char *pName, uint8_t *pMacAddr, SendCallback_f fSendCallback, unsigned long flags);
+
+void TCPIP_IF_deleteInterface(void *hNetIf);
 
 /*!
 
-    \brief     Driver indication when the Link gets UP 
-    		(i.e. AP connection is established)
+    \brief     Enable/Disable the interface
+    \param[in] hNetIf - network interface handle
+    \param[in] state - up or down  
 
     \return    0 upon success or negative error code 
 */
-int LWIP_IF_setLinkUp(struct netif *pNetIf);
+int TCPIP_IF_setInterfaceState(void *hNetIf, TcpipInterfaceState_e state);
 
 /*!
 
-    \brief     Driver indication when the Link is Down 
-    		(i.e. upon disconnection from the AP)
+    \brief     Wi-Fi notification on change of Libk state
+    \param[in] hNetIf - network interface handle
+    \param[in] state - up or down
 
     \return    0 upon success or negative error code 
 */
-int LWIP_IF_setLinkDown(struct netif *pNetIf);
+int TCPIP_IF_notifyLinkChange(void *hNetIf, TcpipLinkState_e state);
 
+int TCPIP_IF_setIp4Addr(void *hNetIf, ip4addr_t ip, ip4addr_t mask, ip4addr_t gw);
 
+int   TCPIP_IF_receive(void *hPkt, int pktLen, void *hNetIf);
 
+#ifdef TCPIP_IF_ZERO_COPY
+void *TCPIP_IF_pktAlloc(uint16_t pktSize);
+void  TCPIP_IF_pktFree(void *hPkt);
+void *TCPIP_IF_pktPayload(void *hPkt);
+int   TCPIP_IF_pktLength(void *hPkt);
+#endif
 
-#endif // OTA_IF_H
+#endif // TCPIP_IF_H
