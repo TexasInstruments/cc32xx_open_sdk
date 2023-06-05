@@ -30,9 +30,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ifmod/debug_if.h>
-#include <ifmod/mqtt_if.h>
-#include <ifmod/utils_if.h>
+#include <debug_if.h>
+#include <mqtt_if.h>
+#include <utils_if.h>
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>

@@ -42,10 +42,14 @@
 //                 DEBUG IF DEFINITIONS
 //*****************************************************************************
 /* Debug Severity Levels Definition */
-typedef enum
-{
-    E_TRACE, E_DEBUG, E_INFO, E_WARNING, E_ERROR, E_FATAL, E_DISABLED
-} severity_e;
+#define E_TRACE 	0
+#define E_DEBUG		1
+#define E_INFO		2
+#define E_WARNING	3
+#define E_ERROR         4
+#define E_FATAL         5
+#define E_DISABLED      6
+
 
 /* Debug (Printf) Methods Definition */
 #define  D_UART_PRINT       0

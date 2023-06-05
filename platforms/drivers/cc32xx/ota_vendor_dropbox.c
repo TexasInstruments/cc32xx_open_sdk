@@ -35,7 +35,7 @@
 #if OTA_VENDOR_DROPBOX_SUPPORT
 
 #include "string.h"
-#include <ifmod/ota_vendors.h>
+#include <ota_vendors.h>
 #include "ota_if.h"
 #include "debug_if.h"
 #include "utils_if.h"

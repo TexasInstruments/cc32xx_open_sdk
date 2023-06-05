@@ -40,7 +40,7 @@
 // Standard includes
 
 
-#include <ifmod/debug_if.h>
+#include <debug_if.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <unistd.h>

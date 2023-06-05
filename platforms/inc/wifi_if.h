@@ -37,7 +37,7 @@
 #ifndef WIFI_IF_H
 #define WIFI_IF_H
 
-#include "wifi_settings.h"
+//#include "wifi_settings.h"
 
 //*****************************************************************************
 //                 WIFI IF INTRODUCTION

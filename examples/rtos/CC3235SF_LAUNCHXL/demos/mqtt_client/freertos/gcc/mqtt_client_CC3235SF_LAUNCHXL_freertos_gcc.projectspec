@@ -26,14 +26,14 @@
         compilerBuildOptions="
             -I${PROJECT_ROOT}
             -I${PROJECT_ROOT}/${ConfigName}
-             
+            -Iplat/
             -DDeviceFamily_CC3220
             -I${COM_TI_SIMPLELINK_CC32XX_SDK_INSTALL_DIR}/source
             -I${COM_TI_SIMPLELINK_CC32XX_SDK_INSTALL_DIR}/source/ti/posix/gcc
             -I${FREERTOS_INSTALL_DIR}/FreeRTOS/Source/include
             -I${FREERTOS_INSTALL_DIR}/FreeRTOS/Source/portable/GCC/ARM_CM3
             -I${WORKSPACE_LOC}/freertos_builds_cc32xx_release_gcc
-            -mcpu=cortex-m4
+           -mcpu=cortex-m4
             -march=armv7e-m
             -mthumb
             -std=c99
@@ -113,37 +113,37 @@
         </file>
         <file path="../../debug_settings.h" openOnCreation="false" excludeFromBuild="false" action="copy">
         </file>
-        <file path="../../../../../common/ifmod/mqtt_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/ns/simplelink/mqtt_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/mqtt_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/mqtt_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/debug_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/debug_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/wifi_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/wifi_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/wifi_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/wifi_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/httpsrv_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/ns/simplelink/httpsrv_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/httpsrv_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/httpsrv_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/utils_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/utils_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/utils_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/utils_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/uart_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/uart_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/uart_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/uart_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/ota_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/ota_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/ota_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/ota_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/ota_vendors.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/ota_vendors.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/ota_vendor_github.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/ota_vendor_github.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/ota_vendor_dropbox.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/ota_vendor_dropbox.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
         <file path="../../freertos/main_freertos.c" openOnCreation="false" excludeFromBuild="false" action="copy">
         </file>

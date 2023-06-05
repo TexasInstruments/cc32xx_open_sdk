@@ -89,13 +89,19 @@ int TCPIP_IF_init(EvtCallback_f fEvtCallback, unsigned char bStackInit);
 /*!
 
     \brief     User request to register The WIFI Interface 
-    		at the network stack 
+               at the network stack
     \return    pointer (handle) to the network interface or NULL in case of failure 
 */
 
 #define TCPIP_IF_FLAGS_DHCPC 	0x00000001 /* DHCP CLIENT */
 void * TCPIP_IF_addInterface(char *pName, uint8_t *pMacAddr, SendCallback_f fSendCallback, unsigned long flags);
 
+/*!
+
+    \brief     User request to unregister The WIFI Network Interface
+               at the network stack
+    \param[in] pointer (handle) to the network interface
+*/
 void TCPIP_IF_deleteInterface(void *hNetIf);
 
 /*!

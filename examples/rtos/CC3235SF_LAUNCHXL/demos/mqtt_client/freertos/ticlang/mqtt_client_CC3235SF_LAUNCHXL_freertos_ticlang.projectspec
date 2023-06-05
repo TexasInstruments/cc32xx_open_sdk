@@ -26,7 +26,7 @@
         compilerBuildOptions="
             -I${PROJECT_ROOT}
             -I${PROJECT_ROOT}/${ConfigName}
-             
+            -Iplat/
             -DDeviceFamily_CC3220
             -Oz
             -I${COM_TI_SIMPLELINK_CC32XX_SDK_INSTALL_DIR}/source
@@ -110,37 +110,37 @@
         </file>
         <file path="../../ota_settings.h" openOnCreation="false" excludeFromBuild="false" action="copy">
         </file>
-        <file path="../../../../../common/ifmod/mqtt_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/ns/simplelink/mqtt_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/mqtt_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/mqtt_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/debug_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/debug_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/wifi_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/wifi_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/wifi_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/wifi_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/httpsrv_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/httpsrv_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/httpsrv_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/httpsrv_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/utils_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/utils_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/utils_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/utils_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/uart_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/uart_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/uart_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/uart_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/ota_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/ota_if.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/ota_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/ota_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/ota_vendors.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/inc/ota_vendors.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/ota_vendor_github.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/ota_vendor_github.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
-        <file path="../../../../../common/ifmod/ota_vendor_dropbox.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="ifmod">
+        <file path="../../../../../../../platforms/drivers/cc32xx/ota_vendor_dropbox.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
         <file path="../../freertos/main_freertos.c" openOnCreation="false" excludeFromBuild="false" action="copy">
         </file>

@@ -176,23 +176,23 @@ This readme assumes you are familiar with the following documents:<br>
 Note: The OTA capability is disabled by default. Please enable the required method in the app's "ota\_settings.h" (see "Enable The OTA\_IF" section below). To enable the launchpad's button to trigger the primary OTA method also set OTA\_DEFAULT\_METHOD (see in mqtt\_client\_app.c") to the required trigger.
 
 ### What is OTA\_IF
-The OTA\_IF is a wrapper on top of the legacy "ota.a" lib. The OTA_IF module is available as part of the mqtt_client application (see under ifmod/). 
+The OTA\_IF is a wrapper on top of the legacy "ota.a" lib. The OTA_IF module is available as part of the mqtt_client application (see under plat/). 
 
-The OTA\_IF was planned to ease the integration of OTA to any existing application. It is designed for RTOS environment only (non RTOS users will use the OTA library as before). The OTA\_IF presents a simple interface for the main application to poll, download and install an OTA update (see API in ifmod/ota\_if.h).
+The OTA\_IF was planned to ease the integration of OTA to any existing application. It is designed for RTOS environment only (non RTOS users will use the OTA library as before). The OTA\_IF presents a simple interface for the main application to poll, download and install an OTA update (see API in plat/ota\_if.h).
 
 The OTA\_IF currently supports 4 use cases:
 
-1. <b>Cloud OTA (FULL)</b> - Download from an CDN server (such as Github or Dropbox). This use case starts by connecting to the CDN server to get a download link (file server's URL). Once the link is received, the download of the OTA (tar) image will be started automatically by sending HTTP Get Request to the file server. This method supports up to 2 callbacks to 2 different servers (primary and backup) <br>API: **OTA\_IF\_downloadImageByCloudVendor()** (see ifmod/ota\_if.h)<br>Enabled With: **CLOUD\_OTA\_SUPPORT** (see ota\_settings.h)<br>
+1. <b>Cloud OTA (FULL)</b> - Download from an CDN server (such as Github or Dropbox). This use case starts by connecting to the CDN server to get a download link (file server's URL). Once the link is received, the download of the OTA (tar) image will be started automatically by sending HTTP Get Request to the file server. This method supports up to 2 callbacks to 2 different servers (primary and backup) <br>API: **OTA\_IF\_downloadImageByCloudVendor()** (see plat/ota\_if.h)<br>Enabled With: **CLOUD\_OTA\_SUPPORT** (see ota\_settings.h)<br>
 This method requires Internet Level Connection.<br>
 
-2. <b>Cloud OTA (Download from File Server)</b> - in this case the user will get the URL of the OTA (tar) image using other method and directly download the file (using HTTP Get Request).<br>API: **OTA\_IF\_downloadImageByFileURL()** (see ifmod/ota\_if.h)<br>Enabled With: **CLOUD\_OTA\_SUPPORT** (see ota_settings.h)<br>
+2. <b>Cloud OTA (Download from File Server)</b> - in this case the user will get the URL of the OTA (tar) image using other method and directly download the file (using HTTP Get Request).<br>API: **OTA\_IF\_downloadImageByFileURL()** (see plat/ota\_if.h)<br>Enabled With: **CLOUD\_OTA\_SUPPORT** (see ota_settings.h)<br>
 This method requires Internet Level Connection.<br>
 
-3. <b>Local OTA</b> - using the SimpleLink internal HTTP server to enable connection from a PC or a mobile device connected to the same local network. The PC/Mobile device will send the OTA (tar) image in a HTTP Post request.<br>API: **OTA\_IF\_uploadImage()** (see ifmod/ota\_if.h)<br>Enabled With: **LOCAL\_OTA\_SUPPORT** (see ota_settings.h)
+3. <b>Local OTA</b> - using the SimpleLink internal HTTP server to enable connection from a PC or a mobile device connected to the same local network. The PC/Mobile device will send the OTA (tar) image in a HTTP Post request.<br>API: **OTA\_IF\_uploadImage()** (see plat/ota\_if.h)<br>Enabled With: **LOCAL\_OTA\_SUPPORT** (see ota_settings.h)
 This method requires local network connection (it can work in AP mode or in a station connected to local AP, even without internet access).<br>
 Note: In the mqtt\_client example the OTA is enabled only after connecting (SimpleLink as a station) to a router with internet connection. <br>   
 
-4. <b>Internal Update</b> - in this case the update starts when the OTA (tar) image is already located in the SimpleLink file-system. The OTA\_IF will be used to read the image and install the content.<br>API: **OTA\_IF\_readImage()** (see ifmod/ota\_if.h)<br>Enabled With: **INTERNAL\_UPDATE\_SUPPORT** (see ota_settings.h)
+4. <b>Internal Update</b> - in this case the update starts when the OTA (tar) image is already located in the SimpleLink file-system. The OTA\_IF will be used to read the image and install the content.<br>API: **OTA\_IF\_readImage()** (see plat/ota\_if.h)<br>Enabled With: **INTERNAL\_UPDATE\_SUPPORT** (see ota_settings.h)
 This method can work without any Wi-Fi connection.<br>
 Note: In the mqtt\_client example the OTA is enabled only after connecting (SimpleLink as a station) to a router with internet connection. <br>
 
@@ -220,13 +220,13 @@ The OTA\_IF in fact is a component which is composed of the following files: <br
 	activated in case of issues (this can be a using second OTA vendor and/or local OTA).
   ***************************************************************************************************
 
-### The "ifmod/" folder
-The "ifmod" folder contains all the "interface modules" required by the main application. Those are close modules that a user typically won't need to change that are meant to simplify the use and the integration of common feature (e.g. provisioning through the WIFI\_IF, OTA update through the OTA\_IF, MQTT connection through the MQTT\_IF etc). 
+### The "plat/" folder
+The "plat" folder contains all the "interface modules" required by the main application. Those are close modules that a user typically won't need to change that are meant to simplify the use and the integration of common feature (e.g. provisioning through the WIFI\_IF, OTA update through the OTA\_IF, MQTT connection through the MQTT\_IF etc). 
 
 The folder contains all the code required for the OTA functionality.
 
-In additions, the "ifmod/" contains other interface modules that are used by the MQTT example: WIFI\_IF, MQTT\_IF, UART\_IF and UTILS\_IF. Those are general interfaces that are not related to the OTA functionality directly. 
-If the entire "ifmod" folder is copied to a new project, any unused module may be excluded from the build (or you can trust the linker to do the work (dead code will typically be removed by the linker).
+In additions, the "plat/" contains other interface modules that are used by the MQTT example: WIFI\_IF, MQTT\_IF, UART\_IF and UTILS\_IF. Those are general interfaces that are not related to the OTA functionality directly. 
+If the entire "plat" folder is copied to a new project, any unused module may be excluded from the build (or you can trust the linker to do the work (dead code will typically be removed by the linker).
 
 
 ### Enable the OTA\_IF in the mqtt\_client example
@@ -252,7 +252,7 @@ The following are instructions for including OTA in an existing example:
 1.1 For all uses cases: "ota.a" (under <SDK\>/ti/net/ota/) and "json\_[release|debug].a" (under <SDK\>/ti/utils/json/)<br>
 1.2 When using cloud ota use case, add:  "httpclient\_[release|debug].a" (under <SDK\>/ti/net/http/http\_lib\_for\_OTA/) - this library is the same as the original httpclient but uses a larger internal buffer (HTTPClient\_BUF\_LEN is set to 512 due to the Dropbox server's requirements for large HTTP header) <br>
 
-2. Copy the entire "ifmod/" folder from the mqtt_client example to target project.
+2. Copy the entire "plat/" folder from the mqtt_client example to target project.
 3. Copy the ota_settings.h to the target application, enable OTA (it is disabled by default) and update user configuration (see "Configure user accounts")   
 4. Copy user files and use them (or modification) when creating the flash image:
 	* www/ - contain files (html, js, css,etc) need by the HTTP Server for Local OTA

@@ -34,7 +34,7 @@
 
 #if OTA_VENDOR_GITHUB_SUPPORT
 
-#include <ifmod/ota_vendors.h>
+#include <ota_vendors.h>
 #include "ota_if.h"
 #include "string.h"
 #include "debug_if.h"

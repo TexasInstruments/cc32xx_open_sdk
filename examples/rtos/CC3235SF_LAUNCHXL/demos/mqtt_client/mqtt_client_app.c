@@ -61,13 +61,13 @@
 #include <ti/net/mqtt/mqttclient.h>
 
 
-#include "ifmod/uart_if.h"
-#include "ifmod/wifi_if.h"
-#include "ifmod/mqtt_if.h"
-#include "ifmod/debug_if.h"
-#include "ifmod/ota_if.h"
-#include "ifmod/utils_if.h"
-#include "ifmod/ota_vendors.h"
+#include "uart_if.h"
+#include "wifi_if.h"
+#include "mqtt_if.h"
+#include "debug_if.h"
+#include "ota_if.h"
+#include "utils_if.h"
+#include "ota_vendors.h"
 
 #include "ti_drivers_config.h"
 
