@@ -136,6 +136,8 @@
         </file>
         <file path="../../../../../../../platforms/inc/ota_if.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
+        <file path="../../../../../../../platforms/ns/net_log.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
+        </file>
         <file path="../../../../../../../platforms/inc/ota_vendors.h" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
         </file>
         <file path="../../../../../../../platforms/drivers/cc32xx/ota_vendor_github.c" openOnCreation="false" excludeFromBuild="false" action="copy" targetDirectory="plat">
