@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020, Texas Instruments Incorporated
+ * Copyright (c) 2018-2022, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,7 +43,8 @@ MEMORY
      * ARM memory map can be found here:
      * https://developer.arm.com/documentation/ddi0337/e/memory-map/about-the-memory-map
      */
-    LOG_DATA (R) : ORIGIN = 0x90000000, LENGTH = 0x40000
+    LOG_DATA     (R) : ORIGIN = 0x90000000, LENGTH = 0x40000
+    LOG_PTR      (R) : ORIGIN = 0x94000008, LENGTH = 0x40000
 }
 
 REGION_ALIAS("REGION_HDR", FLASH_HDR);
@@ -149,6 +150,9 @@ SECTIONS {
     .log_data (COPY) : {
         KEEP (*(.log_data))
     } > REGION_LOG
+    .log_ptr (COPY) : {
+        KEEP (*(.log_ptr*))
+    } > LOG_PTR
 }
 
 ENTRY(resetISR)

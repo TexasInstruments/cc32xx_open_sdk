@@ -276,7 +276,8 @@ to their previous (non-parked) states.
         longDescription: "Only one of the following GPIOs can be specified as"
             + " a wake source from Shutdown.",
         hidden      : false,  /* because enableGPIOWakeupShutdown is true */
-        default     : "GPIO13",
+        default     : ["GPIO13"],
+        minSelections: 0,
         options     :
         [
             { name: "GPIO2" },

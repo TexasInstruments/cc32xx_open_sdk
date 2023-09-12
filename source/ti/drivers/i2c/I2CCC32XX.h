@@ -74,14 +74,14 @@ extern "C" {
  *  value for the pin to operate in the I2C mode.  For example, pin 1 is
  *  configured with mode 1 to operate as I2C_SCL.
  */
-#define I2CCC32XX_PIN_01_I2C_SCL  0x100 /*!< PIN 1 is used for I2C_SCL */
-#define I2CCC32XX_PIN_02_I2C_SDA  0x101 /*!< PIN 2 is used for I2C_SDA */
-#define I2CCC32XX_PIN_03_I2C_SCL  0x502 /*!< PIN 3 is used for I2C_SCL */
-#define I2CCC32XX_PIN_04_I2C_SDA  0x503 /*!< PIN 4 is used for I2C_SDA */
-#define I2CCC32XX_PIN_05_I2C_SCL  0x504 /*!< PIN 5 is used for I2C_SCL */
-#define I2CCC32XX_PIN_06_I2C_SDA  0x505 /*!< PIN 6 is used for I2C_SDA */
-#define I2CCC32XX_PIN_16_I2C_SCL  0x90F /*!< PIN 16 is used for I2C_SCL */
-#define I2CCC32XX_PIN_17_I2C_SDA  0x910 /*!< PIN 17 is used for I2C_SDA */
+#define I2CCC32XX_PIN_01_I2C_SCL 0x100 /*!< PIN 1 is used for I2C_SCL */
+#define I2CCC32XX_PIN_02_I2C_SDA 0x101 /*!< PIN 2 is used for I2C_SDA */
+#define I2CCC32XX_PIN_03_I2C_SCL 0x502 /*!< PIN 3 is used for I2C_SCL */
+#define I2CCC32XX_PIN_04_I2C_SDA 0x503 /*!< PIN 4 is used for I2C_SDA */
+#define I2CCC32XX_PIN_05_I2C_SCL 0x504 /*!< PIN 5 is used for I2C_SCL */
+#define I2CCC32XX_PIN_06_I2C_SDA 0x505 /*!< PIN 6 is used for I2C_SDA */
+#define I2CCC32XX_PIN_16_I2C_SCL 0x90F /*!< PIN 16 is used for I2C_SCL */
+#define I2CCC32XX_PIN_17_I2C_SDA 0x910 /*!< PIN 17 is used for I2C_SDA */
 
 /**
  *  @addtogroup I2C_STATUS
@@ -147,7 +147,8 @@ extern "C" {
  *  };
  *  @endcode
  */
-typedef struct {
+typedef struct
+{
     I2C_BASE_HWATTRS
 
     /*! SCL low clock timeout specified in I2C clocks */
@@ -163,18 +164,19 @@ typedef struct {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct {
+typedef struct
+{
     I2C_BASE_OBJECT
 
     /* Burst counters */
-    uint16_t           burstCount;
-    bool               burstStarted;
+    uint16_t burstCount;
+    bool burstStarted;
 
     /* Enumerated bit rate */
-    I2C_BitRate        bitRate;
+    I2C_BitRate bitRate;
 
     /* For notification of wake from LPDS */
-    Power_NotifyObj    notifyObj;
+    Power_NotifyObj notifyObj;
 } I2CCC32XX_Object;
 
 #ifdef __cplusplus

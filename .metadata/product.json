@@ -2,7 +2,7 @@
 {
     "name": "simplelink_cc32xx_sdk",
     "displayName": "SimpleLink CC32XX SDK",
-    "version": "6.10.00.05",
+    "version": "7.10.00.13",
     "documentationPath": "../docs",
     "includePaths": [
         "../source",
@@ -13,15 +13,14 @@
     ],
     "components": [
         "/ti/drivers/drivers.component.js",
-        "/ti/loggers/drivers/drivers.component.js",
-        "/ti/loggers/utils/utils.component.js",
+        "/ti/log/drivers.component.js",
+        "/ti/log/utils.component.js",
         "/ti/net/ns.component.js",
         "/ti/posix/tiposix.component.js",
         "/ti/utils/tiutils.component.js",
         "/ti/utils/build/build.component.js",
-        "/ti/utils/osal/osal.component.js",
         "/ti/utils/rov/rov.component.js",
-        "/ti/utils/runtime/runtime.component.js",
+        "/freertos/freertos.component.js",
         "/ti/sysbios/sysbios.component.js",
         "/ti/drivers/net/wifi/product.syscfg.js",
         "/ti/drivers/net/imagecreator/image.component.js"

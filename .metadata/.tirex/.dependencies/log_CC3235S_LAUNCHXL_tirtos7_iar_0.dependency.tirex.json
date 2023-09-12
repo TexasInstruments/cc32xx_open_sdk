@@ -6,6 +6,7 @@
             "+../../log.c -> log.c",
             "+../log.syscfg -> log.syscfg",
             "+../main_tirtos.c -> main_tirtos.c",
+            "+../../overview.rov.json -> overview.rov.json",
             "+../../README.html -> README.html",
             "+../../README.md -> README.md"
         ]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2019-2022 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,19 +70,29 @@ function getLibs(mod)
     let libs = [];
 
     if (family != "") {
-        libs.push(libPath("ti/drivers","drivers_" + family + ".a"));
+        /* Check for TrustZone module */
+        let tfmEnabled = family.match(/(cc.*4)/) && system.modules["/ti/utils/TrustZone"];
 
-        if (!family.match(/cc.*4/) && !family.match(/cc23/)) {
+        if(tfmEnabled){
+            libs.push(libPath("ti/drivers","drivers_" + family + "_ns" + ".a"));
+        }
+        else{
+            libs.push(libPath("ti/drivers","drivers_" + family + ".a"));
+        }
 
+        if (!family.match(/cc(13|26).[34]|cc23/)) {
             libs.push(libPath("ti/grlib", "grlib.a"));
+        }
 
-            if (rtos == "tirtos" || rtos == "tirtos7") {
-                libs.push(libPath("ti/dpl","dpl_" + family + ".a"));
+        if (rtos == "nortos") {
+            if(tfmEnabled){
+                libs.push("lib/" + getToolchainDir() + "/" + getDeviceIsa() + "/nortos_" + family + "_ns.a");
             }
-            else if (rtos == "nortos") {
+            else{
                 libs.push("lib/" + getToolchainDir() + "/" + getDeviceIsa() + "/nortos_" + family + ".a");
             }
         }
+
     }
 
     if (libs == null) {
@@ -110,7 +120,7 @@ function getLibs(mod)
     }
 
     if (system.modules["/ti/drivers/ECDH"] || system.modules["/ti/drivers/ECDSA"]) {
-        /* Add dependency on ECC library for Agama-Lite and Loki-Low */
+        /* Add dependency on ECC library for CC13x1/CC26x1 and CC23x0 */
         if (family.match(/cc13.1/) || family.match(/cc26.1/) || family.match(/cc23.0/)) {
             linkOpts.deps.push("/third_party/ecc");
         }
@@ -139,12 +149,19 @@ function modules(mod)
         hidden    : true
     });
 
-    /* this module is only really needed for BIOS 7.x, a noop for others */
-    reqs.push({
-        name      : "DPL",
-        moduleName: "/ti/dpl/Settings",
-        hidden    : true
-    });
+    if (system.getRTOS() === "tirtos7") {
+        reqs.push({
+            name      : "DPL",
+            moduleName: "/ti/dpl/Settings",
+            hidden    : true
+        });
+    } else if (system.getRTOS() === "freertos") {
+        reqs.push({
+            name      : "DPL",
+            moduleName: "/freertos/dpl/Settings",
+            hidden    : true
+        });
+    }
 
     if (system.deviceData.board && system.deviceData.board.components) {
 
@@ -240,11 +257,6 @@ module will execute.
         config   : config
     }
 };
-
-/* This should maybe go somewhere else, but until we get a FreeRTOS module it can stay here */
-if (system.getRTOS() == "freertos") {
-    base.templates["/ti/utils/rov/syscfg_c.rov.xs.xdt"] = "/kernel/freertos/rov/FreeRTOS.rov.js";
-}
 
 /* extend the base exports to include family-specific content */
 let deviceBoard = system.getScript("/ti/drivers/Board" + family);

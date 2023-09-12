@@ -138,7 +138,7 @@ Fd_t spi_Open(char *ifName, unsigned long flags)
 
     /* configure the SPI settings */
     SPI_Config.transferMode = SPI_MODE_BLOCKING;
-    SPI_Config.mode = SPI_MASTER;
+    SPI_Config.mode = SPI_CONTROLLER;
 
     /* Check NWP generation */
     if((HWREG(GPRCM_BASE + GPRCM_O_GPRCM_DIEID_READ_REG4) >> 24) & 0x02)

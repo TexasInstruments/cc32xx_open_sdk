@@ -36,7 +36,7 @@
 #include DeviceFamily_constructPath(inc/hw_ocp_shared.h)
 
 #define SPARE_REG4_SWV_ON_TDO_S 6
-#define SWV_ON_TDO_MASK (~(1<<SPARE_REG4_SWV_ON_TDO_S))
+#define SWV_ON_TDO_MASK         (~(1 << SPARE_REG4_SWV_ON_TDO_S))
 
 /*
  *  ======== ITM_applyPinMux ========
@@ -45,7 +45,8 @@ bool ITM_applyPinMux(void)
 {
     /* Mux the SWO functionality out on the TDO pin */
     /* NB! This is not configurable, it must use TDO */
-    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_SPARE_REG_4) = ((HWREG(OCP_SHARED_BASE + OCP_SHARED_O_SPARE_REG_4) & SWV_ON_TDO_MASK) | (1<<SPARE_REG4_SWV_ON_TDO_S));
+    HWREG(OCP_SHARED_BASE + OCP_SHARED_O_SPARE_REG_4) = ((HWREG(OCP_SHARED_BASE + OCP_SHARED_O_SPARE_REG_4) & SWV_ON_TDO_MASK) |
+                                            (1 << SPARE_REG4_SWV_ON_TDO_S));
 
     return (bool)true;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2021, Texas Instruments Incorporated
+ * Copyright (c) 2015-2023, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,8 +61,8 @@
  *  <table>
  *  <tr>
  *  <th>Chip select type</th>
- *  <th>SPI_MASTER mode</th>
- *  <th>SPI_SLAVE mode</th>
+ *  <th>SPI_CONTROLLER mode</th>
+ *  <th>SPI_PERIPHERAL mode</th>
  *  </tr>
  *  <tr>
  *  <td>Hardware chip select</td>
@@ -109,14 +109,12 @@
  *  the assigned micro DMA channels.
  *
  *  ## DMA and Queueing
- *  This driver utilizes DMA channels in ping pong mode (see device TRM) in
- *  order to overcome the 1024 item DMA channel limit. This means the driver
- *  can execute multi kilo-item transactions without pausing to reconfigure the
- *  DMA and causing gaps in transmission. In addition, the driver also allows
- *  the user to queue up transfers when opened in #SPI_MODE_CALLBACK by calling
+ *  This driver supports DMA, but ping pong mode (see device TRM) is
+ *  not implemented. In addition, the driver also allows the user to
+ *  queue up transfers when opened in #SPI_MODE_CALLBACK by calling
  *  SPI_transfer() multiple times. Note that each transaction's
- *  #SPI_Transaction struct must still be persistent and unmodified until that
- *  transaction is complete.
+ *  #SPI_Transaction struct must still be persistent and unmodified
+ *  until that transaction is complete.
  *
  *  @anchor ti_drivers_spi_SPICC32XXDMA_example_queueing
  *  Below is an example of queueing three transactions
@@ -212,7 +210,6 @@ extern "C" {
 
 /* Add SPICC32XXDMA_CMD_* macros here */
 
-
 /** @}*/
 
 /*
@@ -230,21 +227,21 @@ extern "C" {
  *  has it tied to the CS signal.
  */
 /*! @cond HIDDEN_DEFINES */
-#define SPICC32XXDMA_PIN_05_CLK     0x0704 /*!< PIN 5 is used for SPI CLK */
-#define SPICC32XXDMA_PIN_06_MISO    0x0705 /*!< PIN 6 is used for MISO */
-#define SPICC32XXDMA_PIN_07_MOSI    0x0706 /*!< PIN 7 is used for MOSI */
-#define SPICC32XXDMA_PIN_08_CS      0x0707 /*!< PIN 8 is used for CS */
-#define SPICC32XXDMA_PIN_45_CLK     0x072C /*!< PIN 45 is used for SPI CLK */
-#define SPICC32XXDMA_PIN_50_CS      0x0931 /*!< PIN 50 is used for CS */
-#define SPICC32XXDMA_PIN_52_MOSI    0x0833 /*!< PIN 52 is used for MOSI */
-#define SPICC32XXDMA_PIN_53_MISO    0x0734 /*!< PIN 53 is used for MISO */
+#define SPICC32XXDMA_PIN_05_CLK  0x0704 /*!< PIN 5 is used for SPI CLK */
+#define SPICC32XXDMA_PIN_06_POCI 0x0705 /*!< PIN 6 is used for POCI */
+#define SPICC32XXDMA_PIN_07_PICO 0x0706 /*!< PIN 7 is used for PICO */
+#define SPICC32XXDMA_PIN_08_CS   0x0707 /*!< PIN 8 is used for CS */
+#define SPICC32XXDMA_PIN_45_CLK  0x072C /*!< PIN 45 is used for SPI CLK */
+#define SPICC32XXDMA_PIN_50_CS   0x0931 /*!< PIN 50 is used for CS */
+#define SPICC32XXDMA_PIN_52_PICO 0x0833 /*!< PIN 52 is used for PICO */
+#define SPICC32XXDMA_PIN_53_POCI 0x0734 /*!< PIN 53 is used for POCI */
 
 /*! @endcond*/
 
 /*!
  * @brief Indicates a pin is not to be configured by the SPICC32XXDMA driver.
  */
-#define SPICC32XXDMA_PIN_NO_CONFIG  0xFFFF
+#define SPICC32XXDMA_PIN_NO_CONFIG 0xFFFF
 
 /* SPI function table pointer */
 extern const SPI_FxnTable SPICC32XXDMA_fxnTable;
@@ -297,66 +294,66 @@ extern const SPI_FxnTable SPICC32XXDMA_fxnTable;
  *          .rxChannelIndex = UDMA_CH6_GSPI_RX,
  *          .txChannelIndex = UDMA_CH7_GSPI_TX,
  *          .minDmaTransferSize = 100,
- *          .mosiPin = SPICC32XXDMA_PIN_07_MOSI,
- *          .misoPin = SPICC32XXDMA_PIN_06_MISO,
+ *          .picoPin = SPICC32XXDMA_PIN_07_PICO,
+ *          .pociPin = SPICC32XXDMA_PIN_06_POCI,
  *          .clkPin = SPICC32XXDMA_PIN_05_CLK,
- *          .csPin = SPICC32XXDMA_PIN_08_CS,
+ *          .csnPin = SPICC32XXDMA_PIN_08_CS,
  *      },
  *      ...
  *  };
  *  @endcode
  */
-typedef struct {
+typedef struct
+{
     /*! SPICC32XXDMA Peripheral's base address */
-    uint32_t   baseAddr;
-
+    uint32_t baseAddr;
 
     /*! SPICC32XXDMA Peripheral's interrupt vector */
-    uint32_t   intNum;
+    uint32_t intNum;
 
     /*! SPICC32XXDMA Peripheral's interrupt priority */
-    uint32_t   intPriority;
+    uint32_t intPriority;
 
     /*! SPI PRCM peripheral number */
-    uint32_t   spiPRCM;
+    uint32_t spiPRCM;
 
     /*! Specify if chip select line will be controlled by SW or HW */
-    uint32_t   csControl;
+    uint32_t csControl;
 
-    uint32_t   csPolarity;
+    uint32_t csPolarity;
 
     /*! Set peripheral to work in 3-pin or 4-pin mode */
-    uint32_t   pinMode;
+    uint32_t pinMode;
 
     /*! Enable or disable SPI TURBO mode */
-    uint32_t   turboMode;
+    uint32_t turboMode;
 
     /*! Address of a scratch buffer of size uint32_t */
-    uint32_t  *scratchBufPtr;
+    uint32_t *scratchBufPtr;
 
     /*! Default TX value if txBuf == NULL */
-    uint32_t   defaultTxBufValue;
+    uint32_t defaultTxBufValue;
 
     /*! uDMA RX channel index */
-    uint32_t   rxChannelIndex;
+    uint32_t rxChannelIndex;
 
     /*! uDMA TX channel index */
-    uint32_t   txChannelIndex;
+    uint32_t txChannelIndex;
 
     /*! Minimum amout of data to start a uDMA transfer */
-    uint32_t   minDmaTransferSize;
+    uint32_t minDmaTransferSize;
 
-    /*! GSPI MOSI pin assignment */
-    uint16_t   mosiPin;
+    /*! GSPI PICO pin assignment */
+    uint16_t picoPin;
 
-    /*! GSPI MISO pin assignment */
-    uint16_t   misoPin;
+    /*! GSPI POCI pin assignment */
+    uint16_t pociPin;
 
     /*! GSPI CLK pin assignment */
-    uint16_t   clkPin;
+    uint16_t clkPin;
 
     /*! GSPI CS pin assignment */
-    uint16_t   csPin;
+    uint16_t csnPin;
 } SPICC32XXDMA_HWAttrsV1;
 
 /*!
@@ -364,28 +361,29 @@ typedef struct {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct {
-    HwiP_Handle        hwiHandle;
-    Power_NotifyObj    notifyObj;
-    SemaphoreP_Handle  transferComplete;
-    SPI_CallbackFxn    transferCallbackFxn;
-    SPI_Transaction   *transaction;
-    UDMACC32XX_Handle  dmaHandle;
+typedef struct
+{
+    HwiP_Handle hwiHandle;
+    Power_NotifyObj notifyObj;
+    SemaphoreP_Handle transferComplete;
+    SPI_CallbackFxn transferCallbackFxn;
+    SPI_Transaction *transaction;
+    UDMACC32XX_Handle dmaHandle;
 
-    size_t             amtDataXferred;
-    size_t             currentXferAmt;
-    uint32_t           bitRate;
-    uint32_t           dataSize;
-    uint32_t           transferTimeout;
+    size_t amtDataXferred;
+    size_t currentXferAmt;
+    uint32_t bitRate;
+    uint32_t dataSize;
+    uint32_t transferTimeout;
 
-    SPI_Mode           spiMode;
-    SPI_TransferMode   transferMode;
-    SPI_FrameFormat    frameFormat;
+    SPI_Mode spiMode;
+    SPI_TransferMode transferMode;
+    SPI_FrameFormat frameFormat;
 
-    bool               cancelInProgress;
-    bool               isOpen;
-    uint8_t            rxFifoTrigger;
-    uint8_t            txFifoTrigger;
+    bool cancelInProgress;
+    bool isOpen;
+    uint8_t rxFifoTrigger;
+    uint8_t txFifoTrigger;
 } SPICC32XXDMA_Object, *SPICC32XXDMA_Handle;
 
 #ifdef __cplusplus

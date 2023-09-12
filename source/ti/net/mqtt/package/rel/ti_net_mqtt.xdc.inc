@@ -13,7 +13,7 @@ server/server_plug.h
 server/server_util.h
 package.bld
 package/package.cfg.xdc.inc
-lib/ccs/m4/mqtt_debug.a
+lib/ticlang/m4/mqtt_debug.a
 package/package_ti.net.mqtt.c
 interface/mqttclient.c
 interface/mqttserver.c
@@ -25,8 +25,6 @@ server/server_core.c
 server/server_pkts.c
 server/server_plug.c
 server/server_util.c
-lib/ccs/m4/mqtt_release.a
-lib/ticlang/m4/mqtt_debug.a
 lib/ticlang/m4/mqtt_release.a
 lib/gcc/m4/mqtt_debug.a
 lib/gcc/m4/mqtt_release.a

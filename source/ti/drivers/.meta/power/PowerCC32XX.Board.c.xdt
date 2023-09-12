@@ -109,6 +109,8 @@
         //wakeupGPIOTypeShutdown    = DONTCARE;
     }
 
+    let wakeupGPIOSourceShutdownMask = "PRCM_HIB_" + pow.wakeupGPIOSourceShutdown.join("|PRCM_HIB_");
+
     function ramRetentionMask()
     {
       let mask = pow.ramRetentionMaskLPDS;
@@ -168,7 +170,7 @@ const PowerCC32XX_ConfigV1 PowerCC32XX_config = {
     .wakeupGPIOTypeLPDS        = PRCM_LPDS_`pow.wakeupGPIOTypeLPDS`,
     .wakeupGPIOFxnLPDS         = `wakeupGPIOFxnLPDS`,
     .wakeupGPIOFxnLPDSArg      = `wakeupGPIOFxnLPDSArg`,
-    .wakeupGPIOSourceShutdown  = PRCM_HIB_`pow.wakeupGPIOSourceShutdown`,
+    .wakeupGPIOSourceShutdown  = `wakeupGPIOSourceShutdownMask`,
     .wakeupGPIOTypeShutdown    = PRCM_HIB_`pow.wakeupGPIOTypeShutdown`,
     .ramRetentionMaskLPDS      = `ramRetentionMask()`,
     .latencyForLPDS            = `latencyForLPDS`,

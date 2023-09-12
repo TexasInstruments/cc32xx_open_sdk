@@ -109,12 +109,6 @@ function modules(inst)
         });
     }
 
-    modules.push({
-        name: "getLibs",
-        displayName: "GetLibs",
-        moduleName: "/ti/utils/runtime/GetLibs"
-    });
-
     return (modules);
 }
 

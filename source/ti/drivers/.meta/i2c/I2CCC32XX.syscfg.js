@@ -59,9 +59,9 @@ let devSpecific = {
             default: 0x00,
             description: "Sets the SCL low clock timeout",
             longDescription:`
-An I2C slave can extend a I2C transaction by periodically pulling the
+An I2C target can extend a I2C transaction by periodically pulling the
 clock low to create a slow bit transfer rate. The __SCL Timeout__ is used to
-force a timeout if an I2C slave holds the clock line low for longer than the
+force a timeout if an I2C target holds the clock line low for longer than the
 timeout duration. A value less than 0x1 indicates the timeout is disabled.`
         },
 
@@ -108,7 +108,7 @@ function extend(base)
     /* display which driver implementation can be used */
     base = Common.addImplementationConfig(base, "I2C", null,
         [{name: "I2CCC32XX"}], null);
-    
+
     /* merge and overwrite base module attributes */
     let result = Object.assign({}, base, devSpecific);
 

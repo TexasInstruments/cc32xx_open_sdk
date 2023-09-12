@@ -87,7 +87,7 @@ extern "C" {
 /** @}*/
 
 /* CC32XX camera DMA transfer size */
-#define CameraCC32XXDMA_DMA_TRANSFER_SIZE  64
+#define CameraCC32XXDMA_DMA_TRANSFER_SIZE 64
 
 /* Camera function table pointer */
 extern const Camera_FxnTable CameraCC32XXDMA_fxnTable;
@@ -121,13 +121,14 @@ extern const Camera_FxnTable CameraCC32XXDMA_fxnTable;
  *  };
  *  @endcode
  */
-typedef struct {
+typedef struct
+{
     /*! Camera Peripheral's base address */
-    uint32_t     baseAddr;
+    uint32_t baseAddr;
     /*! Camera Peripheral's interrupt vector */
-    uint32_t    intNum;
+    uint32_t intNum;
     /*! Camera Peripheral's interrupt priority */
-    uint32_t    intPriority;
+    uint32_t intPriority;
     /*! uDMA controlTable channel index */
     unsigned long channelIndex;
 } CameraCC32XXDMA_HWAttrs;
@@ -137,25 +138,26 @@ typedef struct {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct {
+typedef struct
+{
     /* Camera control variables */
-    bool                opened;            /* Has the obj been opened */
-    Camera_CaptureMode  operationMode;     /* Mode of operation of Camera */
+    bool opened;                      /* Has the obj been opened */
+    Camera_CaptureMode operationMode; /* Mode of operation of Camera */
 
     /* Camera capture variables */
-    Camera_Callback     captureCallback;   /* Pointer to capture callback */
-    uint32_t            captureTimeout;    /* Timeout for capture semaphore */
-    void                *captureBuf;       /* Buffer data pointer */
-    size_t              bufferlength;      /* Input Buffer length*/
-    size_t              frameLength;       /* Captured frame length */
+    Camera_Callback captureCallback; /* Pointer to capture callback */
+    uint32_t captureTimeout;         /* Timeout for capture semaphore */
+    void *captureBuf;                /* Buffer data pointer */
+    size_t bufferlength;             /* Input Buffer length*/
+    size_t frameLength;              /* Captured frame length */
 
-    bool                cameraDMA_PingPongMode; /* DMA ping pong mode */
-    size_t              cameraDMAxIntrRcvd;     /* Number of DMA interrupts*/
-    bool                inUse;                  /* Camera in Use */
+    bool cameraDMA_PingPongMode; /* DMA ping pong mode */
+    size_t cameraDMAxIntrRcvd;   /* Number of DMA interrupts*/
+    bool inUse;                  /* Camera in Use */
 
     /* Camera OS objects */
-    SemaphoreP_Handle   captureSem;
-    HwiP_Handle         hwiHandle;
+    SemaphoreP_Handle captureSem;
+    HwiP_Handle hwiHandle;
 } CameraCC32XXDMA_Object, *CameraCC32XXDMA_Handle;
 
 #ifdef __cplusplus

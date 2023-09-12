@@ -193,7 +193,7 @@ const SDSPI_HWAttrs sdspiHWattrs[`SDSPICount`] = {
     /* `inst.$name` */
     {
         .spiIndex = `inst.spiInstance.$name`,
-        .spiCsGpioIndex = `inst.slaveSelect.$name`
+        .spiCsGpioIndex = `inst.chipSelect.$name`
     },
 % }
 };

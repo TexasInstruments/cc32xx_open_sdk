@@ -60,14 +60,12 @@
  * macro to resolve RTC count when reading from 40MHz domain (need to read 3
  * times and compare values to ensure proper sync with RTC running at 32786Hz)
  */
-#define COUNT_WITHIN_TRESHOLD(a, b, c, th) \
-        ((((b) - (a)) <= (th)) ? (b) : (c))
+#define COUNT_WITHIN_TRESHOLD(a, b, c, th) ((((b) - (a)) <= (th)) ? (b) : (c))
 
 /* macros for enabling RTC */
-#define HWREG(x) (*((volatile unsigned long *)(x)))
-#define HIB3P3_BASE                        0x4402F800
-#define HIB3P3_O_MEM_HIB_RTC_TIMER_ENABLE  0x00000004
-
+#define HWREG(x)                          (*((volatile unsigned long *)(x)))
+#define HIB3P3_BASE                       0x4402F800
+#define HIB3P3_O_MEM_HIB_RTC_TIMER_ENABLE 0x00000004
 
 extern void ClockP_doTick(uintptr_t arg);
 extern void ClockP_setTicks(uint32_t ticks);
@@ -80,37 +78,35 @@ static uint64_t getCountsRTC(void);
 
 static volatile uint32_t idleTime = 0;
 
-
 /*
  *  ======== PowerCC32XX_initPolicy ========
  */
 void PowerCC32XX_initPolicy(void)
-{
-}
+{}
 
 /*
  *  ======== PowerCC32XX_sleepPolicy ========
  */
 void PowerCC32XX_sleepPolicy(void)
 {
-    ClockP_FreqHz   cpuFreq;
-    uint32_t        constraintMask;
-    uint32_t        deltaTicksPerRTC;
-    uint32_t        beforeTick;
-    uint64_t        beforeRTC;
-    uint64_t        wakeRTC;
-    uint64_t        deltaTime;
-    uint64_t        remain;
-    uint64_t        temp64;
-    uint64_t        latency;
-    uint32_t        deltaTick;
-    uint32_t        workTick;
-    uint32_t        newTick;
-    uint32_t        newDelta;
-    uintptr_t       key;
-    uint32_t        swiKey;
-    uint32_t        i;
-    bool            slept = false;
+    ClockP_FreqHz cpuFreq;
+    uint32_t constraintMask;
+    uint32_t deltaTicksPerRTC;
+    uint32_t beforeTick;
+    uint64_t beforeRTC;
+    uint64_t wakeRTC;
+    uint64_t deltaTime;
+    uint64_t remain;
+    uint64_t temp64;
+    uint64_t latency;
+    uint32_t deltaTick;
+    uint32_t workTick;
+    uint32_t newTick;
+    uint32_t newDelta;
+    uintptr_t key;
+    uint32_t swiKey;
+    uint32_t i;
+    bool slept = false;
 
     /* For resetting the SysTick period after wakeup */
     ClockP_getCpuFreq(&cpuFreq);
@@ -124,7 +120,8 @@ void PowerCC32XX_sleepPolicy(void)
      * could have been disbled to short-circuit this function.
      * SemaphoreP_post() does this purposely (see comments in there).
      */
-    if (!PowerCC32XX_module.enablePolicy) {
+    if (!PowerCC32XX_module.enablePolicy)
+    {
         HwiP_restore(key);
 
         return;
@@ -136,7 +133,8 @@ void PowerCC32XX_sleepPolicy(void)
     constraintMask = Power_getConstraintMask();
 
     /* check if there is a constraint to disallow LPDS */
-    if ((constraintMask & LPDS_DISALLOWED) == 0) {
+    if ((constraintMask & LPDS_DISALLOWED) == 0)
+    {
 
         /* query Clock for the next tick that has a scheduled timeout */
         deltaTick = ClockP_getTicksUntilInterrupt();
@@ -146,7 +144,8 @@ void PowerCC32XX_sleepPolicy(void)
 
         /* check if there is enough time to transition to/from LPDS */
         latency = Power_getTransitionLatency(PowerCC32XX_LPDS, Power_TOTAL);
-        if (deltaTime > latency) {
+        if (deltaTime > latency)
+        {
 
             /* decision is now made, going to transition to LPDS ... */
 
@@ -170,7 +169,8 @@ void PowerCC32XX_sleepPolicy(void)
             remain = (deltaTime * 32768) / 1000000;
 
             /* if necessary clip the interval to a max 32-bit value */
-            if (remain > 0xFFFFFFFF) {
+            if (remain > 0xFFFFFFFF)
+            {
                 remain = 0xFFFFFFFF;
             }
 
@@ -193,9 +193,8 @@ void PowerCC32XX_sleepPolicy(void)
             wakeRTC = getCountsRTC();
 
             /* compute delta Clock ticks spent in LPDS */
-            temp64 = (((wakeRTC - beforeRTC) * 1000000) /
-                (32768 * ClockP_tickPeriod));
-            deltaTicksPerRTC = (uint32_t) temp64;
+            temp64           = (((wakeRTC - beforeRTC) * 1000000) / (32768 * ClockP_tickPeriod));
+            deltaTicksPerRTC = (uint32_t)temp64;
 
             /* compute resulting 'new' tick count */
             newTick = beforeTick + deltaTicksPerRTC;
@@ -214,12 +213,14 @@ void PowerCC32XX_sleepPolicy(void)
             newDelta = newTick - beforeTick;
 
             /* first, handle normal case of early wake (before workTick) ... */
-            if (newDelta < deltaTick) {
+            if (newDelta < deltaTick)
+            {
                 /* just set count to newTick */
                 ClockP_setTicks(newTick);
             }
             /* else, if woke on workTick or later */
-            else {
+            else
+            {
                 /*
                  * update tick count, trigger Clock Swi to run ASAP
                  *  1. set tick count to workTick - 1
@@ -230,7 +231,8 @@ void PowerCC32XX_sleepPolicy(void)
                  *     catch up for ticks that weren't serviced on time]
                  */
                 ClockP_setTicks(workTick - 1);
-                for (i = 0; i < (newDelta - deltaTick + 1); i++) {
+                for (i = 0; i < (newDelta - deltaTick + 1); i++)
+                {
                     ClockP_doTick(0);
                 }
             }
@@ -249,7 +251,8 @@ void PowerCC32XX_sleepPolicy(void)
     }
 
     /* sleep, but only if did not invoke a sleep state above */
-    if (!(slept)) {
+    if (!(slept))
+    {
         /* Flush any remaining log messages in the ITM */
         ITM_flush();
         MAP_PRCMSleepEnter();
@@ -276,7 +279,8 @@ static uint64_t getCountsRTC(void)
      *  fast interface the count must be read three times, and then
      *  the value that matches on at least two of the reads is chosen
      */
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++)
+    {
         count[i] = MAP_PRCMSlowClkCtrFastGet();
     }
     curr = COUNT_WITHIN_TRESHOLD(count[0], count[1], count[2], 1);

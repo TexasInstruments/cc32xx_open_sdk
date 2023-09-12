@@ -381,11 +381,13 @@ int TCPIP_IF_setInterfaceState(void *hNetIf, TcpipInterfaceState_e state)
 {
     if (state == E_TCPIP_IF_UP)
     {
+        //LED_setOn(gLedBlueHandle, LED_BRIGHTNESS_MAX);
         LOG_DEBUG("[TCPIP_IF_setInterfaceState] I/F - UP!");
         tcpip_callback(LwipCB_interfaceUpDeferred, hNetIf);
     }
     else
     {
+        //LED_setOff(gLedBlueHandle);
         LOG_DEBUG("[TCPIP_IF_setInterfaceState] I/F - DOWN!");
         tcpip_callback(LwipCB_interfaceDownDeferred, hNetIf);
     }
@@ -401,6 +403,7 @@ int TCPIP_IF_notifyLinkChange(void *hNetIf, TcpipLinkState_e state)
     }
     else
     {
+        //LED_setOff(gLedBlueHandle);
         LOG_DEBUG("[TCPIP_IF_notifyLinkChange] I/F - DISCONNECTED!");
         tcpip_callback(LwipCB_linkDownDeferred, hNetIf);
     }

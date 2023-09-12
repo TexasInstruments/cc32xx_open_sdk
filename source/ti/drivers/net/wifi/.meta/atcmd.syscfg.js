@@ -69,12 +69,6 @@ function modules(inst)
         moduleName: "/ti/drivers/net/wifi/atcmd"
     });
 
-    modules.push({
-        name: "getLibs",
-        displayName: "GetLibs",
-        moduleName: "/ti/utils/runtime/GetLibs"
-    });
-
     return (modules);
 }
 

@@ -473,8 +473,14 @@ public class ti_sysbios_family_arm
             sb.append("pkg.packageRepository = xdc.om['ti.sysbios.family.arm$$stat$root'];\n");
         sb.append("}\n");
         sb.append("pkg.build.libraries = [\n");
+            sb.append("'lib/debug/ti.sysbios.family.arm.aem4f',\n");
+            sb.append("'lib/debug/ti.sysbios.family.arm.am4fg',\n");
+            sb.append("'lib/debug/ti.sysbios.family.arm.arm4f',\n");
         sb.append("];\n");
         sb.append("pkg.build.libDesc = [\n");
+            sb.append("['lib/debug/ti.sysbios.family.arm.aem4f', {target: 'ti.targets.arm.elf.M4F', suffix: 'em4f'}],\n");
+            sb.append("['lib/debug/ti.sysbios.family.arm.am4fg', {target: 'gnu.targets.arm.M4F', suffix: 'm4fg'}],\n");
+            sb.append("['lib/debug/ti.sysbios.family.arm.arm4f', {target: 'iar.targets.arm.M4F', suffix: 'rm4f'}],\n");
         sb.append("];\n");
         Global.eval(sb.toString());
     }

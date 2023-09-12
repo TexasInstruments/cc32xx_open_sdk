@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2021, Texas Instruments Incorporated
+ * Copyright (c) 2015-2023, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,65 +57,52 @@
 #define PAD_RESET_STATE 0xC61
 
 void SPICC32XXDMA_close(SPI_Handle handle);
-int_fast16_t SPICC32XXDMA_control(SPI_Handle handle, uint_fast16_t cmd,
-    void *arg);
+int_fast16_t SPICC32XXDMA_control(SPI_Handle handle, uint_fast16_t cmd, void *arg);
 void SPICC32XXDMA_init(SPI_Handle handle);
 SPI_Handle SPICC32XXDMA_open(SPI_Handle handle, SPI_Params *params);
 bool SPICC32XXDMA_transfer(SPI_Handle handle, SPI_Transaction *transaction);
 void SPICC32XXDMA_transferCancel(SPI_Handle handle);
 
 /* SPI function table for SPICC32XXDMA implementation */
-const SPI_FxnTable SPICC32XXDMA_fxnTable = {
-    SPICC32XXDMA_close,
-    SPICC32XXDMA_control,
-    SPICC32XXDMA_init,
-    SPICC32XXDMA_open,
-    SPICC32XXDMA_transfer,
-    SPICC32XXDMA_transferCancel
-};
+const SPI_FxnTable SPICC32XXDMA_fxnTable = {SPICC32XXDMA_close,
+                                            SPICC32XXDMA_control,
+                                            SPICC32XXDMA_init,
+                                            SPICC32XXDMA_open,
+                                            SPICC32XXDMA_transfer,
+                                            SPICC32XXDMA_transferCancel};
 
-static const uint32_t mode[] = {
-    SPI_MODE_MASTER,
-    SPI_MODE_SLAVE
-};
+static const uint32_t mode[] = {SPI_MODE_MASTER, SPI_MODE_SLAVE};
 
 /*
  * This lookup table is used to configure the DMA channels for the appropriate
  * (8bit, 16bit or 32bit) transfer sizes.
  * Table for an SPI DMA RX channel.
  */
-static const uint32_t dmaRxConfig[] = {
-    UDMA_SIZE_8  | UDMA_SRC_INC_NONE | UDMA_DST_INC_8  | UDMA_ARB_1,
-    UDMA_SIZE_16 | UDMA_SRC_INC_NONE | UDMA_DST_INC_16 | UDMA_ARB_1,
-    UDMA_SIZE_32 | UDMA_SRC_INC_NONE | UDMA_DST_INC_32 | UDMA_ARB_1
-};
+static const uint32_t dmaRxConfig[] = {UDMA_SIZE_8 | UDMA_SRC_INC_NONE | UDMA_DST_INC_8 | UDMA_ARB_1,
+                                       UDMA_SIZE_16 | UDMA_SRC_INC_NONE | UDMA_DST_INC_16 | UDMA_ARB_1,
+                                       UDMA_SIZE_32 | UDMA_SRC_INC_NONE | UDMA_DST_INC_32 | UDMA_ARB_1};
 
 /*
  * This lookup table is used to configure the DMA channels for the appropriate
  * (8bit, 16bit or 32bit) transfer sizes.
  * Table for an SPI DMA TX channel
  */
-static const uint32_t dmaTxConfig[] = {
-    UDMA_SIZE_8  | UDMA_SRC_INC_8  | UDMA_DST_INC_NONE | UDMA_ARB_1,
-    UDMA_SIZE_16 | UDMA_SRC_INC_16 | UDMA_DST_INC_NONE | UDMA_ARB_1,
-    UDMA_SIZE_32 | UDMA_SRC_INC_32 | UDMA_DST_INC_NONE | UDMA_ARB_1
-};
+static const uint32_t dmaTxConfig[] = {UDMA_SIZE_8 | UDMA_SRC_INC_8 | UDMA_DST_INC_NONE | UDMA_ARB_1,
+                                       UDMA_SIZE_16 | UDMA_SRC_INC_16 | UDMA_DST_INC_NONE | UDMA_ARB_1,
+                                       UDMA_SIZE_32 | UDMA_SRC_INC_32 | UDMA_DST_INC_NONE | UDMA_ARB_1};
 
 /*
  * This lookup table is used to configure the DMA channels for the appropriate
  * (8bit, 16bit or 32bit) transfer sizes when either txBuf or rxBuf are NULL.
  */
-static const uint32_t dmaNullConfig[] = {
-    UDMA_SIZE_8  | UDMA_SRC_INC_NONE | UDMA_DST_INC_NONE | UDMA_ARB_1,
-    UDMA_SIZE_16 | UDMA_SRC_INC_NONE | UDMA_DST_INC_NONE | UDMA_ARB_1,
-    UDMA_SIZE_32 | UDMA_SRC_INC_NONE | UDMA_DST_INC_NONE | UDMA_ARB_1
-};
+static const uint32_t dmaNullConfig[] = {UDMA_SIZE_8 | UDMA_SRC_INC_NONE | UDMA_DST_INC_NONE | UDMA_ARB_1,
+                                         UDMA_SIZE_16 | UDMA_SRC_INC_NONE | UDMA_DST_INC_NONE | UDMA_ARB_1,
+                                         UDMA_SIZE_32 | UDMA_SRC_INC_NONE | UDMA_DST_INC_NONE | UDMA_ARB_1};
 
 /*
  *  ======== blockingTransferCallback ========
  */
-static void blockingTransferCallback(SPI_Handle handle,
-    SPI_Transaction *transaction)
+static void blockingTransferCallback(SPI_Handle handle, SPI_Transaction *transaction)
 {
     SPICC32XXDMA_Object *object = handle->object;
 
@@ -127,26 +114,28 @@ static void blockingTransferCallback(SPI_Handle handle,
  *  This functions configures the transmit and receive DMA channels for a given
  *  SPI_Handle and SPI_Transaction
  */
-static void configDMA(SPICC32XXDMA_Object *object,
-    SPICC32XXDMA_HWAttrsV1 const *hwAttrs, SPI_Transaction *transaction)
+static void configDMA(SPICC32XXDMA_Object *object, SPICC32XXDMA_HWAttrsV1 const *hwAttrs, SPI_Transaction *transaction)
 {
-    uintptr_t  key;
-    void      *buf;
-    uint32_t   channelControlOptions;
-    uint8_t    dataFrameSizeInBytes;
-    uint8_t    optionsIndex;
+    uintptr_t key;
+    void *buf;
+    uint32_t channelControlOptions;
+    uint8_t dataFrameSizeInBytes;
+    uint8_t optionsIndex;
 
     /* DMA options used vary according to data size. */
-    if (object->dataSize < 9) {
-        optionsIndex = 0;
+    if (object->dataSize < 9)
+    {
+        optionsIndex         = 0;
         dataFrameSizeInBytes = sizeof(uint8_t);
     }
-    else if (object->dataSize < 17) {
-        optionsIndex = 1;
-        dataFrameSizeInBytes = sizeof(uint16_t);;
+    else if (object->dataSize < 17)
+    {
+        optionsIndex         = 1;
+        dataFrameSizeInBytes = sizeof(uint16_t);
     }
-    else {
-        optionsIndex = 2;
+    else
+    {
+        optionsIndex         = 2;
         dataFrameSizeInBytes = sizeof(uint32_t);
     }
 
@@ -155,61 +144,65 @@ static void configDMA(SPICC32XXDMA_Object *object,
      * greater; we must transfer it in chunks.  object->amtDataXferred has
      * how much data has already been sent.
      */
-    if ((transaction->count - object->amtDataXferred) > MAX_DMA_TRANSFER_AMOUNT) {
+    if ((transaction->count - object->amtDataXferred) > MAX_DMA_TRANSFER_AMOUNT)
+    {
         object->currentXferAmt = MAX_DMA_TRANSFER_AMOUNT;
     }
-    else {
+    else
+    {
         object->currentXferAmt = (transaction->count - object->amtDataXferred);
     }
 
-    if (transaction->txBuf) {
+    if (transaction->txBuf)
+    {
         channelControlOptions = dmaTxConfig[optionsIndex];
         /*
-         * Add an offset for the amount of data transfered.  The offset is
+         * Add an offset for the amount of data transferred.  The offset is
          * calculated by: object->amtDataXferred * (dataFrameSizeInBytes).
          * This accounts for 8, 16 or 32-bit sized transfers.
          */
-        buf = (void *) ((uint32_t) transaction->txBuf +
-            ((uint32_t) object->amtDataXferred * dataFrameSizeInBytes));
+        buf = (void *)((uint32_t)transaction->txBuf + ((uint32_t)object->amtDataXferred * dataFrameSizeInBytes));
     }
-    else {
-        channelControlOptions = dmaNullConfig[optionsIndex];
+    else
+    {
+        channelControlOptions   = dmaNullConfig[optionsIndex];
         *hwAttrs->scratchBufPtr = hwAttrs->defaultTxBufValue;
-        buf = hwAttrs->scratchBufPtr;
+        buf                     = hwAttrs->scratchBufPtr;
     }
 
     /* Setup the TX transfer characteristics & buffers */
-    MAP_uDMAChannelControlSet(hwAttrs->txChannelIndex | UDMA_PRI_SELECT,
-        channelControlOptions);
-    MAP_uDMAChannelAttributeDisable(hwAttrs->txChannelIndex,
-        UDMA_ATTR_ALTSELECT);
+    MAP_uDMAChannelControlSet(hwAttrs->txChannelIndex | UDMA_PRI_SELECT, channelControlOptions);
+    MAP_uDMAChannelAttributeDisable(hwAttrs->txChannelIndex, UDMA_ATTR_ALTSELECT);
     MAP_uDMAChannelTransferSet(hwAttrs->txChannelIndex | UDMA_PRI_SELECT,
-        UDMA_MODE_BASIC, buf, (void *) (hwAttrs->baseAddr + MCSPI_O_TX0),
-        object->currentXferAmt);
+                               UDMA_MODE_BASIC,
+                               buf,
+                               (void *)(hwAttrs->baseAddr + MCSPI_O_TX0),
+                               object->currentXferAmt);
 
-    if (transaction->rxBuf) {
+    if (transaction->rxBuf)
+    {
         channelControlOptions = dmaRxConfig[optionsIndex];
         /*
-         * Add an offset for the amount of data transfered.  The offset is
+         * Add an offset for the amount of data transferred.  The offset is
          * calculated by: object->amtDataXferred * (dataFrameSizeInBytes).
          * This accounts for 8 or 16-bit sized transfers.
          */
-        buf = (void *) ((uint32_t) transaction->rxBuf +
-            ((uint32_t) object->amtDataXferred * dataFrameSizeInBytes));
+        buf = (void *)((uint32_t)transaction->rxBuf + ((uint32_t)object->amtDataXferred * dataFrameSizeInBytes));
     }
-    else {
+    else
+    {
         channelControlOptions = dmaNullConfig[optionsIndex];
-        buf = hwAttrs->scratchBufPtr;
+        buf                   = hwAttrs->scratchBufPtr;
     }
 
     /* Setup the RX transfer characteristics & buffers */
-    MAP_uDMAChannelControlSet(hwAttrs->rxChannelIndex | UDMA_PRI_SELECT,
-        channelControlOptions);
-    MAP_uDMAChannelAttributeDisable(hwAttrs->rxChannelIndex,
-        UDMA_ATTR_ALTSELECT);
+    MAP_uDMAChannelControlSet(hwAttrs->rxChannelIndex | UDMA_PRI_SELECT, channelControlOptions);
+    MAP_uDMAChannelAttributeDisable(hwAttrs->rxChannelIndex, UDMA_ATTR_ALTSELECT);
     MAP_uDMAChannelTransferSet(hwAttrs->rxChannelIndex | UDMA_PRI_SELECT,
-        UDMA_MODE_BASIC, (void *) (hwAttrs->baseAddr + MCSPI_O_RX0), buf,
-        object->currentXferAmt);
+                               UDMA_MODE_BASIC,
+                               (void *)(hwAttrs->baseAddr + MCSPI_O_RX0),
+                               buf,
+                               object->currentXferAmt);
 
     /* A lock is needed because we are accessing shared uDMA memory */
     key = HwiP_disable();
@@ -219,10 +212,12 @@ static void configDMA(SPICC32XXDMA_Object *object,
      * If someone hasn't remapped them to something else already, we remap
      * them to SW.
      */
-    if (!(HWREG(UDMA_BASE + UDMA_O_CHMAP3) & UDMA_CHMAP3_CH30SEL_M)) {
+    if (!(HWREG(UDMA_BASE + UDMA_O_CHMAP3) & UDMA_CHMAP3_CH30SEL_M))
+    {
         MAP_uDMAChannelAssign(UDMA_CH30_SW);
     }
-    if (!(HWREG(UDMA_BASE + UDMA_O_CHMAP3) & UDMA_CHMAP3_CH31SEL_M)) {
+    if (!(HWREG(UDMA_BASE + UDMA_O_CHMAP3) & UDMA_CHMAP3_CH31SEL_M))
+    {
         MAP_uDMAChannelAssign(UDMA_CH31_SW);
     }
 
@@ -249,12 +244,13 @@ static void configDMA(SPICC32XXDMA_Object *object,
 /*
  *  ======== getDmaRemainingXfers ========
  */
-static inline uint32_t getDmaRemainingXfers(SPICC32XXDMA_HWAttrsV1 const *hwAttrs) {
-    uint32_t          controlWord;
+static inline uint32_t getDmaRemainingXfers(SPICC32XXDMA_HWAttrsV1 const *hwAttrs)
+{
+    uint32_t controlWord;
     tDMAControlTable *controlTable;
 
     controlTable = MAP_uDMAControlBaseGet();
-    controlWord = controlTable[(hwAttrs->rxChannelIndex & 0x3f)].ulControl;
+    controlWord  = controlTable[(hwAttrs->rxChannelIndex & 0x3f)].ulControl;
 
     return (((controlWord & UDMA_CHCTL_XFERSIZE_M) >> 4) + 1);
 }
@@ -264,7 +260,8 @@ static inline uint32_t getDmaRemainingXfers(SPICC32XXDMA_HWAttrsV1 const *hwAttr
  */
 static uint16_t getPowerMgrId(uint32_t baseAddr)
 {
-    switch (baseAddr) {
+    switch (baseAddr)
+    {
         case GSPI_BASE:
             return (PowerCC32XX_PERIPH_GSPI);
         case LSPI_BASE:
@@ -277,8 +274,7 @@ static uint16_t getPowerMgrId(uint32_t baseAddr)
 /*
  *  ======== initHw ========
  */
-static void initHw(SPICC32XXDMA_Object *object,
-    SPICC32XXDMA_HWAttrsV1 const *hwAttrs)
+static void initHw(SPICC32XXDMA_Object *object, SPICC32XXDMA_HWAttrsV1 const *hwAttrs)
 {
     /*
      * SPI peripheral should remain disabled until a transfer is requested.
@@ -290,24 +286,24 @@ static void initHw(SPICC32XXDMA_Object *object,
     MAP_SPIReset(hwAttrs->baseAddr);
 
     MAP_SPIConfigSetExpClk(hwAttrs->baseAddr,
-        MAP_PRCMPeripheralClockGet(hwAttrs->spiPRCM), object->bitRate,
-        mode[object->spiMode], object->frameFormat,
-        (hwAttrs->csControl | hwAttrs->pinMode | hwAttrs->turboMode |
-        hwAttrs->csPolarity | ((object->dataSize - 1) << 7)));
+                           MAP_PRCMPeripheralClockGet(hwAttrs->spiPRCM),
+                           object->bitRate,
+                           mode[object->spiMode],
+                           object->frameFormat,
+                           (hwAttrs->csControl | hwAttrs->pinMode | hwAttrs->turboMode | hwAttrs->csPolarity |
+                            ((object->dataSize - 1) << 7)));
 
     MAP_SPIFIFOEnable(hwAttrs->baseAddr, SPI_RX_FIFO | SPI_TX_FIFO);
-    MAP_SPIFIFOLevelSet(hwAttrs->baseAddr, object->txFifoTrigger,
-        object->rxFifoTrigger);
+    MAP_SPIFIFOLevelSet(hwAttrs->baseAddr, object->txFifoTrigger, object->rxFifoTrigger);
 }
 
 /*
  *  ======== postNotifyFxn ========
  */
-static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg,
-    uintptr_t clientArg)
+static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg)
 {
-    SPICC32XXDMA_Object          *object = ((SPI_Handle) clientArg)->object;
-    SPICC32XXDMA_HWAttrsV1 const *hwAttrs = ((SPI_Handle) clientArg)->hwAttrs;
+    SPICC32XXDMA_Object *object           = ((SPI_Handle)clientArg)->object;
+    SPICC32XXDMA_HWAttrsV1 const *hwAttrs = ((SPI_Handle)clientArg)->hwAttrs;
 
     initHw(object, hwAttrs);
 
@@ -319,9 +315,9 @@ static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg,
  */
 static void spiHwiFxn(uintptr_t arg)
 {
-    uint32_t                      intFlags;
-    SPI_Transaction              *msg;
-    SPICC32XXDMA_Object          *object = ((SPI_Handle)arg)->object;
+    uint32_t intFlags;
+    SPI_Transaction *msg;
+    SPICC32XXDMA_Object *object           = ((SPI_Handle)arg)->object;
     SPICC32XXDMA_HWAttrsV1 const *hwAttrs = ((SPI_Handle)arg)->hwAttrs;
 
     /*
@@ -330,12 +326,14 @@ static void spiHwiFxn(uintptr_t arg)
      * disable the interrupt thus reducing the amount of spurious interrupts.
      */
     intFlags = MAP_SPIIntStatus(hwAttrs->baseAddr, false);
-    if (intFlags & SPI_INT_DMATX) {
+    if (intFlags & SPI_INT_DMATX)
+    {
         MAP_SPIIntDisable(hwAttrs->baseAddr, SPI_INT_DMATX);
         MAP_SPIIntClear(hwAttrs->baseAddr, SPI_INT_DMATX);
     }
 
-    if (MAP_uDMAChannelIsEnabled(hwAttrs->rxChannelIndex)) {
+    if (MAP_uDMAChannelIsEnabled(hwAttrs->rxChannelIndex))
+    {
         /* DMA has not completed if the channel is still enabled */
         return;
     }
@@ -347,14 +345,15 @@ static void spiHwiFxn(uintptr_t arg)
     MAP_SPICSDisable(hwAttrs->baseAddr);
     MAP_SPIDisable(hwAttrs->baseAddr);
 
-    if (object->transaction->count - object->amtDataXferred >
-        MAX_DMA_TRANSFER_AMOUNT) {
+    if (object->transaction->count - object->amtDataXferred > MAX_DMA_TRANSFER_AMOUNT)
+    {
         /* Data still remaining, configure another DMA transfer */
         object->amtDataXferred += object->currentXferAmt;
 
         configDMA(object, hwAttrs, object->transaction);
     }
-    else {
+    else
+    {
         /* All data sent; set status, perform callback & return */
         object->transaction->status = SPI_TRANSFER_COMPLETED;
 
@@ -370,7 +369,7 @@ static void spiHwiFxn(uintptr_t arg)
         /* Indicate we are done with this transfer */
         object->transaction = NULL;
 
-        object->transferCallbackFxn((SPI_Handle) arg, msg);
+        object->transferCallbackFxn((SPI_Handle)arg, msg);
     }
 }
 
@@ -381,34 +380,41 @@ static inline void spiPollingTransfer(SPICC32XXDMA_Object *object,
                                       SPICC32XXDMA_HWAttrsV1 const *hwAttrs,
                                       SPI_Transaction *transaction)
 {
-    uint8_t   increment;
-    uint32_t  dummyBuffer;
-    size_t    transferCount;
-    void     *rxBuf;
-    void     *txBuf;
+    uint8_t increment;
+    uint32_t dummyBuffer;
+    size_t transferCount;
+    void *rxBuf;
+    void *txBuf;
 
-    if (transaction->rxBuf) {
+    if (transaction->rxBuf)
+    {
         rxBuf = transaction->rxBuf;
     }
-    else {
+    else
+    {
         rxBuf = hwAttrs->scratchBufPtr;
     }
 
-    if (transaction->txBuf) {
+    if (transaction->txBuf)
+    {
         txBuf = transaction->txBuf;
     }
-    else {
+    else
+    {
         *hwAttrs->scratchBufPtr = hwAttrs->defaultTxBufValue;
-        txBuf = hwAttrs->scratchBufPtr;
+        txBuf                   = hwAttrs->scratchBufPtr;
     }
 
-    if (object->dataSize < 9) {
+    if (object->dataSize < 9)
+    {
         increment = sizeof(uint8_t);
     }
-    else if (object->dataSize < 17) {
+    else if (object->dataSize < 17)
+    {
         increment = sizeof(uint16_t);
     }
-    else {
+    else
+    {
         increment = sizeof(uint32_t);
     }
 
@@ -423,28 +429,34 @@ static inline void spiPollingTransfer(SPICC32XXDMA_Object *object,
     MAP_SPIEnable(hwAttrs->baseAddr);
     MAP_SPICSEnable(hwAttrs->baseAddr);
 
-    while (transferCount--) {
-        if (object->dataSize < 9) {
-            MAP_SPIDataPut(hwAttrs->baseAddr, *((uint8_t *) txBuf));
+    while (transferCount--)
+    {
+        if (object->dataSize < 9)
+        {
+            MAP_SPIDataPut(hwAttrs->baseAddr, *((uint8_t *)txBuf));
             MAP_SPIDataGet(hwAttrs->baseAddr, (unsigned long *)&dummyBuffer);
-            *((uint8_t *) rxBuf) = (uint8_t) dummyBuffer;
+            *((uint8_t *)rxBuf) = (uint8_t)dummyBuffer;
         }
-        else if (object->dataSize < 17) {
-            MAP_SPIDataPut(hwAttrs->baseAddr, *((uint16_t *) txBuf));
-            MAP_SPIDataGet(hwAttrs->baseAddr, (unsigned long *) &dummyBuffer);
-            *((uint16_t *) rxBuf) = (uint16_t) dummyBuffer;
+        else if (object->dataSize < 17)
+        {
+            MAP_SPIDataPut(hwAttrs->baseAddr, *((uint16_t *)txBuf));
+            MAP_SPIDataGet(hwAttrs->baseAddr, (unsigned long *)&dummyBuffer);
+            *((uint16_t *)rxBuf) = (uint16_t)dummyBuffer;
         }
-        else {
-            MAP_SPIDataPut(hwAttrs->baseAddr, *((uint32_t *) txBuf));
-            MAP_SPIDataGet(hwAttrs->baseAddr, (unsigned long * ) rxBuf);
+        else
+        {
+            MAP_SPIDataPut(hwAttrs->baseAddr, *((uint32_t *)txBuf));
+            MAP_SPIDataGet(hwAttrs->baseAddr, (unsigned long *)rxBuf);
         }
 
         /* Only increment source & destination if buffers were provided */
-        if (transaction->rxBuf) {
-            rxBuf = (void *) (((uint32_t) rxBuf) + increment);
+        if (transaction->rxBuf)
+        {
+            rxBuf = (void *)(((uint32_t)rxBuf) + increment);
         }
-        if (transaction->txBuf) {
-            txBuf = (void *) (((uint32_t) txBuf) + increment);
+        if (transaction->txBuf)
+        {
+            txBuf = (void *)(((uint32_t)txBuf) + increment);
         }
     }
 
@@ -457,8 +469,8 @@ static inline void spiPollingTransfer(SPICC32XXDMA_Object *object,
  */
 void SPICC32XXDMA_close(SPI_Handle handle)
 {
-    uint32_t                      padRegister;
-    SPICC32XXDMA_Object          *object = handle->object;
+    uint32_t padRegister;
+    SPICC32XXDMA_Object *object           = handle->object;
     SPICC32XXDMA_HWAttrsV1 const *hwAttrs = handle->hwAttrs;
 
     MAP_SPICSDisable(hwAttrs->baseAddr);
@@ -469,40 +481,42 @@ void SPICC32XXDMA_close(SPI_Handle handle)
     Power_releaseDependency(getPowerMgrId(hwAttrs->baseAddr));
     Power_unregisterNotify(&(object->notifyObj));
 
-    if (object->hwiHandle) {
+    if (object->hwiHandle)
+    {
         HwiP_delete(object->hwiHandle);
         object->hwiHandle = NULL;
     }
-    if (object->transferComplete) {
+    if (object->transferComplete)
+    {
         SemaphoreP_delete(object->transferComplete);
         object->transferComplete = NULL;
     }
 
-    if (object->dmaHandle) {
+    if (object->dmaHandle)
+    {
         UDMACC32XX_close(object->dmaHandle);
         object->dmaHandle = NULL;
     }
 
     /* Restore pin pads to their reset states */
-    if (hwAttrs->mosiPin != SPICC32XXDMA_PIN_NO_CONFIG) {
-        padRegister = (PinToPadGet((hwAttrs->mosiPin) & 0xff)<<2)
-            + PAD_CONFIG_BASE;
+    if (hwAttrs->picoPin != SPICC32XXDMA_PIN_NO_CONFIG)
+    {
+        padRegister        = (PinToPadGet((hwAttrs->picoPin) & 0xff) << 2) + PAD_CONFIG_BASE;
         HWREG(padRegister) = PAD_RESET_STATE;
     }
-    if (hwAttrs->misoPin != SPICC32XXDMA_PIN_NO_CONFIG) {
-        padRegister = (PinToPadGet((hwAttrs->misoPin) & 0xff)<<2)
-            + PAD_CONFIG_BASE;
+    if (hwAttrs->pociPin != SPICC32XXDMA_PIN_NO_CONFIG)
+    {
+        padRegister        = (PinToPadGet((hwAttrs->pociPin) & 0xff) << 2) + PAD_CONFIG_BASE;
         HWREG(padRegister) = PAD_RESET_STATE;
     }
-    if (hwAttrs->clkPin != SPICC32XXDMA_PIN_NO_CONFIG) {
-        padRegister = (PinToPadGet((hwAttrs->clkPin) & 0xff)<<2)
-            + PAD_CONFIG_BASE;
+    if (hwAttrs->clkPin != SPICC32XXDMA_PIN_NO_CONFIG)
+    {
+        padRegister        = (PinToPadGet((hwAttrs->clkPin) & 0xff) << 2) + PAD_CONFIG_BASE;
         HWREG(padRegister) = PAD_RESET_STATE;
     }
-    if ((hwAttrs->pinMode == SPI_4PIN_MODE) &&
-        (hwAttrs->csPin != SPICC32XXDMA_PIN_NO_CONFIG)) {
-        padRegister = (PinToPadGet((hwAttrs->csPin) & 0xff)<<2)
-            + PAD_CONFIG_BASE;
+    if ((hwAttrs->pinMode == SPI_4PIN_MODE) && (hwAttrs->csnPin != SPICC32XXDMA_PIN_NO_CONFIG))
+    {
+        padRegister        = (PinToPadGet((hwAttrs->csnPin) & 0xff) << 2) + PAD_CONFIG_BASE;
         HWREG(padRegister) = PAD_RESET_STATE;
     }
 
@@ -530,17 +544,18 @@ void SPICC32XXDMA_init(SPI_Handle handle)
  */
 SPI_Handle SPICC32XXDMA_open(SPI_Handle handle, SPI_Params *params)
 {
-    uintptr_t                     key;
-    uint16_t                      pin;
-    uint16_t                      mode;
-    uint8_t                       powerMgrId;
-    HwiP_Params                   hwiParams;
-    SPICC32XXDMA_Object          *object = handle->object;
+    uintptr_t key;
+    uint16_t pin;
+    uint16_t mode;
+    uint8_t powerMgrId;
+    HwiP_Params hwiParams;
+    SPICC32XXDMA_Object *object           = handle->object;
     SPICC32XXDMA_HWAttrsV1 const *hwAttrs = handle->hwAttrs;
 
     key = HwiP_disable();
 
-    if (object->isOpen) {
+    if (object->isOpen)
+    {
         HwiP_restore(key);
 
         return (NULL);
@@ -550,7 +565,8 @@ SPI_Handle SPICC32XXDMA_open(SPI_Handle handle, SPI_Params *params)
     HwiP_restore(key);
 
     /* SPI_TI & SPI_MW are not supported */
-    if (params->frameFormat == SPI_TI || params->frameFormat == SPI_MW) {
+    if (params->frameFormat == SPI_TI || params->frameFormat == SPI_MW)
+    {
         object->isOpen = false;
 
         return (NULL);
@@ -558,66 +574,75 @@ SPI_Handle SPICC32XXDMA_open(SPI_Handle handle, SPI_Params *params)
 
     /* Register power dependency - i.e. power up and enable clock for SPI. */
     powerMgrId = getPowerMgrId(hwAttrs->baseAddr);
-    if (powerMgrId > PowerCC32XX_NUMRESOURCES) {
+    if (powerMgrId > PowerCC32XX_NUMRESOURCES)
+    {
         object->isOpen = false;
 
         return (NULL);
     }
     Power_setDependency(powerMgrId);
-    Power_registerNotify(&(object->notifyObj), PowerCC32XX_AWAKE_LPDS,
-        postNotifyFxn, (uintptr_t) handle);
+    Power_registerNotify(&(object->notifyObj), PowerCC32XX_AWAKE_LPDS, postNotifyFxn, (uintptr_t)handle);
 
     /* Configure the pins */
-    if (hwAttrs->mosiPin != SPICC32XXDMA_PIN_NO_CONFIG) {
-        pin = (hwAttrs->mosiPin) & 0xff;
-        mode = (hwAttrs->mosiPin >> 8) & 0xff;
-        MAP_PinTypeSPI((unsigned long) pin, (unsigned long) mode);
+    if (hwAttrs->picoPin != SPICC32XXDMA_PIN_NO_CONFIG)
+    {
+        pin  = (hwAttrs->picoPin) & 0xff;
+        mode = (hwAttrs->picoPin >> 8) & 0xff;
+        MAP_PinTypeSPI((unsigned long)pin, (unsigned long)mode);
     }
 
-    if (hwAttrs->misoPin != SPICC32XXDMA_PIN_NO_CONFIG) {
-        pin = (hwAttrs->misoPin) & 0xff;
-        mode = (hwAttrs->misoPin >> 8) & 0xff;
-        MAP_PinTypeSPI((unsigned long) pin, (unsigned long) mode);
+    if (hwAttrs->pociPin != SPICC32XXDMA_PIN_NO_CONFIG)
+    {
+        pin  = (hwAttrs->pociPin) & 0xff;
+        mode = (hwAttrs->pociPin >> 8) & 0xff;
+        MAP_PinTypeSPI((unsigned long)pin, (unsigned long)mode);
     }
 
-    if (hwAttrs->clkPin != SPICC32XXDMA_PIN_NO_CONFIG) {
-        pin = (hwAttrs->clkPin) & 0xff;
+    if (hwAttrs->clkPin != SPICC32XXDMA_PIN_NO_CONFIG)
+    {
+        pin  = (hwAttrs->clkPin) & 0xff;
         mode = (hwAttrs->clkPin >> 8) & 0xff;
-        MAP_PinTypeSPI((unsigned long) pin, (unsigned long) mode);
+        MAP_PinTypeSPI((unsigned long)pin, (unsigned long)mode);
     }
 
-    if (hwAttrs->pinMode == SPI_4PIN_MODE) {
-        if (hwAttrs->csPin != SPICC32XXDMA_PIN_NO_CONFIG) {
-            pin = (hwAttrs->csPin) & 0xff;
-            mode = (hwAttrs->csPin >> 8) & 0xff;
-            MAP_PinTypeSPI((unsigned long) pin, (unsigned long) mode);
+    if (hwAttrs->pinMode == SPI_4PIN_MODE)
+    {
+        if (hwAttrs->csnPin != SPICC32XXDMA_PIN_NO_CONFIG)
+        {
+            pin  = (hwAttrs->csnPin) & 0xff;
+            mode = (hwAttrs->csnPin >> 8) & 0xff;
+            MAP_PinTypeSPI((unsigned long)pin, (unsigned long)mode);
         }
     }
 
     object->dmaHandle = UDMACC32XX_open();
-    if (object->dmaHandle == NULL) {
+    if (object->dmaHandle == NULL)
+    {
         SPICC32XXDMA_close(handle);
 
         return (NULL);
     }
 
     HwiP_Params_init(&hwiParams);
-    hwiParams.arg = (uintptr_t) handle;
+    hwiParams.arg      = (uintptr_t)handle;
     hwiParams.priority = hwAttrs->intPriority;
-    object->hwiHandle = HwiP_create(hwAttrs->intNum, spiHwiFxn, &hwiParams);
-    if (object->hwiHandle == NULL) {
+    object->hwiHandle  = HwiP_create(hwAttrs->intNum, spiHwiFxn, &hwiParams);
+    if (object->hwiHandle == NULL)
+    {
         SPICC32XXDMA_close(handle);
 
         return (NULL);
     }
 
-    if (params->transferMode == SPI_MODE_BLOCKING) {
+    if (params->transferMode == SPI_MODE_BLOCKING)
+    {
         /*
          * Create a semaphore to block task execution for the duration of the
          * SPI transfer
          */
         object->transferComplete = SemaphoreP_createBinary(0);
-        if (object->transferComplete == NULL) {
+        if (object->transferComplete == NULL)
+        {
             SPICC32XXDMA_close(handle);
 
             return (NULL);
@@ -625,8 +650,10 @@ SPI_Handle SPICC32XXDMA_open(SPI_Handle handle, SPI_Params *params)
 
         object->transferCallbackFxn = blockingTransferCallback;
     }
-    else {
-        if (params->transferCallbackFxn == NULL) {
+    else
+    {
+        if (params->transferCallbackFxn == NULL)
+        {
             SPICC32XXDMA_close(handle);
 
             return (NULL);
@@ -635,24 +662,27 @@ SPI_Handle SPICC32XXDMA_open(SPI_Handle handle, SPI_Params *params)
         object->transferCallbackFxn = params->transferCallbackFxn;
     }
 
-    object->bitRate = params->bitRate;
-    object->dataSize = params->dataSize;
-    object->frameFormat = params->frameFormat;
-    object->spiMode = params->mode;
-    object->transaction = NULL;
-    object->transferMode = params->transferMode;
+    object->bitRate         = params->bitRate;
+    object->dataSize        = params->dataSize;
+    object->frameFormat     = params->frameFormat;
+    object->spiMode         = params->mode;
+    object->transaction     = NULL;
+    object->transferMode    = params->transferMode;
     object->transferTimeout = params->transferTimeout;
 
     /* SPI FIFO trigger sizes vary based on data frame size */
-    if (object->dataSize < 9) {
+    if (object->dataSize < 9)
+    {
         object->rxFifoTrigger = sizeof(uint8_t);
         object->txFifoTrigger = sizeof(uint8_t);
     }
-    else if (object->dataSize < 17) {
+    else if (object->dataSize < 17)
+    {
         object->rxFifoTrigger = sizeof(uint16_t);
         object->txFifoTrigger = sizeof(uint16_t);
     }
-    else {
+    else
+    {
         object->rxFifoTrigger = sizeof(uint32_t);
         object->txFifoTrigger = sizeof(uint32_t);
     }
@@ -667,16 +697,15 @@ SPI_Handle SPICC32XXDMA_open(SPI_Handle handle, SPI_Params *params)
  */
 bool SPICC32XXDMA_transfer(SPI_Handle handle, SPI_Transaction *transaction)
 {
-    uintptr_t                     key;
-    uint8_t                       alignMask;
-    bool                          buffersAligned;
-    SPICC32XXDMA_Object          *object = handle->object;
+    uintptr_t key;
+    uint8_t alignMask;
+    bool buffersAligned;
+    SPICC32XXDMA_Object *object           = handle->object;
     SPICC32XXDMA_HWAttrsV1 const *hwAttrs = handle->hwAttrs;
 
-    if ((transaction->count == 0) ||
-        (transaction->rxBuf == NULL && transaction->txBuf == NULL) ||
-        (hwAttrs->scratchBufPtr == NULL && (transaction->rxBuf == NULL ||
-            transaction->txBuf == NULL))) {
+    if ((transaction->count == 0) || (transaction->rxBuf == NULL && transaction->txBuf == NULL) ||
+        (hwAttrs->scratchBufPtr == NULL && (transaction->rxBuf == NULL || transaction->txBuf == NULL)))
+    {
         return (false);
     }
 
@@ -686,20 +715,22 @@ bool SPICC32XXDMA_transfer(SPI_Handle handle, SPI_Transaction *transaction)
      * alignMask is used to determine if the RX/TX buffers addresses are
      * aligned to the data frame size.
      */
-    alignMask = (object->rxFifoTrigger - 1);
-    buffersAligned = ((((uint32_t) transaction->rxBuf & alignMask) == 0) &&
-        (((uint32_t) transaction->txBuf & alignMask) == 0));
+    alignMask      = (object->rxFifoTrigger - 1);
+    buffersAligned = ((((uint32_t)transaction->rxBuf & alignMask) == 0) &&
+                      (((uint32_t)transaction->txBuf & alignMask) == 0));
 
-    if (object->transaction) {
+    if (object->transaction)
+    {
         HwiP_restore(key);
 
         return (false);
     }
-    else {
-        object->transaction = transaction;
+    else
+    {
+        object->transaction         = transaction;
         object->transaction->status = SPI_TRANSFER_STARTED;
-        object->amtDataXferred = 0;
-        object->currentXferAmt = 0;
+        object->amtDataXferred      = 0;
+        object->currentXferAmt      = 0;
     }
 
     HwiP_restore(key);
@@ -708,23 +739,26 @@ bool SPICC32XXDMA_transfer(SPI_Handle handle, SPI_Transaction *transaction)
     Power_setConstraint(PowerCC32XX_DISALLOW_LPDS);
 
     /* Polling transfer if BLOCKING mode & transaction->count < threshold */
-    if ((object->transferMode == SPI_MODE_BLOCKING &&
-        transaction->count < hwAttrs->minDmaTransferSize) || !buffersAligned) {
+    if ((object->transferMode == SPI_MODE_BLOCKING && transaction->count < hwAttrs->minDmaTransferSize) ||
+        !buffersAligned)
+    {
         spiPollingTransfer(object, hwAttrs, transaction);
 
         /* Transaction completed; set status & mark SPI ready */
         object->transaction->status = SPI_TRANSFER_COMPLETED;
-        object->transaction = NULL;
+        object->transaction         = NULL;
 
         Power_releaseConstraint(PowerCC32XX_DISALLOW_LPDS);
     }
-    else {
+    else
+    {
         /* Perform a DMA backed SPI transfer */
         configDMA(object, hwAttrs, transaction);
 
-        if (object->transferMode == SPI_MODE_BLOCKING) {
-            if (SemaphoreP_pend(object->transferComplete,
-                object->transferTimeout) != SemaphoreP_OK) {
+        if (object->transferMode == SPI_MODE_BLOCKING)
+        {
+            if (SemaphoreP_pend(object->transferComplete, object->transferTimeout) != SemaphoreP_OK)
+            {
                 /* Timeout occurred; cancel the transfer */
                 object->transaction->status = SPI_TRANSFER_FAILED;
                 SPICC32XXDMA_transferCancel(handle);
@@ -748,9 +782,9 @@ bool SPICC32XXDMA_transfer(SPI_Handle handle, SPI_Transaction *transaction)
  */
 void SPICC32XXDMA_transferCancel(SPI_Handle handle)
 {
-    uintptr_t                     key;
-    SPI_Transaction              *msg;
-    SPICC32XXDMA_Object          *object = handle->object;
+    uintptr_t key;
+    SPI_Transaction *msg;
+    SPICC32XXDMA_Object *object           = handle->object;
     SPICC32XXDMA_HWAttrsV1 const *hwAttrs = handle->hwAttrs;
 
     /*
@@ -758,12 +792,13 @@ void SPICC32XXDMA_transferCancel(SPI_Handle handle)
      *   1.  The driver is in CALLBACK mode.
      *   2.  The driver is in BLOCKING mode & there has been a transfer timeout.
      */
-    if (object->transferMode == SPI_MODE_CALLBACK ||
-        object->transaction->status == SPI_TRANSFER_FAILED) {
+    if (object->transferMode == SPI_MODE_CALLBACK || object->transaction->status == SPI_TRANSFER_FAILED)
+    {
 
         key = HwiP_disable();
 
-        if (object->transaction == NULL || object->cancelInProgress) {
+        if (object->transaction == NULL || object->cancelInProgress)
+        {
             HwiP_restore(key);
 
             return;
@@ -796,11 +831,11 @@ void SPICC32XXDMA_transferCancel(SPI_Handle handle)
          * Calculate amount of data which has already been sent & store
          * it in transaction->count
          */
-        object->transaction->count = object->amtDataXferred +
-            (object->currentXferAmt - getDmaRemainingXfers(hwAttrs));
+        object->transaction->count = object->amtDataXferred + (object->currentXferAmt - getDmaRemainingXfers(hwAttrs));
 
         /* Set status CANCELED if we did not cancel due to timeout  */
-        if (object->transaction->status == SPI_TRANSFER_STARTED) {
+        if (object->transaction->status == SPI_TRANSFER_STARTED)
+        {
             object->transaction->status = SPI_TRANSFER_CANCELED;
         }
 
@@ -814,7 +849,7 @@ void SPICC32XXDMA_transferCancel(SPI_Handle handle)
         msg = object->transaction;
 
         /* Indicate we are done with this transfer */
-        object->transaction = NULL;
+        object->transaction      = NULL;
         object->cancelInProgress = false;
         object->transferCallbackFxn(handle, msg);
     }

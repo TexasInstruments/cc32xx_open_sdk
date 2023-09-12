@@ -58,8 +58,7 @@
 #define PAD_RESET_STATE 0xC61
 
 void CaptureCC32XX_close(Capture_Handle handle);
-int_fast16_t CaptureCC32XX_control(Capture_Handle handle,
-    uint_fast16_t cmd, void *arg);
+int_fast16_t CaptureCC32XX_control(Capture_Handle handle, uint_fast16_t cmd, void *arg);
 void CaptureCC32XX_init(Capture_Handle handle);
 Capture_Handle CaptureCC32XX_open(Capture_Handle handle, Capture_Params *params);
 int32_t CaptureCC32XX_start(Capture_Handle handle);
@@ -69,40 +68,38 @@ void CaptureCC32XX_stop(Capture_Handle handle);
 static void CaptureCC32XX_hwiIntFunction(uintptr_t arg);
 static uint32_t getPowerMgrId(uint32_t baseAddress);
 static void initHw(Capture_Handle handle);
-static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg,
-    uintptr_t clientArg);
+static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg);
 
 /* System Clock Frequency */
 static ClockP_FreqHz clockFreq;
 
 /* Function table for CaptureCC32XX implementation */
-const Capture_FxnTable CaptureCC32XX_fxnTable = {
-    .closeFxn    = CaptureCC32XX_close,
-    .openFxn     = CaptureCC32XX_open,
-    .startFxn    = CaptureCC32XX_start,
-    .stopFxn     = CaptureCC32XX_stop,
-    .initFxn     = CaptureCC32XX_init,
-    .controlFxn  = CaptureCC32XX_control
-};
+const Capture_FxnTable CaptureCC32XX_fxnTable = {.closeFxn   = CaptureCC32XX_close,
+                                                 .openFxn    = CaptureCC32XX_open,
+                                                 .startFxn   = CaptureCC32XX_start,
+                                                 .stopFxn    = CaptureCC32XX_stop,
+                                                 .initFxn    = CaptureCC32XX_init,
+                                                 .controlFxn = CaptureCC32XX_control};
 
 /*
  *  ======== CaptureCC32XX_close ========
  */
 void CaptureCC32XX_close(Capture_Handle handle)
 {
-    CaptureCC32XX_Object *object  = handle->object;
+    CaptureCC32XX_Object *object         = handle->object;
     CaptureCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
     TimerCC32XX_SubTimer subTimer;
     uint32_t baseAddress = getTimerBaseAddress(hwAttrs->capturePin);
 
-    subTimer = (TimerCC32XX_SubTimer) getSubTimer(hwAttrs->capturePin);
+    subTimer = (TimerCC32XX_SubTimer)getSubTimer(hwAttrs->capturePin);
 
     CaptureCC32XX_stop(handle);
 
     Power_unregisterNotify(&(object->notifyObj));
     Power_releaseDependency(getPowerMgrId(getGPIOBaseAddress(hwAttrs->capturePin)));
 
-    if (object->hwiHandle) {
+    if (object->hwiHandle)
+    {
 
         HwiP_delete(object->hwiHandle);
         object->hwiHandle = NULL;
@@ -111,15 +108,13 @@ void CaptureCC32XX_close(Capture_Handle handle)
     TimerCC32XX_freeTimerResource(baseAddress, subTimer);
 
     /* Restore the GPIO pad to its reset state */
-    HWREG(OCP_SHARED_BASE + getPadOffset(hwAttrs->capturePin))
-        = PAD_RESET_STATE;
+    HWREG(OCP_SHARED_BASE + getPadOffset(hwAttrs->capturePin)) = PAD_RESET_STATE;
 }
 
 /*
  *  ======== CaptureCC32XX_control ========
  */
-int_fast16_t CaptureCC32XX_control(Capture_Handle handle,
-        uint_fast16_t cmd, void *arg)
+int_fast16_t CaptureCC32XX_control(Capture_Handle handle, uint_fast16_t cmd, void *arg)
 {
     return (Capture_STATUS_UNDEFINEDCMD);
 }
@@ -129,10 +124,10 @@ int_fast16_t CaptureCC32XX_control(Capture_Handle handle,
  */
 static void CaptureCC32XX_hwiIntFunction(uintptr_t arg)
 {
-    Capture_Handle handle = (Capture_Handle) arg;
+    Capture_Handle handle                = (Capture_Handle)arg;
     CaptureCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    CaptureCC32XX_Object *object = handle->object;
-    uint32_t baseAddress = getTimerBaseAddress(hwAttrs->capturePin);
+    CaptureCC32XX_Object *object         = handle->object;
+    uint32_t baseAddress                 = getTimerBaseAddress(hwAttrs->capturePin);
     uint32_t interruptMask;
     uint32_t interval, currentCount;
 
@@ -140,16 +135,19 @@ static void CaptureCC32XX_hwiIntFunction(uintptr_t arg)
     currentCount = TimerValueGet(baseAddress, object->timer);
 
     /* Calculate the interval */
-    if (currentCount < object->previousCount) {
+    if (currentCount < object->previousCount)
+    {
 
         /* Calculate the difference if the timer rolled over */
         interval = currentCount + (0xFFFFFF - object->previousCount);
     }
-    else if (currentCount > object->previousCount) {
+    else if (currentCount > object->previousCount)
+    {
 
         interval = currentCount - object->previousCount - 1;
     }
-    else {
+    else
+    {
         interval = 1;
     }
 
@@ -164,11 +162,13 @@ static void CaptureCC32XX_hwiIntFunction(uintptr_t arg)
     TimerIntClear(baseAddress, interruptMask);
 
     /* Need to convert the interval to periodUnits if microseconds or hertz */
-    if (object->periodUnits == Capture_PERIOD_US) {
+    if (object->periodUnits == Capture_PERIOD_US)
+    {
 
         interval = interval / (clockFreq.lo / 1000000);
     }
-    else if (object->periodUnits == Capture_PERIOD_HZ) {
+    else if (object->periodUnits == Capture_PERIOD_HZ)
+    {
 
         interval = clockFreq.lo / interval;
     }
@@ -190,46 +190,52 @@ void CaptureCC32XX_init(Capture_Handle handle)
  */
 Capture_Handle CaptureCC32XX_open(Capture_Handle handle, Capture_Params *params)
 {
-    CaptureCC32XX_Object        *object = handle->object;
+    CaptureCC32XX_Object *object         = handle->object;
     CaptureCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    HwiP_Params                  hwiParams;
-    uint32_t                     powerId;
+    HwiP_Params hwiParams;
+    uint32_t powerId;
 
     /* Check parameters. This driver requires a callback function. */
-    if (params == NULL ||
-        params->callbackFxn == NULL) {
+    if (params == NULL || params->callbackFxn == NULL)
+    {
 
         return (NULL);
     }
 
     /* Set the mode */
-    if (params->mode == Capture_RISING_EDGE) {
+    if (params->mode == Capture_RISING_EDGE)
+    {
 
         object->mode = TIMER_EVENT_POS_EDGE;
     }
-    else if (params->mode == Capture_FALLING_EDGE) {
+    else if (params->mode == Capture_FALLING_EDGE)
+    {
 
         object->mode = TIMER_EVENT_NEG_EDGE;
     }
-    else if (params->mode == Capture_ANY_EDGE) {
+    else if (params->mode == Capture_ANY_EDGE)
+    {
 
         object->mode = TIMER_EVENT_BOTH_EDGES;
     }
-    else {
+    else
+    {
         /* Fail if Capture mode is not supported by device*/
         return (NULL);
     }
 
     powerId = getPowerMgrId(getGPIOBaseAddress(hwAttrs->capturePin));
 
-    if (powerId == (uint32_t) -1) {
+    if (powerId == (uint32_t)-1)
+    {
 
         return (NULL);
     }
 
     /* Attempt to allocate timer hardware resource */
     if (!TimerCC32XX_allocateTimerResource(getTimerBaseAddress(hwAttrs->capturePin),
-           (TimerCC32XX_SubTimer) getSubTimer(hwAttrs->capturePin))) {
+                                           (TimerCC32XX_SubTimer)getSubTimer(hwAttrs->capturePin)))
+    {
 
         return (NULL);
     }
@@ -238,32 +244,33 @@ Capture_Handle CaptureCC32XX_open(Capture_Handle handle, Capture_Params *params)
     Power_setDependency(powerId);
 
     /* Function to re-initialize the timer after a low-power event */
-    Power_registerNotify(&(object->notifyObj), PowerCC32XX_AWAKE_LPDS,
-        postNotifyFxn, (uintptr_t) handle);
+    Power_registerNotify(&(object->notifyObj), PowerCC32XX_AWAKE_LPDS, postNotifyFxn, (uintptr_t)handle);
 
     /* Determine which timer half will be used. */
-    if (getSubTimer(hwAttrs->capturePin) == TimerCC32XX_timer16A) {
+    if (getSubTimer(hwAttrs->capturePin) == TimerCC32XX_timer16A)
+    {
 
         object->timer = TIMER_A;
     }
-    else {
+    else
+    {
 
         object->timer = TIMER_B;
     }
 
-    object->isRunning = false;
-    object->callBack = params->callbackFxn;
+    object->isRunning   = false;
+    object->callBack    = params->callbackFxn;
     object->periodUnits = params->periodUnit;
 
     /* Setup the hardware interrupt function to handle timer interrupts */
     HwiP_Params_init(&hwiParams);
-    hwiParams.arg = (uintptr_t) handle;
+    hwiParams.arg      = (uintptr_t)handle;
     hwiParams.priority = hwAttrs->intPriority;
 
-    object->hwiHandle = HwiP_create(getTimerIntNum(hwAttrs->capturePin),
-        CaptureCC32XX_hwiIntFunction, &hwiParams);
+    object->hwiHandle = HwiP_create(getTimerIntNum(hwAttrs->capturePin), CaptureCC32XX_hwiIntFunction, &hwiParams);
 
-    if (object->hwiHandle == NULL) {
+    if (object->hwiHandle == NULL)
+    {
 
         CaptureCC32XX_close(handle);
 
@@ -285,8 +292,8 @@ Capture_Handle CaptureCC32XX_open(Capture_Handle handle, Capture_Params *params)
 int32_t CaptureCC32XX_start(Capture_Handle handle)
 {
     CaptureCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    CaptureCC32XX_Object *object = handle->object;
-    uint32_t baseAddress = getTimerBaseAddress(hwAttrs->capturePin);
+    CaptureCC32XX_Object *object         = handle->object;
+    uint32_t baseAddress                 = getTimerBaseAddress(hwAttrs->capturePin);
     uint32_t interruptMask;
     uintptr_t key;
 
@@ -294,14 +301,15 @@ int32_t CaptureCC32XX_start(Capture_Handle handle)
 
     key = HwiP_disable();
 
-    if (object->isRunning) {
+    if (object->isRunning)
+    {
 
         HwiP_restore(key);
 
         return (Capture_STATUS_ERROR);
     }
 
-    object->isRunning = true;
+    object->isRunning     = true;
     object->previousCount = 0;
 
     Power_setConstraint(PowerCC32XX_DISALLOW_LPDS);
@@ -322,8 +330,8 @@ int32_t CaptureCC32XX_start(Capture_Handle handle)
 void CaptureCC32XX_stop(Capture_Handle handle)
 {
     CaptureCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    CaptureCC32XX_Object *object = handle->object;
-    uint32_t baseAddress = getTimerBaseAddress(hwAttrs->capturePin);
+    CaptureCC32XX_Object *object         = handle->object;
+    uint32_t baseAddress                 = getTimerBaseAddress(hwAttrs->capturePin);
     uint32_t interruptMask;
     uintptr_t key;
 
@@ -331,7 +339,8 @@ void CaptureCC32XX_stop(Capture_Handle handle)
 
     key = HwiP_disable();
 
-    if (object->isRunning) {
+    if (object->isRunning)
+    {
 
         object->isRunning = false;
 
@@ -343,13 +352,13 @@ void CaptureCC32XX_stop(Capture_Handle handle)
     HwiP_restore(key);
 }
 
-
 /*
  *  ======== getPowerMgrId ========
  */
 static uint32_t getPowerMgrId(uint32_t baseAddress)
 {
-    switch (baseAddress) {
+    switch (baseAddress)
+    {
 
         case GPIOA0_BASE:
 
@@ -373,7 +382,7 @@ static uint32_t getPowerMgrId(uint32_t baseAddress)
 
         default:
 
-            return ((uint32_t) -1);
+            return ((uint32_t)-1);
     }
 }
 
@@ -383,16 +392,15 @@ static uint32_t getPowerMgrId(uint32_t baseAddress)
 static void initHw(Capture_Handle handle)
 {
     CaptureCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    CaptureCC32XX_Object  const *object = handle->object;
-    uint32_t baseAddress = getTimerBaseAddress(hwAttrs->capturePin);
+    CaptureCC32XX_Object const *object   = handle->object;
+    uint32_t baseAddress                 = getTimerBaseAddress(hwAttrs->capturePin);
     uintptr_t key;
 
     /* Enable external GPT trigger */
     HWREG(APPS_CONFIG_BASE + APPS_CONFIG_O_GPT_TRIG_SEL) = 0xFF;
 
     /* Route the GPIO pad for capture usage */
-    HWREG(OCP_SHARED_BASE + getPadOffset(hwAttrs->capturePin))
-        = getPinMode(hwAttrs->capturePin);
+    HWREG(OCP_SHARED_BASE + getPadOffset(hwAttrs->capturePin)) = getPinMode(hwAttrs->capturePin);
 
     /* Read/Write modifications for shared registers */
     key = HwiP_disable();
@@ -415,11 +423,13 @@ static void initHw(Capture_Handle handle)
     HWREG(baseAddress + TIMER_O_CFG) = TIMER_CFG_16_BIT;
 
     /* Configure in capture time edge mode, counting up */
-    if (object->timer == TIMER_A) {
+    if (object->timer == TIMER_A)
+    {
 
         HWREG(baseAddress + TIMER_O_TAMR) = TIMER_CFG_A_CAP_TIME_UP;
     }
-    else {
+    else
+    {
 
         HWREG(baseAddress + TIMER_O_TBMR) = TIMER_CFG_A_CAP_TIME_UP;
     }
@@ -430,10 +440,9 @@ static void initHw(Capture_Handle handle)
  *  This function is called when a transition from LPDS mode is made.
  *  clientArg should be a handle of a previously opened Timer instance.
  */
-static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg,
-    uintptr_t clientArg)
+static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg)
 {
-    initHw((Capture_Handle) clientArg);
+    initHw((Capture_Handle)clientArg);
 
     return (Power_NOTIFYDONE);
 }

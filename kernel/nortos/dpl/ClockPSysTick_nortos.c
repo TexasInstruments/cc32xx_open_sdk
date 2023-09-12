@@ -42,8 +42,8 @@
 #include DeviceFamily_constructPath(inc/hw_nvic.h)
 #include DeviceFamily_constructPath(inc/hw_types.h)
 
-#define CPU_CLOCK_HZ            ((uint32_t) 80000000)
-#define CPU_CLOCK_MHZ           ((uint32_t) 80)
+#define CPU_CLOCK_HZ  ((uint32_t)80000000)
+#define CPU_CLOCK_MHZ ((uint32_t)80)
 
 #include DeviceFamily_constructPath(driverlib/rom.h)
 #include DeviceFamily_constructPath(driverlib/rom_map.h)
@@ -53,16 +53,18 @@
 #include <ti/drivers/dpl/HwiP.h>
 #include <ti/drivers/dpl/SemaphoreP.h>
 
-typedef struct _ClockP_Obj {
+typedef struct _ClockP_Obj
+{
     ClockP_Fxn cbFxn;
     uintptr_t cbArg;
-    uint32_t startTimeout;  /* timeout passed to ClockP_create() */
+    uint32_t startTimeout; /* timeout passed to ClockP_create() */
     uint32_t timeout;
     uint32_t period;
     struct _ClockP_Obj *next;
 } ClockP_Obj;
 
-typedef struct _ClockP_Control {
+typedef struct _ClockP_Control
+{
     uint64_t count;
     ClockP_Obj *list;
 } ClockP_Control;
@@ -79,7 +81,6 @@ static void sleepTicks(uint32_t ticks);
 static bool ClockP_initialized = false;
 static uint32_t sysTickPeriod;
 
-
 /*
  *  ======== ClockP_sysTickHandler ========
  */
@@ -91,8 +92,8 @@ void ClockP_sysTickHandler(void)
     ClockP_ctrl.count++;
 
     /*  check if the clock instance has expired */
-    while (((obj = ClockP_ctrl.list) != NULL) &&
-           (obj->timeout == ClockP_ctrl.count)) {
+    while (((obj = ClockP_ctrl.list) != NULL) && (obj->timeout == ClockP_ctrl.count))
+    {
         temp = obj->next;
 
         /* clock instance expired */
@@ -106,7 +107,8 @@ void ClockP_sysTickHandler(void)
          */
         ClockP_ctrl.list = temp;
 
-        if (obj->period != 0) {
+        if (obj->period != 0)
+        {
             obj->timeout = obj->period + ClockP_ctrl.count;
 
             /*
@@ -129,13 +131,15 @@ static void sysTickInit(void)
 {
     /* SysTick Enabling */
     ClockP_ctrl.count = 0;
-    ClockP_ctrl.list = NULL;
+    ClockP_ctrl.list  = NULL;
 
-    if (ClockP_tickPeriod == 0) {
+    if (ClockP_tickPeriod == 0)
+    {
         /* Set to maximum value */
         MAP_SysTickPeriodSet(0x1000000);
     }
-    else {
+    else
+    {
         MAP_SysTickPeriodSet(CPU_CLOCK_HZ / ClockP_tickPeriod);
     }
 
@@ -149,68 +153,66 @@ static void sysTickInit(void)
 /*
  *  ======== ClockP_add ========
  */
-void ClockP_add(ClockP_Struct *handle, ClockP_Fxn clockFxn,
-                uint32_t timeout, uintptr_t arg)
+void ClockP_add(ClockP_Struct *handle, ClockP_Fxn clockFxn, uint32_t timeout, uintptr_t arg)
 {
     ClockP_Obj *obj = (ClockP_Obj *)handle;
 
     /* populate the new clock instance */
-    obj->cbFxn = clockFxn;
-    obj->cbArg = arg;
-    obj->timeout = 0;
-    obj->period = 0;
+    obj->cbFxn        = clockFxn;
+    obj->cbArg        = arg;
+    obj->timeout      = 0;
+    obj->period       = 0;
     obj->startTimeout = timeout;
-    obj->next = NULL;
+    obj->next         = NULL;
 }
 
 /*
  *  ======== ClockP_construct ========
  */
-ClockP_Handle ClockP_construct(ClockP_Struct *handle, ClockP_Fxn clockFxn,
-                               uint32_t timeout, ClockP_Params *params)
+ClockP_Handle ClockP_construct(ClockP_Struct *handle, ClockP_Fxn clockFxn, uint32_t timeout, ClockP_Params *params)
 {
     ClockP_Obj *obj = (ClockP_Obj *)handle;
     ClockP_Params defaultParams;
 
     ClockP_startup();
 
-    if (handle != NULL) {
+    if (handle != NULL)
+    {
         /* initialise the params, if not already */
-        if (params == NULL) {
+        if (params == NULL)
+        {
             params = &defaultParams;
             ClockP_Params_init(&defaultParams);
         }
 
         /* populate the new clock instance */
-        obj->cbFxn = clockFxn;
-        obj->cbArg = params->arg;
-        obj->timeout = 0;
-        obj->period = params->period;
+        obj->cbFxn        = clockFxn;
+        obj->cbArg        = params->arg;
+        obj->timeout      = 0;
+        obj->period       = params->period;
         obj->startTimeout = timeout;
-        obj->next = NULL;
+        obj->next         = NULL;
 
-        if (params->startFlag) {
+        if (params->startFlag)
+        {
             ClockP_start((ClockP_Handle)obj);
         }
     }
 
     return ((ClockP_Handle)obj);
-
 }
 
 /*
  *  ======== ClockP_create ========
  */
-ClockP_Handle ClockP_create(ClockP_Fxn clockFxn, uint32_t timeout,
-                            ClockP_Params *params)
+ClockP_Handle ClockP_create(ClockP_Fxn clockFxn, uint32_t timeout, ClockP_Params *params)
 {
     ClockP_Handle handle;
 
     handle = (ClockP_Handle)malloc(sizeof(ClockP_Obj));
 
     /* ClockP_construct will check handle for NULL, no need here */
-    handle = ClockP_construct((ClockP_Struct *)handle, clockFxn, timeout,
-                              params);
+    handle = ClockP_construct((ClockP_Struct *)handle, clockFxn, timeout, params);
 
     return (handle);
 }
@@ -230,30 +232,35 @@ void ClockP_delete(ClockP_Handle handle)
  */
 void ClockP_destruct(ClockP_Struct *clk)
 {
-    ClockP_Obj *obj = (ClockP_Obj*) clk;
+    ClockP_Obj *obj = (ClockP_Obj *)clk;
     ClockP_Obj *temp;
-    uintptr_t   key;
+    uintptr_t key;
 
     key = HwiP_disable();
 
-    if (ClockP_ctrl.list == NULL) {
+    if (ClockP_ctrl.list == NULL)
+    {
         HwiP_restore(key);
 
         return;
     }
 
-    if (ClockP_ctrl.list == obj) {
+    if (ClockP_ctrl.list == obj)
+    {
         /* Obj is first on list */
         ClockP_ctrl.list = ClockP_ctrl.list->next;
     }
-    else {
+    else
+    {
         /* Search through list for obj */
         temp = ClockP_ctrl.list;
-        while ((temp->next != obj) && (temp->next != NULL)) {
+        while ((temp->next != obj) && (temp->next != NULL))
+        {
             temp = temp->next;
         }
 
-        if (temp->next == obj) {
+        if (temp->next == obj)
+        {
             temp->next = obj->next;
         }
     }
@@ -302,16 +309,19 @@ uint32_t ClockP_getSystemTicks(void)
  */
 uint32_t ClockP_getTicksUntilInterrupt(void)
 {
-    uint32_t  ticks = 0xFFFFFFFF;
+    uint32_t ticks = 0xFFFFFFFF;
     uintptr_t key;
 
     key = HwiP_disable();
 
-    if (ClockP_ctrl.list != NULL) {
-        if (ClockP_ctrl.list->timeout <= ClockP_ctrl.count) {
+    if (ClockP_ctrl.list != NULL)
+    {
+        if (ClockP_ctrl.list->timeout <= ClockP_ctrl.count)
+        {
             ticks = 0;
         }
-        else {
+        else
+        {
             ticks = ClockP_ctrl.list->timeout - ClockP_ctrl.count;
         }
     }
@@ -328,10 +338,12 @@ uint32_t ClockP_getTimeout(ClockP_Handle handle)
 {
     ClockP_Obj *obj = (ClockP_Obj *)handle;
 
-    if (obj->timeout > 0) {
+    if (obj->timeout > 0)
+    {
         return (obj->timeout - ClockP_ctrl.count);
     }
-    else {
+    else
+    {
         return (obj->startTimeout);
     }
 }
@@ -351,9 +363,9 @@ bool ClockP_isActive(ClockP_Handle handle)
  */
 void ClockP_Params_init(ClockP_Params *params)
 {
-    params->arg = (uintptr_t)0;
+    params->arg       = (uintptr_t)0;
     params->startFlag = false;
-    params->period = 0;
+    params->period    = 0;
 }
 
 /*
@@ -370,17 +382,17 @@ void ClockP_setTicks(uint32_t ticks)
  */
 void ClockP_setTimeout(ClockP_Handle handle, uint32_t timeout)
 {
-    ClockP_Obj *obj = (ClockP_Obj*)handle;
+    ClockP_Obj *obj = (ClockP_Obj *)handle;
 
     obj->startTimeout = timeout;
 }
 
 /*
-*  ======== ClockP_setPeriod ========
-*/
+ *  ======== ClockP_setPeriod ========
+ */
 void ClockP_setPeriod(ClockP_Handle handle, uint32_t period)
 {
-    ClockP_Obj *obj = (ClockP_Obj*)handle;
+    ClockP_Obj *obj = (ClockP_Obj *)handle;
 
     obj->period = period;
 }
@@ -402,14 +414,15 @@ void ClockP_sleep(uint32_t sec)
  */
 void ClockP_start(ClockP_Handle handle)
 {
-    ClockP_Obj *obj = (ClockP_Obj*)handle;
-    uintptr_t   key;
+    ClockP_Obj *obj = (ClockP_Obj *)handle;
+    uintptr_t key;
 
     /* protect the context by disable the interrupt */
     key = HwiP_disable();
 
     /* in case the timer is active, restart it with the new timeout */
-    if (obj->timeout > 0) {
+    if (obj->timeout > 0)
+    {
         ClockP_stop(handle);
     }
     obj->timeout = ClockP_ctrl.count + obj->startTimeout;
@@ -425,10 +438,11 @@ void ClockP_start(ClockP_Handle handle)
  */
 void ClockP_startup(void)
 {
-    if (!ClockP_initialized) {
+    if (!ClockP_initialized)
+    {
         sysTickInit();
 
-        sysTickPeriod = CPU_CLOCK_HZ / ClockP_tickPeriod;
+        sysTickPeriod      = CPU_CLOCK_HZ / ClockP_tickPeriod;
         ClockP_initialized = true;
     }
 }
@@ -448,37 +462,41 @@ size_t ClockP_staticObjectSize(void)
  */
 void ClockP_stop(ClockP_Handle handle)
 {
-    ClockP_Obj *obj = (ClockP_Obj*)handle;
+    ClockP_Obj *obj = (ClockP_Obj *)handle;
     ClockP_Obj *temp;
-    uintptr_t   key;
+    uintptr_t key;
 
     /* protect the context by disable the interrupt */
     key = HwiP_disable();
 
     temp = ClockP_ctrl.list;
 
-    if (!temp) {
+    if (!temp)
+    {
         /* Enable the systick interrupt */
         HwiP_restore(key);
         return;
     }
 
-    if (ClockP_ctrl.list == obj) {
+    if (ClockP_ctrl.list == obj)
+    {
         ClockP_ctrl.list = ClockP_ctrl.list->next;
-        obj->next = NULL;
-        obj->timeout = 0;
+        obj->next        = NULL;
+        obj->timeout     = 0;
         /* Enable the systick interrupt */
         HwiP_restore(key);
         return;
     }
 
-    while ((temp->next != obj) && (temp->next != NULL)) {
+    while ((temp->next != obj) && (temp->next != NULL))
+    {
         temp = temp->next;
     }
 
-    if (temp->next == obj) {
-        temp->next = obj->next;
-        obj->next = NULL;
+    if (temp->next == obj)
+    {
+        temp->next   = obj->next;
+        obj->next    = NULL;
         obj->timeout = 0;
     }
 
@@ -499,13 +517,15 @@ void ClockP_usleep(uint32_t usec)
     curTime = getTimeUsec();
     endTime = curTime + usec;
 
-    if (usec >= ClockP_tickPeriod) {
+    if (usec >= ClockP_tickPeriod)
+    {
         ticksToSleep = usec / ClockP_tickPeriod;
         sleepTicks(ticksToSleep);
     }
 
     curTime = getTimeUsec();
-    while (curTime < endTime) {
+    while (curTime < endTime)
+    {
         curTime = getTimeUsec();
     }
 }
@@ -517,34 +537,42 @@ void ClockP_usleep(uint32_t usec)
 static void addToList(ClockP_Obj *obj)
 {
     /* check if the linked list exists */
-    if (ClockP_ctrl.list != NULL) {
+    if (ClockP_ctrl.list != NULL)
+    {
         ClockP_Obj *temp = ClockP_ctrl.list;
 
-        if (temp->timeout > obj->timeout) {
-            obj->next = ClockP_ctrl.list;
+        if (temp->timeout > obj->timeout)
+        {
+            obj->next        = ClockP_ctrl.list;
             ClockP_ctrl.list = obj;
         }
-        else {
-            while (temp->next != NULL) {
-                if ((temp->next)->timeout > obj->timeout) {
-                    obj->next = temp->next;
+        else
+        {
+            while (temp->next != NULL)
+            {
+                if ((temp->next)->timeout > obj->timeout)
+                {
+                    obj->next  = temp->next;
                     temp->next = obj;
                     break;
                 }
-                else {
+                else
+                {
                     temp = temp->next;
                 }
             }
 
-            if (temp->next == NULL) {
+            if (temp->next == NULL)
+            {
                 temp->next = obj;
-                obj->next = NULL;
+                obj->next  = NULL;
             }
         }
     }
-    else {
+    else
+    {
         ClockP_ctrl.list = obj;
-        obj->next = NULL;
+        obj->next        = NULL;
     }
 }
 
@@ -554,20 +582,20 @@ static void addToList(ClockP_Obj *obj)
  */
 static uint64_t getTimeUsec(void)
 {
-    uint64_t       ts;
-    unsigned long  ticks;
-    uint64_t       count1;
-    uint64_t       count2;
+    uint64_t ts;
+    unsigned long ticks;
+    uint64_t count1;
+    uint64_t count2;
 
-    do {
+    do
+    {
         count1 = ClockP_ctrl.count;
-        ticks = MAP_SysTickValueGet();
+        ticks  = MAP_SysTickValueGet();
         count2 = ClockP_ctrl.count;
     } while (count1 != count2);
 
     /* Get the current time in microseconds */
-    ts = count1 * (uint64_t)ClockP_tickPeriod +
-            (uint64_t)((sysTickPeriod - ticks) / CPU_CLOCK_MHZ);
+    ts = count1 * (uint64_t)ClockP_tickPeriod + (uint64_t)((sysTickPeriod - ticks) / CPU_CLOCK_MHZ);
 
     return (ts);
 }
@@ -581,7 +609,8 @@ static void sleepTicks(uint32_t ticks)
     SemaphoreP_Struct semStruct;
     SemaphoreP_Handle sem;
 
-    if (ticks > 0) {
+    if (ticks > 0)
+    {
         /*
          *  Construct a semaphore with 0 count that will never be posted.
          *  We will timeout pending on this semaphore.

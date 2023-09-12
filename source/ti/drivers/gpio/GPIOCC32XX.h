@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2021, Texas Instruments Incorporated
+ * Copyright (c) 2015-2022, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -72,10 +72,10 @@ extern "C" {
  *  @{
  */
 /*! @hideinitializer Do not configure this pin. setConfig calls will return immediately */
-#define GPIOCC32XX_DO_NOT_CONFIG    0x80000000
+#define GPIOCC32XX_DO_NOT_CONFIG 0x80000000
 
 /*! @hideinitializer Use statically-defined parking state from Power driver, instead of current pin value */
-#define GPIOCC32XX_CFG_USE_STATIC   0x4000
+#define GPIOCC32XX_CFG_USE_STATIC 0x4000
 /** @} */
 
 /* We don't define this value on purpose - any unsupported values will cause a
@@ -87,13 +87,18 @@ extern "C" {
 #undef GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
 
 /* To mux on CC32XX, use the PinTypeXXX functions from driverlib. */
-#define GPIO_MUX_GPIO_INTERNAL              GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
+#define GPIO_MUX_GPIO_INTERNAL GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
 
 /* The following options are not supported by CC32XX IO hardware */
-#define GPIO_CFG_SLEW_NORMAL_INTERNAL       GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
-#define GPIO_CFG_SLEW_REDUCED_INTERNAL      GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
-#define GPIO_CFG_INVERT_OFF_INTERNAL        GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
-#define GPIO_CFG_INVERT_ON_INTERNAL         GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
+#define GPIO_CFG_SLEW_NORMAL_INTERNAL  GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
+#define GPIO_CFG_SLEW_REDUCED_INTERNAL GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
+#define GPIO_CFG_INVERT_OFF_INTERNAL   GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
+#define GPIO_CFG_INVERT_ON_INTERNAL    GPIOCC32XX_CFG_OPTION_NOT_SUPPORTED
+
+/* Wakeup from shutdown is configured by the Power driver */
+#define GPIO_CFG_SHUTDOWN_WAKE_OFF_INTERNAL  GPIOCC26XX_CFG_OPTION_NOT_SUPPORTED
+#define GPIO_CFG_SHUTDOWN_WAKE_HIGH_INTERNAL GPIOCC26XX_CFG_OPTION_NOT_SUPPORTED
+#define GPIO_CFG_SHUTDOWN_WAKE_LOW_INTERNAL  GPIOCC26XX_CFG_OPTION_NOT_SUPPORTED
 
 /* See GPIO.h for details about these configuration values */
 
@@ -102,39 +107,39 @@ extern "C" {
  * highest value here is 6 and 7 is still only 3 bits, so we add 1 to shift the
  * value range and we can then use 0 for 'no configured interrupts' as usual.
  */
-#define GPIO_CFG_INT_NONE_INTERNAL          0
-#define GPIO_CFG_INT_LOW_INTERNAL           (GPIO_LOW_LEVEL + 1)
-#define GPIO_CFG_INT_HIGH_INTERNAL          (GPIO_HIGH_LEVEL + 1)
-#define GPIO_CFG_INT_FALLING_INTERNAL       (GPIO_FALLING_EDGE + 1)
-#define GPIO_CFG_INT_RISING_INTERNAL        (GPIO_RISING_EDGE + 1)
-#define GPIO_CFG_INT_BOTH_EDGES_INTERNAL    (GPIO_BOTH_EDGES + 1)
+#define GPIO_CFG_INT_NONE_INTERNAL       0
+#define GPIO_CFG_INT_LOW_INTERNAL        (GPIO_LOW_LEVEL + 1)
+#define GPIO_CFG_INT_HIGH_INTERNAL       (GPIO_HIGH_LEVEL + 1)
+#define GPIO_CFG_INT_FALLING_INTERNAL    (GPIO_FALLING_EDGE + 1)
+#define GPIO_CFG_INT_RISING_INTERNAL     (GPIO_RISING_EDGE + 1)
+#define GPIO_CFG_INT_BOTH_EDGES_INTERNAL (GPIO_BOTH_EDGES + 1)
 
 /* Int enabled stored in bit 3 */
-#define GPIO_CFG_INT_ENABLE_INTERNAL        0x8
-#define GPIO_CFG_INT_DISABLE_INTERNAL       0
+#define GPIO_CFG_INT_ENABLE_INTERNAL  0x8
+#define GPIO_CFG_INT_DISABLE_INTERNAL 0
 
 /* General options, stored in bits 4-11 */
 #define GPIO_CFG_INPUT_INTERNAL             (PIN_TYPE_STD | PIN_DIR_MODE_IN)
 #define GPIO_CFG_OUTPUT_INTERNAL            (PIN_TYPE_STD | PIN_DIR_MODE_OUT)
 #define GPIO_CFG_OUTPUT_OPEN_DRAIN_INTERNAL (PIN_TYPE_OD | PIN_DIR_MODE_OUT)
 
-#define GPIO_CFG_PULL_NONE_INTERNAL         PIN_TYPE_STD
-#define GPIO_CFG_PULL_UP_INTERNAL           PIN_TYPE_STD_PU
-#define GPIO_CFG_PULL_DOWN_INTERNAL         PIN_TYPE_STD_PD
+#define GPIO_CFG_PULL_NONE_INTERNAL PIN_TYPE_STD
+#define GPIO_CFG_PULL_UP_INTERNAL   PIN_TYPE_STD_PU
+#define GPIO_CFG_PULL_DOWN_INTERNAL PIN_TYPE_STD_PD
 
-#define GPIO_CFG_DRVSTR_LOW_INTERNAL        PIN_STRENGTH_2MA
-#define GPIO_CFG_DRVSTR_MED_INTERNAL        PIN_STRENGTH_4MA
-#define GPIO_CFG_DRVSTR_HIGH_INTERNAL       PIN_STRENGTH_6MA
+#define GPIO_CFG_DRVSTR_LOW_INTERNAL  PIN_STRENGTH_2MA
+#define GPIO_CFG_DRVSTR_MED_INTERNAL  PIN_STRENGTH_4MA
+#define GPIO_CFG_DRVSTR_HIGH_INTERNAL PIN_STRENGTH_6MA
 
-#define GPIO_CFG_NO_DIR_INTERNAL            PIN_TYPE_ANALOG
+#define GPIO_CFG_NO_DIR_INTERNAL PIN_TYPE_ANALOG
 
 /* Hysteresis enable in bit 12 */
-#define GPIO_CFG_HYSTERESIS_OFF_INTERNAL    0x0
-#define GPIO_CFG_HYSTERESIS_ON_INTERNAL     0x1000
+#define GPIO_CFG_HYSTERESIS_OFF_INTERNAL 0x0
+#define GPIO_CFG_HYSTERESIS_ON_INTERNAL  0x1000
 
 /* Default enable in bit 13 */
-#define GPIO_CFG_OUTPUT_DEFAULT_LOW_INTERNAL     0x0
-#define GPIO_CFG_OUTPUT_DEFAULT_HIGH_INTERNAL    0x2000
+#define GPIO_CFG_OUTPUT_DEFAULT_LOW_INTERNAL  0x0
+#define GPIO_CFG_OUTPUT_DEFAULT_HIGH_INTERNAL 0x2000
 
 #ifdef __cplusplus
 }

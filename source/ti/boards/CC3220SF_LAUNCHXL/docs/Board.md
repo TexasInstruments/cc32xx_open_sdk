@@ -58,6 +58,7 @@ The following BoosterPack(s) are used with some driver examples.
           | __`P08/CMD`__  | __`SPI_MOSI`__   |
           | __`P07/CLK`__  | __`SPI_CLK`__    |
           | __`P06/DATA`__ | __`SPI_MISO`__   |
+          | __`3V3`__      | __`SD_CS`__      |
 
   * The LCD's SPI slave select and power pins are not compatible with this
     LaunchPad's header pin layout. The BoosterPack ___can___ be placed

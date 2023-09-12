@@ -120,9 +120,9 @@ function _getPinResources(inst)
             pin = mod._getPinResources(inst.spiInstance);
         }
 
-        if (inst.slaveSelect) {
+        if (inst.chipSelect) {
             let mod = system.getScript("/ti/drivers/GPIO.syscfg.js");
-            pin += "SS: " + mod._getPinResources(inst.slaveSelect);
+            pin += "CS: " + mod._getPinResources(inst.chipSelect);
         }
     }
     else {

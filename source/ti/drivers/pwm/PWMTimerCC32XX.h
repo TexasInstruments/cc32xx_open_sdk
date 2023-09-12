@@ -178,22 +178,22 @@ extern "C" {
  *  The CC32XX has fixed GPIO assignments and pin modes for a given pin.
  *  A PWM pin mode for a given pin has a fixed timer/timer-half.
  */
-#define PWMTimerCC32XX_T0A  (0x00 << 24)
-#define PWMTimerCC32XX_T0B  (0x01 << 24)
-#define PWMTimerCC32XX_T1A  (0x10 << 24)
-#define PWMTimerCC32XX_T1B  (0x11 << 24)
-#define PWMTimerCC32XX_T2A  (0x20 << 24)
-#define PWMTimerCC32XX_T2B  (0x21 << 24)
-#define PWMTimerCC32XX_T3A  (0x30 << 24)
-#define PWMTimerCC32XX_T3B  (0x31 << 24)
+#define PWMTimerCC32XX_T0A (0x00 << 24)
+#define PWMTimerCC32XX_T0B (0x01 << 24)
+#define PWMTimerCC32XX_T1A (0x10 << 24)
+#define PWMTimerCC32XX_T1B (0x11 << 24)
+#define PWMTimerCC32XX_T2A (0x20 << 24)
+#define PWMTimerCC32XX_T2B (0x21 << 24)
+#define PWMTimerCC32XX_T3A (0x30 << 24)
+#define PWMTimerCC32XX_T3B (0x31 << 24)
 
-#define PWMTimerCC32XX_GPIO9   (0x11 << 16)
-#define PWMTimerCC32XX_GPIO10  (0x12 << 16)
-#define PWMTimerCC32XX_GPIO11  (0x13 << 16)
-#define PWMTimerCC32XX_GPIO24  (0x30 << 16)
-#define PWMTimerCC32XX_GPIO25  (0x31 << 16)
+#define PWMTimerCC32XX_GPIO9  (0x11 << 16)
+#define PWMTimerCC32XX_GPIO10 (0x12 << 16)
+#define PWMTimerCC32XX_GPIO11 (0x13 << 16)
+#define PWMTimerCC32XX_GPIO24 (0x30 << 16)
+#define PWMTimerCC32XX_GPIO25 (0x31 << 16)
 
-#define PWMTimerCC32XX_GPIONONE  (0xFF << 16)
+#define PWMTimerCC32XX_GPIONONE (0xFF << 16)
 /*! \endcond */
 
 /*!
@@ -204,37 +204,37 @@ extern "C" {
  *  @name PIN 01, GPIO10, uses Timer3A for PWM.
  *  @{
  */
-#define PWMTimerCC32XX_PIN_01  (PWMTimerCC32XX_T3A | PWMTimerCC32XX_GPIO10 | 0x0300) /*!< @hideinitializer */
+#define PWMTimerCC32XX_PIN_01 (PWMTimerCC32XX_T3A | PWMTimerCC32XX_GPIO10 | 0x0300) /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 02, GPIO11, uses Timer3B for PWM.
  *  @{
  */
-#define PWMTimerCC32XX_PIN_02  (PWMTimerCC32XX_T3B | PWMTimerCC32XX_GPIO11 | 0x0301) /*!< @hideinitializer */
+#define PWMTimerCC32XX_PIN_02 (PWMTimerCC32XX_T3B | PWMTimerCC32XX_GPIO11 | 0x0301) /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 17, GPIO24, uses Timer0A for PWM.
  *  @{
  */
-#define PWMTimerCC32XX_PIN_17  (PWMTimerCC32XX_T0A | PWMTimerCC32XX_GPIO24 | 0x0510) /*!< @hideinitializer */
+#define PWMTimerCC32XX_PIN_17 (PWMTimerCC32XX_T0A | PWMTimerCC32XX_GPIO24 | 0x0510) /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 19, uses Timer1B for PWM.
  *  @{
  */
-#define PWMTimerCC32XX_PIN_19  (PWMTimerCC32XX_T1B | PWMTimerCC32XX_GPIONONE | 0x0812) /*!< @hideinitializer */
+#define PWMTimerCC32XX_PIN_19 (PWMTimerCC32XX_T1B | PWMTimerCC32XX_GPIONONE | 0x0812) /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 21, GPIO25, uses Timer1A for PWM.
  *  @{
  */
-#define PWMTimerCC32XX_PIN_21  (PWMTimerCC32XX_T1A | PWMTimerCC32XX_GPIO25 | 0x0914) /*!< @hideinitializer */
+#define PWMTimerCC32XX_PIN_21 (PWMTimerCC32XX_T1A | PWMTimerCC32XX_GPIO25 | 0x0914) /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 64, GPIO9, uses Timer2B for PWM.
  *  @{
  */
-#define PWMTimerCC32XX_PIN_64  (PWMTimerCC32XX_T2B | PWMTimerCC32XX_GPIO9 | 0x033F)  /*!< @hideinitializer */
+#define PWMTimerCC32XX_PIN_64 (PWMTimerCC32XX_T2B | PWMTimerCC32XX_GPIO9 | 0x033F) /*!< @hideinitializer */
 /*! @} */
 /*! @} */
 
@@ -290,9 +290,10 @@ extern const PWM_FxnTable PWMTimerCC32XX_fxnTable;
  *  };
  *  @endcode
  */
-typedef struct {
-    uint32_t pwmPin;                    /*!< Pin to output PWM signal on
-                                             (see @ref pwmPinIdentifiersCC32XX) */
+typedef struct
+{
+    uint32_t pwmPin; /*!< Pin to output PWM signal on
+                          (see @ref pwmPinIdentifiersCC32XX) */
 } PWMTimerCC32XX_HWAttrsV2;
 
 /*!
@@ -300,15 +301,16 @@ typedef struct {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct {
-    Power_NotifyObj  postNotify;
-    uint32_t         duty;              /* Current duty cycle in Duty_Unites */
-    uint32_t         period;            /* Current period PERIOD_Units */
-    PWM_Duty_Units   dutyUnits;         /* Current duty cycle unit */
-    PWM_Period_Units periodUnits;       /* Current period unit */
-    PWM_IdleLevel    idleLevel;         /* PWM idle level when stopped / not started */
-    bool             pwmStarted;        /* Used to gate Power_set/releaseConstraint() calls */
-    bool             isOpen;            /* open flag used to check if PWM is opened */
+typedef struct
+{
+    Power_NotifyObj postNotify;
+    uint32_t duty;                /* Current duty cycle in Duty_Unites */
+    uint32_t period;              /* Current period PERIOD_Units */
+    PWM_Duty_Units dutyUnits;     /* Current duty cycle unit */
+    PWM_Period_Units periodUnits; /* Current period unit */
+    PWM_IdleLevel idleLevel;      /* PWM idle level when stopped / not started */
+    bool pwmStarted;              /* Used to gate Power_set/releaseConstraint() calls */
+    bool isOpen;                  /* open flag used to check if PWM is opened */
 } PWMTimerCC32XX_Object;
 
 #ifdef __cplusplus

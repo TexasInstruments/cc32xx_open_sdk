@@ -99,7 +99,7 @@
                 // Header Pin 6 is an alias of Header Pin 26
                 {
                     "number" : 6,
-                    //"ball"   : "59",
+                    // "ball"   : "59",
                     "name"   : "P59*"
                 },
                 {
@@ -314,13 +314,13 @@
                     "number" : 15,
                     "ball"   : "7",
                     "name"   : "P07",
-                    "preferredType" : ["SPI_MOSI"]
+                    "preferredType" : ["SPI_PICO"]
                 },
                 {
                     "number" : 14,
                     "ball"   : "6",
                     "name"   : "P06",
-                    "preferredType" : ["SPI_MISO"]
+                    "preferredType" : ["SPI_POCI"]
                 },
 
                 // Header pin 13 is an alias of the device Pin Sense of Power 2 (SOP2).
@@ -439,7 +439,7 @@
         },
 
         "SW2": {
-            "displayName" : "LaunchPad Button SW2 (Left)",
+            "displayName" : "LaunchPad User Button SW2 (Left)",
             "definition"  : "/ti/boards/components/button.json",
             "longDescription" : "SW2 (Left) LaunchPad button with an external pull-down.",
             /* See schematic linked at top of file */

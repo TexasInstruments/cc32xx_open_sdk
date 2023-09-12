@@ -40,11 +40,9 @@ extern const Capture_Config Capture_config[];
 extern const uint_least8_t Capture_count;
 
 /* Default Parameters */
-static const Capture_Params defaultParams = {
-    .callbackFxn = NULL,
-    .mode        = Capture_RISING_EDGE,
-    .periodUnit  = Capture_PERIOD_COUNTS
-};
+static const Capture_Params defaultParams = {.callbackFxn = NULL,
+                                             .mode        = Capture_RISING_EDGE,
+                                             .periodUnit  = Capture_PERIOD_COUNTS};
 
 static bool isInitialized = false;
 
@@ -59,8 +57,7 @@ void Capture_close(Capture_Handle handle)
 /*
  *  ======== Capture_control ========
  */
-int_fast16_t Capture_control(Capture_Handle handle, uint_fast16_t cmd,
-    void *arg)
+int_fast16_t Capture_control(Capture_Handle handle, uint_fast16_t cmd, void *arg)
 {
     return (handle->fxnTablePtr->controlFxn(handle, cmd, arg));
 }
@@ -75,12 +72,14 @@ void Capture_init(void)
 
     key = HwiP_disable();
 
-    if (!isInitialized) {
-        isInitialized = (bool) true;
+    if (!isInitialized)
+    {
+        isInitialized = (bool)true;
 
         /* Call each driver's init function */
-        for (i = 0; i < Capture_count; i++) {
-            Capture_config[i].fxnTablePtr->initFxn((Capture_Handle) &(Capture_config[i]));
+        for (i = 0; i < Capture_count; i++)
+        {
+            Capture_config[i].fxnTablePtr->initFxn((Capture_Handle) & (Capture_config[i]));
         }
     }
 
@@ -95,14 +94,16 @@ Capture_Handle Capture_open(uint_least8_t index, Capture_Params *params)
     Capture_Handle handle = NULL;
 
     /* Verify driver index and state */
-    if (isInitialized && (index < Capture_count)) {
+    if (isInitialized && (index < Capture_count))
+    {
         /* If parameters are NULL use defaults */
-        if (params == NULL) {
-            params = (Capture_Params *) &defaultParams;
+        if (params == NULL)
+        {
+            params = (Capture_Params *)&defaultParams;
         }
 
         /* Get handle for this driver instance */
-        handle = (Capture_Handle) &(Capture_config[index]);
+        handle = (Capture_Handle) & (Capture_config[index]);
         handle = handle->fxnTablePtr->openFxn(handle, params);
     }
 

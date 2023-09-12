@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2019, Texas Instruments Incorporated
+ * Copyright (c) 2016-2022, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -50,10 +50,10 @@
  *
  *  ## DMA buffer alignment #
  *
- *  When performing disk operations with a word aligned buffer the driver will
- *  make transfers using the DMA controller. Alternatively, if the buffer is
- *  not aligned, the data will be copied to the internal SD Host controller
- *  buffer using a polling method.
+ *  When performing disk operations the driver will use DMA for transferring
+ *  data. Because of this, data must be 32-bit aligned or the operation
+ *  can be unreliable. Please make sure that data that is either written to or
+ *  read from the SD host driver has the attribute: __attribute__((aligned (4)))
  *
  *  ## DMA Interrupts #
  *
@@ -85,12 +85,12 @@
 extern "C" {
 #endif
 
-#define SDHostCC32XX_PIN_06_SDCARD_DATA  0x0805
-#define SDHostCC32XX_PIN_07_SDCARD_CLK   0x0806
-#define SDHostCC32XX_PIN_08_SDCARD_CMD   0x0807
-#define SDHostCC32XX_PIN_01_SDCARD_CLK   0x0600
-#define SDHostCC32XX_PIN_02_SDCARD_CMD   0x0601
-#define SDHostCC32XX_PIN_64_SDCARD_DATA  0x063f
+#define SDHostCC32XX_PIN_06_SDCARD_DATA 0x0805
+#define SDHostCC32XX_PIN_07_SDCARD_CLK  0x0806
+#define SDHostCC32XX_PIN_08_SDCARD_CMD  0x0807
+#define SDHostCC32XX_PIN_01_SDCARD_CLK  0x0600
+#define SDHostCC32XX_PIN_02_SDCARD_CMD  0x0601
+#define SDHostCC32XX_PIN_64_SDCARD_DATA 0x063f
 
 /* SDHost function table */
 extern const SD_FxnTable sdHostCC32XX_fxnTable;
@@ -130,7 +130,8 @@ extern const SD_FxnTable sdHostCC32XX_fxnTable;
  *  };
  *  @endcode
  */
-typedef struct {
+typedef struct
+{
     /*! SD interface clock rate */
     uint_fast32_t clkRate;
 
@@ -161,40 +162,41 @@ typedef struct {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct {
+typedef struct
+{
     /* Relative Card Address */
-    volatile uint32_t     rca;
+    volatile uint32_t rca;
     /* Number of sectors written */
-    volatile uint32_t     sectorCount;
+    volatile uint32_t sectorCount;
     /* Read data pointer */
-    volatile uint32_t     *buffer;
+    volatile uint32_t *buffer;
     /*
      *  Semaphore to suspend thread execution when waiting for SD Commands
      *  or data transfers to complete.
      */
-    SemaphoreP_Handle      cmdSem;
+    SemaphoreP_Handle cmdSem;
     /* SD Card interrupt handle. */
-    HwiP_Handle            hwiHandle;
+    HwiP_Handle hwiHandle;
     /* UDMA Handle */
-    UDMACC32XX_Handle      dmaHandle;
+    UDMACC32XX_Handle dmaHandle;
     /* Determined from base address */
-    unsigned int           powerMgrId;
+    unsigned int powerMgrId;
     /* LPDS wake-up notify object */
-    Power_NotifyObj        postNotify;
+    Power_NotifyObj postNotify;
     /* Previous park state SDCARD_CLK pin */
-    PowerCC32XX_ParkState  prevParkCLK;
+    PowerCC32XX_ParkState prevParkCLK;
     /* SDCARD_CLK pin */
-    uint16_t               clkPin;
+    uint16_t clkPin;
     /* SD Card command state */
-    volatile int_fast8_t   stat;
+    volatile int_fast8_t stat;
     /* State of the driver (open or closed) */
-    bool                   isOpen;
+    bool isOpen;
     /* Indicates if a DMA transfer is in a ping or pong state */
-    bool                    ping;
+    bool ping;
     /* Indicates if a semaphore has been posted for a DMA event */
-    bool                    dmaPosted;
+    bool dmaPosted;
     /* SDCard Card Command Class (CCC) */
-    SD_CardType            cardType;
+    SD_CardType cardType;
 } SDHostCC32XX_Object;
 
 #ifdef __cplusplus

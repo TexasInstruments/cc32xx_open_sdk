@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020, Texas Instruments Incorporated
+ * Copyright (c) 2018-2023, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,7 +45,8 @@ MEMORY
      * ARM memory map can be found here:
      * https://developer.arm.com/documentation/ddi0337/e/memory-map/about-the-memory-map
      */
-    LOG_DATA (R) : ORIGIN = 0x90000000, LENGTH = 0x40000
+    LOG_DATA     (R) : ORIGIN = 0x90000000, LENGTH = 0x40000
+    LOG_PTR      (R) : ORIGIN = 0x94000008, LENGTH = 0x40000
 }
 
 REGION_ALIAS("REGION_RAM_VECS", SRAM0);
@@ -63,18 +64,15 @@ _intvecs_base_address = 0x20004000;
 
 SECTIONS {
 
-    PROVIDE (_vtable_base_address =
-        DEFINED(_vtable_base_address) ? _vtable_base_address : 0x20000000);
-
-    .vtable (_vtable_base_address) (NOLOAD) : {
-        KEEP (*(.vtable))
+    .ramVecs (NOLOAD) : ALIGN(1024) {
+        KEEP (*(.ramVecs))
     } > REGION_RAM_VECS
 
     PROVIDE (_intvecs_base_address =
         DEFINED(_intvecs_base_address) ? _intvecs_base_address : 0x20004000);
 
-    .intvecs (_intvecs_base_address) : AT (_intvecs_base_address) {
-        KEEP (*(.intvecs))
+    .resetVecs (_intvecs_base_address) : AT (_intvecs_base_address) {
+        KEEP (*(.resetVecs))
     } > REGION_TEXT
 
     .text : {
@@ -158,4 +156,7 @@ SECTIONS {
     .log_data (COPY) : {
         KEEP (*(.log_data))
     } > REGION_LOG
+    .log_ptr (COPY) : {
+        KEEP (*(.log_ptr*))
+    } > LOG_PTR
 }

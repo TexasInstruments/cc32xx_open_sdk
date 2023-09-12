@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2020, Texas Instruments Incorporated
+ * Copyright (c) 2015-2022, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -52,7 +52,7 @@
 #define INT_PRI_LEVEL7 0x000000E0
 
 /* Masks off all bits but the VECTACTIVE bits in the ICSR register. */
-#define portVECTACTIVE_MASK  (0xFFUL)
+#define portVECTACTIVE_MASK (0xFFUL)
 
 /* forward declarations */
 void HwiP_destruct(HwiP_Struct *handle);
@@ -63,15 +63,20 @@ void HwiP_restore(uintptr_t key);
 /* Unused interrupt reserved for SwiP */
 int HwiP_swiPIntNum = 128;
 
-typedef struct HwiP_Obj {
+/* The name of this struct and the names of its members are used by ROV */
+typedef struct HwiP_Obj
+{
     uint32_t intNum;
     HwiP_Fxn fxn;
     uintptr_t arg;
 } HwiP_Obj;
 
-static HwiP_Obj* HwiP_dispatchTable[MAX_INTERRUPTS] = { 0 };
+/* The name of this table is used by ROV */
+static HwiP_Obj *HwiP_dispatchTable[MAX_INTERRUPTS] = {0};
 
-typedef struct HwiP_NVIC {
+/* The name of this struct and the names of its members are used by ROV */
+typedef struct HwiP_NVIC
+{
     uint32_t RES_00;
     uint32_t ICTR;
     uint32_t RES_08;
@@ -147,6 +152,7 @@ typedef struct HwiP_NVIC {
     uint32_t CID3;
 } HwiP_NVIC;
 
+/* The name of this variable is used by ROV */
 static volatile HwiP_NVIC *HwiP_nvic = (HwiP_NVIC *)0xE000E000;
 
 /*
@@ -161,37 +167,41 @@ void HwiP_clearInterrupt(int interruptNum)
 /*
  *  ======== HwiP_construct ========
  */
-HwiP_Handle HwiP_construct(HwiP_Struct *handle, int interruptNum,
-    HwiP_Fxn hwiFxn, HwiP_Params *params)
+HwiP_Handle HwiP_construct(HwiP_Struct *handle, int interruptNum, HwiP_Fxn hwiFxn, HwiP_Params *params)
 {
     HwiP_Params defaultParams;
     HwiP_Obj *obj = (HwiP_Obj *)handle;
 
-    if (handle != NULL) {
-        if (params == NULL) {
+    if (handle != NULL)
+    {
+        if (params == NULL)
+        {
             params = &defaultParams;
             HwiP_Params_init(&defaultParams);
         }
 
-        if ((params->priority & 0xFF) == 0xFF) {
+        if ((params->priority & 0xFF) == 0xFF)
+        {
             /* SwiP_freertos.c uses INT_PRI_LEVEL7 as its scheduler */
             params->priority = INT_PRI_LEVEL6;
         }
 
-        if (interruptNum != HwiP_swiPIntNum &&
-            params->priority == INT_PRI_LEVEL7) {
+        if (interruptNum != HwiP_swiPIntNum && params->priority == INT_PRI_LEVEL7)
+        {
             handle = NULL;
         }
-        else {
+        else
+        {
             HwiP_dispatchTable[interruptNum] = obj;
-            obj->fxn = hwiFxn;
-            obj->arg = params->arg;
-            obj->intNum = (uint32_t)interruptNum;
+            obj->fxn                         = hwiFxn;
+            obj->arg                         = params->arg;
+            obj->intNum                      = (uint32_t)interruptNum;
 
             IntRegister((uint32_t)interruptNum, HwiP_dispatch);
             IntPrioritySet((uint32_t)interruptNum, (uint8_t)params->priority);
 
-            if (params->enableInt) {
+            if (params->enableInt)
+            {
                 IntEnable((uint32_t)interruptNum);
             }
         }
@@ -216,10 +226,11 @@ HwiP_Handle HwiP_create(int interruptNum, HwiP_Fxn hwiFxn, HwiP_Params *params)
      * that construct failed with non-NULL pointer and that we need to
      * free the handle.
      */
-    if (handle != NULL) {
-        retHandle = HwiP_construct((HwiP_Struct *)handle, interruptNum, hwiFxn,
-                                   params);
-        if (retHandle == NULL) {
+    if (handle != NULL)
+    {
+        retHandle = HwiP_construct((HwiP_Struct *)handle, interruptNum, hwiFxn, params);
+        if (retHandle == NULL)
+        {
             free(handle);
             handle = NULL;
         }
@@ -250,6 +261,20 @@ void HwiP_destruct(HwiP_Struct *handle)
 }
 
 /*
+ *  ======== HwiP_enable ========
+ */
+void HwiP_enable(void)
+{
+#if defined(__IAR_SYSTEMS_ICC__)
+    asm volatile("msr basepri, %0 " ::"r"(0) : "memory");
+#elif (defined(__GNUC__) || defined(__clang__))
+    __asm__ __volatile__("msr basepri, %0 " ::"r"(0) : "memory");
+#else
+    #error "Compiler not supported."
+#endif
+}
+
+/*
  *  ======== HwiP_disable ========
  */
 uintptr_t HwiP_disable(void)
@@ -260,25 +285,26 @@ uintptr_t HwiP_disable(void)
      *  If we're not in ISR context, use the FreeRTOS macro, since
      *  it handles nesting.
      */
-    if ((portNVIC_INT_CTRL_REG & portVECTACTIVE_MASK) == 0) {
+    if ((portNVIC_INT_CTRL_REG & portVECTACTIVE_MASK) == 0)
+    {
         /* Cannot be called from an ISR! */
         portENTER_CRITICAL();
         key = 0;
     }
-    else {
+    else
+    {
 #ifdef __TI_COMPILER_VERSION__
         key = _set_interrupt_priority(configMAX_SYSCALL_INTERRUPT_PRIORITY);
 #else
-#if defined(__IAR_SYSTEMS_ICC__)
-        asm volatile (
-#else /* !__IAR_SYSTEMS_ICC__ */
-            __asm__ __volatile__ (
-#endif
-                "mrs %0, basepri\n\t"
-                "msr basepri, %1"
-                : "=&r" (key)
-                : "r" (configMAX_SYSCALL_INTERRUPT_PRIORITY)
-                );
+    #if defined(__IAR_SYSTEMS_ICC__)
+        asm volatile(
+    #else /* !__IAR_SYSTEMS_ICC__ */
+        __asm__ __volatile__(
+    #endif
+            "mrs %0, basepri\n\t"
+            "msr basepri, %1"
+            : "=&r"(key)
+            : "r"(configMAX_SYSCALL_INTERRUPT_PRIORITY));
 #endif
     }
 
@@ -299,8 +325,9 @@ void HwiP_disableInterrupt(int interruptNum)
 void HwiP_dispatch(void)
 {
     uint32_t intNum = (HwiP_nvic->ICSR & 0x000000ff);
-    HwiP_Obj* obj = HwiP_dispatchTable[intNum];
-    if (obj) {
+    HwiP_Obj *obj   = HwiP_dispatchTable[intNum];
+    if (obj)
+    {
         (obj->fxn)(obj->arg);
         taskYIELD();
     }
@@ -321,11 +348,13 @@ bool HwiP_inISR(void)
 {
     bool stat;
 
-    if ((portNVIC_INT_CTRL_REG & portVECTACTIVE_MASK) == 0) {
+    if ((portNVIC_INT_CTRL_REG & portVECTACTIVE_MASK) == 0)
+    {
         /* Not currently in an ISR */
         stat = false;
     }
-    else {
+    else
+    {
         stat = true;
     }
 
@@ -337,8 +366,9 @@ bool HwiP_inISR(void)
  */
 bool HwiP_inSwi(void)
 {
-    uint32_t intNum  = portNVIC_INT_CTRL_REG & portVECTACTIVE_MASK;
-    if (intNum == HwiP_swiPIntNum) {
+    uint32_t intNum = portNVIC_INT_CTRL_REG & portVECTACTIVE_MASK;
+    if (intNum == HwiP_swiPIntNum)
+    {
         /* Currently in a Swi */
         return (true);
     }
@@ -363,9 +393,10 @@ bool HwiP_interruptsEnabled(void)
  */
 void HwiP_Params_init(HwiP_Params *params)
 {
-    if (params != NULL) {
-        params->arg = 0;
-        params->priority = (~0);
+    if (params != NULL)
+    {
+        params->arg       = 0;
+        params->priority  = (~0);
         params->enableInt = true;
     }
 }
@@ -375,7 +406,7 @@ void HwiP_Params_init(HwiP_Params *params)
  */
 void HwiP_plug(int interruptNum, void *fxn)
 {
-    IntRegister((uint32_t)interruptNum, (void(*)(void))fxn);
+    IntRegister((uint32_t)interruptNum, (void (*)(void))fxn);
 }
 
 /*
@@ -383,7 +414,8 @@ void HwiP_plug(int interruptNum, void *fxn)
  */
 void HwiP_post(int interruptNum)
 {
-    if (interruptNum >= 16) {
+    if (interruptNum >= 16)
+    {
         HwiP_nvic->STI = interruptNum - 16;
     }
 }
@@ -393,22 +425,22 @@ void HwiP_post(int interruptNum)
  */
 void HwiP_restore(uintptr_t key)
 {
-    if ((portNVIC_INT_CTRL_REG & portVECTACTIVE_MASK) == 0) {
+    if ((portNVIC_INT_CTRL_REG & portVECTACTIVE_MASK) == 0)
+    {
         /* Cannot be called from an ISR! */
         portEXIT_CRITICAL();
     }
-    else {
+    else
+    {
 #ifdef __TI_COMPILER_VERSION__
         _set_interrupt_priority(key);
 #else
-#if defined(__IAR_SYSTEMS_ICC__)
-        asm volatile (
-#else /* !__IAR_SYSTEMS_ICC__ */
-            __asm__ __volatile__ (
-#endif
-                "msr basepri, %0"
-                :: "r" (key)
-                );
+    #if defined(__IAR_SYSTEMS_ICC__)
+        asm volatile(
+    #else /* !__IAR_SYSTEMS_ICC__ */
+        __asm__ __volatile__(
+    #endif
+            "msr basepri, %0" ::"r"(key));
 #endif
     }
 }

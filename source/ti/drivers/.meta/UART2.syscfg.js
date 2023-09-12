@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2019-2023, Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,6 @@ let family   = Common.device2Family(system.deviceData, "UART2");
 
 /* Array of UART2 configurables that are common across device families */
 let config = [
-    
 
     /* baudRates is only needed by MSP432P but exists for all devs to enable
      * more portable syscfg scripts.
@@ -68,6 +67,18 @@ let config = [
             { name: 460800 },
             { name: 921600 }
         ]
+    },
+    {
+        name        : "enableNonblocking",
+        displayName : "Enable Nonblocking Mode",
+        description : 'Enable nonblocking read/write-mode',
+        longDescription: "If your application does not use UART2_Mode_NONBLOCKING you can disable this mode." +
+        "This will reduce both flash-size and RAM-usage for your application.",
+        default     : true,
+        onChange: function (inst, ui) {
+            /* There will be no TX ring buffer if nonblocking mode is disabled */
+            ui["txRingBufferSize"].hidden = !(inst.enableNonblocking);
+        }
     }
 ];
 
@@ -107,7 +118,6 @@ of the [__UART driver__][5].
     defaultInstanceName: "CONFIG_UART2_",
     config        : Common.addNameConfig(config, "/ti/drivers/UART2", "CONFIG_UART2_"),
     modules       : Common.autoForceModules(["Board", "Power", "DMA"]),
-
     _getPinResources: _getPinResources
 };
 

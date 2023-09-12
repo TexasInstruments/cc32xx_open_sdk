@@ -3,7 +3,7 @@
 //
 // Startup code for use with IAR's Embedded Workbench
 //
-// Copyright (C) 2016-2020 Texas Instruments Incorporated - http://www.ti.com/
+// Copyright (C) 2016-2023 Texas Instruments Incorporated - http://www.ti.com/
 //
 //
 //  Redistribution and use in source and binary forms, with or without
@@ -76,17 +76,16 @@ extern void xPortSysTickHandler(void);
 //*****************************************************************************
 extern void __iar_program_start(void);
 
-
 //*****************************************************************************
 //
 //! Get stack start (highest address) symbol from linker file.
 //
 //*****************************************************************************
-extern const void* STACK_TOP;
+extern const void *STACK_TOP;
 
 // It is required to place something in the CSTACK segment to get the stack
 // check feature in IAR to work as expected
-__root static void* dummy_stack @ ".stack";
+__root static void *dummy_stack @ ".stack";
 
 //*****************************************************************************
 //
@@ -94,28 +93,27 @@ __root static void* dummy_stack @ ".stack";
 // ensure that it ends up at physical address 0x0000.0000.
 //
 //*****************************************************************************
-__root const uVectorEntry __vector_table[16] @ ".intvec" =
-{
-    (void (*)(void))&STACK_TOP,          // The initial stack pointer
-    __iar_program_start,                 // The reset handler
-    nmiISR,                              // The NMI handler
-    faultISR,                            // The hard fault handler
-    defaultHandler,                      // The MPU fault handler
-    busFaultHandler,                     // The bus fault handler
-    defaultHandler,                      // The usage fault handler
-    0,                                   // Reserved
-    0,                                   // Reserved
-    0,                                   // Reserved
-    0,                                   // Reserved
-    vPortSVCHandler,                     // SVCall handler
-    defaultHandler,                      // Debug monitor handler
-    0,                                   // Reserved
-    xPortPendSVHandler,                  // The PendSV handler
-    xPortSysTickHandler                  // The SysTick handler
+__root const uVectorEntry __vector_table[16] @ ".resetVecs" = {
+    (void (*)(void)) & STACK_TOP, // The initial stack pointer
+    __iar_program_start,          // The reset handler
+    nmiISR,                       // The NMI handler
+    faultISR,                     // The hard fault handler
+    defaultHandler,               // The MPU fault handler
+    busFaultHandler,              // The bus fault handler
+    defaultHandler,               // The usage fault handler
+    0,                            // Reserved
+    0,                            // Reserved
+    0,                            // Reserved
+    0,                            // Reserved
+    vPortSVCHandler,              // SVCall handler
+    defaultHandler,               // Debug monitor handler
+    0,                            // Reserved
+    xPortPendSVHandler,           // The PendSV handler
+    xPortSysTickHandler           // The SysTick handler
 };
 
 #pragma data_alignment = 1024
-unsigned long ramVectors[195] @ ".noinit";
+__no_init unsigned long ramVectors[195] @ ".ramVecs";
 
 //*****************************************************************************
 //
@@ -129,12 +127,12 @@ int localProgramStart(void)
     int i;
 
     /* Disable interrupts */
-    __set_BASEPRI( configMAX_SYSCALL_INTERRUPT_PRIORITY );
+    __set_BASEPRI(configMAX_SYSCALL_INTERRUPT_PRIORITY);
     __DSB();
     __ISB();
 
     /* Copy from reset vector table into RAM vector table */
-    memcpy(ramVectors, __vector_table, 16*4);
+    memcpy(ramVectors, __vector_table, 16 * 4);
 
     /* Fill remaining vectors with default handler */
     for (i = 16; i < 195; i++)
@@ -164,11 +162,10 @@ int __low_level_init(void)
      *  This code ensures that the stack pointer is initialized.
      *  The first entry of the vector table is the address of the stack.
      */
-    __asm(
-        " mov32 r0, __vector_table\n"
-        " ldr r0, [r0]\n"
-        " mov sp, r0\n"
-        " b localProgramStart");
+    __asm(" mov32 r0, __vector_table\n"
+          " ldr r0, [r0]\n"
+          " mov sp, r0\n"
+          " b localProgramStart");
 
     // This code is unreachable but the compiler expects a return statement
     return 1;
@@ -181,15 +178,12 @@ int __low_level_init(void)
 // by a debugger.
 //
 //*****************************************************************************
-static void
-nmiISR(void)
+static void nmiISR(void)
 {
     //
     // Enter an infinite loop.
     //
-    while (1)
-    {
-    }
+    while (1) {}
 }
 
 //*****************************************************************************
@@ -199,15 +193,12 @@ nmiISR(void)
 // for examination by a debugger.
 //
 //*****************************************************************************
-static void
-faultISR(void)
+static void faultISR(void)
 {
     //
     // Enter an infinite loop.
     //
-    while (1)
-    {
-    }
+    while (1) {}
 }
 
 //*****************************************************************************
@@ -218,16 +209,12 @@ faultISR(void)
 //
 //*****************************************************************************
 
-
-static void
-busFaultHandler(void)
+static void busFaultHandler(void)
 {
     //
     // Go into an infinite loop.
     //
-    while (1)
-    {
-    }
+    while (1) {}
 }
 
 //*****************************************************************************
@@ -237,13 +224,10 @@ busFaultHandler(void)
 // for examination by a debugger.
 //
 //*****************************************************************************
-static void
-defaultHandler(void)
+static void defaultHandler(void)
 {
     //
     // Go into an infinite loop.
     //
-    while (1)
-    {
-    }
+    while (1) {}
 }

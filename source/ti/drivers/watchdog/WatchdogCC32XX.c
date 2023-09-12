@@ -49,36 +49,30 @@
 /* Function prototypes */
 void WatchdogCC32XX_clear(Watchdog_Handle handle);
 void WatchdogCC32XX_close(Watchdog_Handle handle);
-int_fast16_t WatchdogCC32XX_control(Watchdog_Handle handle,
-    uint_fast16_t cmd, void *arg);
+int_fast16_t WatchdogCC32XX_control(Watchdog_Handle handle, uint_fast16_t cmd, void *arg);
 void WatchdogCC32XX_init(Watchdog_Handle handle);
 Watchdog_Handle WatchdogCC32XX_open(Watchdog_Handle handle, Watchdog_Params *params);
-int_fast16_t WatchdogCC32XX_setReload(Watchdog_Handle handle,
-    uint32_t value);
-uint32_t WatchdogCC32XX_convertMsToTicks(Watchdog_Handle handle,
-    uint32_t milliseconds);
+int_fast16_t WatchdogCC32XX_setReload(Watchdog_Handle handle, uint32_t value);
+uint32_t WatchdogCC32XX_convertMsToTicks(Watchdog_Handle handle, uint32_t milliseconds);
 
 /* Internal functions */
 static void WatchdogCC32XX_initHardware(Watchdog_Handle handle);
-static int WatchdogCC32XX_postNotifyFxn(unsigned int eventType,
-    uintptr_t eventArg, uintptr_t clientArg);
+static int WatchdogCC32XX_postNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg);
 
 /* Watchdog function table for CC32XX implementation */
-const Watchdog_FxnTable WatchdogCC32XX_fxnTable = {
-    WatchdogCC32XX_clear,
-    WatchdogCC32XX_close,
-    WatchdogCC32XX_control,
-    WatchdogCC32XX_init,
-    WatchdogCC32XX_open,
-    WatchdogCC32XX_setReload,
-    WatchdogCC32XX_convertMsToTicks
-};
+const Watchdog_FxnTable WatchdogCC32XX_fxnTable = {WatchdogCC32XX_clear,
+                                                   WatchdogCC32XX_close,
+                                                   WatchdogCC32XX_control,
+                                                   WatchdogCC32XX_init,
+                                                   WatchdogCC32XX_open,
+                                                   WatchdogCC32XX_setReload,
+                                                   WatchdogCC32XX_convertMsToTicks};
 
 /* Maximum allowable setReload value */
-#define MAX_RELOAD_VALUE        0xFFFFFFFF
+#define MAX_RELOAD_VALUE 0xFFFFFFFF
 
 /* Millisecond to second ratio */
-#define MS_RATIO                1000
+#define MS_RATIO 1000
 
 /*
  *  ======== WatchdogCC32XX_initHardware ========
@@ -86,17 +80,19 @@ const Watchdog_FxnTable WatchdogCC32XX_fxnTable = {
 static void WatchdogCC32XX_initHardware(Watchdog_Handle handle)
 {
     WatchdogCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    WatchdogCC32XX_Object  const *object  = handle->object;
+    WatchdogCC32XX_Object const *object   = handle->object;
 
     MAP_WatchdogUnlock(hwAttrs->baseAddr);
     MAP_WatchdogReloadSet(hwAttrs->baseAddr, object->reloadValue);
     MAP_WatchdogIntClear(hwAttrs->baseAddr);
 
     /* Set debug stall mode */
-    if (object->debugMode == Watchdog_DEBUG_STALL_ON) {
+    if (object->debugMode == Watchdog_DEBUG_STALL_ON)
+    {
         MAP_WatchdogStallEnable(hwAttrs->baseAddr);
     }
-    else {
+    else
+    {
         MAP_WatchdogStallDisable(hwAttrs->baseAddr);
     }
 
@@ -110,10 +106,9 @@ static void WatchdogCC32XX_initHardware(Watchdog_Handle handle)
  *  This functions is called when a transition from LPDS mode is made.
  *  clientArg is a handle of a previously opened Watchdog instance.
  */
-static int WatchdogCC32XX_postNotifyFxn(unsigned int eventType,
-    uintptr_t eventArg, uintptr_t clientArg)
+static int WatchdogCC32XX_postNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg)
 {
-    WatchdogCC32XX_initHardware((Watchdog_Handle) clientArg);
+    WatchdogCC32XX_initHardware((Watchdog_Handle)clientArg);
 
     return (Power_NOTIFYDONE);
 }
@@ -144,12 +139,12 @@ void WatchdogCC32XX_close(Watchdog_Handle handle)
  *  ======== WatchdogCC32XX_control ========
  *  @pre    Function assumes that the handle is not NULL
  */
-int_fast16_t WatchdogCC32XX_control(Watchdog_Handle handle, uint_fast16_t cmd,
-        void *arg)
+int_fast16_t WatchdogCC32XX_control(Watchdog_Handle handle, uint_fast16_t cmd, void *arg)
 {
     WatchdogCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
 
-    switch (cmd) {
+    switch (cmd)
+    {
         /* Specific Watchdog CMDs */
         case (WatchdogCC32XX_CMD_IS_TIMER_ENABLE):
             *(bool *)arg = MAP_WatchdogRunning(hwAttrs->baseAddr);
@@ -187,15 +182,16 @@ void WatchdogCC32XX_init(Watchdog_Handle handle)
  */
 Watchdog_Handle WatchdogCC32XX_open(Watchdog_Handle handle, Watchdog_Params *params)
 {
-    uintptr_t                     key;
-    HwiP_Handle                   hwiHandle;
-    HwiP_Params                   hwiParams;
+    uintptr_t key;
+    HwiP_Handle hwiHandle;
+    HwiP_Params hwiParams;
     WatchdogCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    WatchdogCC32XX_Object        *object  = handle->object;
+    WatchdogCC32XX_Object *object         = handle->object;
 
     key = HwiP_disable();
 
-    if (object->isOpen == true) {
+    if (object->isOpen == true)
+    {
         HwiP_restore(key);
         return (NULL);
     }
@@ -204,23 +200,23 @@ Watchdog_Handle WatchdogCC32XX_open(Watchdog_Handle handle, Watchdog_Params *par
     HwiP_restore(key);
 
     /* Register the hardware interrupt for this watchdog */
-    if (params->callbackFxn) {
+    if (params->callbackFxn)
+    {
         HwiP_Params_init(&hwiParams);
-        hwiParams.arg = (uintptr_t) handle;
+        hwiParams.arg      = (uintptr_t)handle;
         hwiParams.priority = hwAttrs->intPriority;
-        hwiHandle = HwiP_create(hwAttrs->intNum, params->callbackFxn,
-            &hwiParams);
-        if (hwiHandle == NULL) {
+        hwiHandle          = HwiP_create(hwAttrs->intNum, params->callbackFxn, &hwiParams);
+        if (hwiHandle == NULL)
+        {
             object->isOpen = false;
             return (NULL);
         }
     }
 
     Power_setDependency(PowerCC32XX_PERIPH_WDT);
-    Power_registerNotify(&(object->notifyObj), PowerCC32XX_AWAKE_LPDS,
-        WatchdogCC32XX_postNotifyFxn, (uintptr_t) handle);
+    Power_registerNotify(&(object->notifyObj), PowerCC32XX_AWAKE_LPDS, WatchdogCC32XX_postNotifyFxn, (uintptr_t)handle);
 
-    object->debugMode = params->debugStallMode;
+    object->debugMode   = params->debugStallMode;
     object->reloadValue = hwAttrs->reloadValue;
 
     WatchdogCC32XX_initHardware(handle);
@@ -234,7 +230,7 @@ Watchdog_Handle WatchdogCC32XX_open(Watchdog_Handle handle, Watchdog_Params *par
 int_fast16_t WatchdogCC32XX_setReload(Watchdog_Handle handle, uint32_t value)
 {
     WatchdogCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    WatchdogCC32XX_Object        *object  = handle->object;
+    WatchdogCC32XX_Object *object         = handle->object;
 
     /* Set value */
     MAP_WatchdogUnlock(hwAttrs->baseAddr);
@@ -250,13 +246,12 @@ int_fast16_t WatchdogCC32XX_setReload(Watchdog_Handle handle, uint32_t value)
  *  This function converts the input value from milliseconds to
  *  Watchdog clock ticks.
  */
-uint32_t WatchdogCC32XX_convertMsToTicks(Watchdog_Handle handle,
-    uint32_t milliseconds)
+uint32_t WatchdogCC32XX_convertMsToTicks(Watchdog_Handle handle, uint32_t milliseconds)
 {
-    uint32_t        tickValue;
-    uint32_t        convertRatio;
-    uint32_t        maxConvertMs;
-    ClockP_FreqHz   freq;
+    uint32_t tickValue;
+    uint32_t convertRatio;
+    uint32_t maxConvertMs;
+    ClockP_FreqHz freq;
 
     /* Determine milliseconds to clock ticks conversion ratio */
     ClockP_getCpuFreq(&freq);
@@ -267,12 +262,14 @@ uint32_t WatchdogCC32XX_convertMsToTicks(Watchdog_Handle handle,
 
     /* Convert milliseconds to watchdog timer ticks */
     /* Check if value exceeds maximum */
-    if (milliseconds > maxConvertMs) {
-        tickValue = 0;  /* Return zero to indicate overflow */
+    if (milliseconds > maxConvertMs)
+    {
+        tickValue = 0; /* Return zero to indicate overflow */
     }
-    else {
+    else
+    {
         tickValue = (uint32_t)(milliseconds * convertRatio);
     }
 
-    return(tickValue);
+    return (tickValue);
 }

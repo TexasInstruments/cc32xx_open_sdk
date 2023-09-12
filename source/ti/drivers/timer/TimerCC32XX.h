@@ -109,8 +109,7 @@
 #include <ti/drivers/dpl/SemaphoreP.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /*!
@@ -124,10 +123,11 @@ extern "C"
  *  two half width timers per single timer peripheral. A 16-bit timer on this
  *  device has an 8-bit prescaler.
  */
-typedef enum {
-    TimerCC32XX_timer16A = 0x0001,    /*!< Half width timer A */
-    TimerCC32XX_timer16B = 0x0002,    /*!< Half width timer B */
-    TimerCC32XX_timer32  = 0x0003,    /*!< Full width timer   */
+typedef enum
+{
+    TimerCC32XX_timer16A = 0x0001, /*!< Half width timer A */
+    TimerCC32XX_timer16B = 0x0002, /*!< Half width timer B */
+    TimerCC32XX_timer32  = 0x0003, /*!< Full width timer   */
 } TimerCC32XX_SubTimer;
 
 /*!
@@ -161,7 +161,8 @@ typedef enum {
  *  };
  *  @endcode
  */
-typedef struct {
+typedef struct
+{
     TIMER_BASE_HWATTRS
     /*! Specifies a full width timer or half-width timer. */
     TimerCC32XX_SubTimer subTimer;
@@ -172,7 +173,8 @@ typedef struct {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct {
+typedef struct
+{
     TIMER_BASE_OBJECT
 } TimerCC32XX_Object;
 
@@ -193,8 +195,7 @@ typedef struct {
  *
  *  @sa     TimerCC32XX_freeTimerResource()
  */
-extern bool TimerCC32XX_allocateTimerResource(uint32_t baseAddress,
-    TimerCC32XX_SubTimer subTimer);
+extern bool TimerCC32XX_allocateTimerResource(uint32_t baseAddress, TimerCC32XX_SubTimer subTimer);
 
 /*!
  *  @brief  Function to de-allocate a timer peripheral.
@@ -214,8 +215,7 @@ extern bool TimerCC32XX_allocateTimerResource(uint32_t baseAddress,
  *
  *  @sa     TimerCC32XX_allocateTimerResource()
  */
-extern void TimerCC32XX_freeTimerResource(uint32_t baseAddress,
-    TimerCC32XX_SubTimer subTimer);
+extern void TimerCC32XX_freeTimerResource(uint32_t baseAddress, TimerCC32XX_SubTimer subTimer);
 
 #ifdef __cplusplus
 }

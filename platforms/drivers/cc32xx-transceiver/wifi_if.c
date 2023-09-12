@@ -32,20 +32,15 @@
 
 /*****************************************************************************
 
-   Module Name     - WIFI INTERFACE
-   Module Overview - This is an abstraction of WIFI functionality 
-               implemented over different devices (cc32xx/cc33xx) 
-               and differnent configurations (transceiver with external n/w stack, 
-               or NWP with or without "connection manager")
-               It simplifies the application "station" interface handling all the  
-               aspects (e.g. provisioning, profile support and network interface control)
-               of a connection to network.
-               The module's behavior can be configured by the app through 
-               "wifi_settings.h".
-   Module Details - The CC32XX Transciever (a.k.a. network bypass) is handling the 
-               interfaces towards the Simpleink Driver (in bypass mode), 
-               Connection Manager (slNetConn+slWifiConn) and the Network Stack 
-               (through the TCPIP_IF abstraction)  
+   Application Name     - Provisioning application
+   Application Overview - This application demonstrates how to use 
+                          the provisioning method
+                        in order to establish connection to the AP.
+                        The application
+                        connects to an AP and ping's the gateway to
+                        verify the connection.
+
+   Application Details  - Refer to 'Provisioning' README.html
 
  *****************************************************************************/
 //****************************************************************************
@@ -154,198 +149,12 @@ extern LED_Handle WIFI_LED_HANDLE;
 static void *ReceivePacket_Task(void * hParam);
 static int NetworkBypass(bool bEnable);
 static void Notify(WifiConnStatus_e wifiConnStatus);
-static int ConfigureLocalNetwork();
 
-//************************* Local Functions *********************************/
-
-//*****************************************************************************
-//
-//! \brief Notify the user (application) on WIFI+Network connection events
-//!
-//*****************************************************************************
-static void Notify(WifiConnStatus_e wifiConnStatus)
-{
-    connRequest_t *pConnReq = m_ctx.pConnRequests;
-    while(pConnReq)
-    {
-    	if(pConnReq->handler)
-    	   pConnReq->handler(wifiConnStatus);
-    	pConnReq = pConnReq->pNext;
-    }
-
-} 
-
-//*****************************************************************************
-//
-//! \brief  Configure static profile based on hard coded setting or
-//!         a configuration file
-//!
-//*****************************************************************************
-static int ConfigureLocalNetwork()
-{
-    int retVal = 0;
-    uint8_t *pBuf = NULL;
-    char *pSSID = NULL;
-    SlWlanSecParams_t  secParams = {SL_WLAN_SEC_TYPE_OPEN, NULL, 0};
-    if (AP_SSID != NULL)
-    {
-        /* AP_SSID is not NULL - it will be set as a static profile
-         * This should be used in development
-         */
-        pSSID = AP_SSID;
-        if(AP_PASSWORD != NULL)
-        {
-            secParams.Type = SL_WLAN_SEC_TYPE_WPA_WPA2;
-            secParams.Key = (int8_t*)AP_PASSWORD;
-            secParams.KeyLen = strlen((char*)secParams.Key);
-        }
-    }
-    else if(AP_CFG_FILENAME != NULL)
-    {
-        int len;
-        /* Read Network credential from a file (if exists) */
-        pBuf  = (uint8_t *)malloc(AP_CFG_MAX_SIZE);
-        if(pBuf)
-        {
-            len = FILE_read((int8_t*)AP_CFG_FILENAME, AP_CFG_MAX_SIZE, pBuf, AP_CFG_TOKEN);
-            if(len > 0)
-            {
-                int i;
-                pSSID = (char*)pBuf;
-                for(i=0; i<len; i++)
-                {
-                    if(pBuf[i] == ' ')
-                    {
-                        pBuf[i] = 0;
-                        if(i < len-1)
-                        {
-                            secParams.Type = SL_WLAN_SEC_TYPE_WPA_WPA2;
-                            secParams.Key = (int8_t*)&pBuf[i+1];
-                            secParams.KeyLen = len-(i+1);
-                            break;
-                        }
-                    }
-                }
-                pBuf[len] = 0;
-            }
-        }
-    }
-    if(pSSID)
-    {
-        uint16_t ssidLen = strlen(pSSID);
-        retVal = SlWifiConn_addProfile(pSSID, ssidLen, NULL, &secParams, NULL, 15, SLWIFICONN_PROFILE_FLAG_NON_PERSISTENT);
-    }
-    if(pBuf)
-        free(pBuf);
-
-    return retVal;
-}
-
-//*****************************************************************************
-//
-//! \brief  Thread context for the SlWifiConn
-//!
-//! \note   The SlWifiConn_pocess only returns when the module is destoryed
-//!         (see WIFI_IF_deinit)
-//!
-//*****************************************************************************
-static void *SlWifiConnTask(void *pvParameters)
-{
-    void* retVal = SlWifiConn_process(pvParameters);
-    pthread_exit(NULL);
-    return retVal;
-}
-
-
-//*****************************************************************************
-//
-//! \brief  Thread context for the external provisioning method (e.g. WAC)
-//!
-//! \note   The start_f should return upon
-//!
-//*****************************************************************************
-static void *WifiExtProvisioingTask(void* pvParameters)
-{
-    if (gfExtProvStart)
-    {
-        gfExtProvStart(gpExtProvHandle);
-    }
-    pthread_detach(pthread_self());
-    pthread_exit(NULL);
-    return NULL;
-}
-
-static int NetworkBypass(bool bEnableCmd)
-{
-    int rc;
-    static bool bEnabled = 0;
-    
-    if(bEnableCmd && !bEnabled)
-    {
-	    /* The following will set IP Address to 0.0.0.0 - for bypass mode */
-	    SlNetCfgIpV4Args_t ipAddr = { 0 };
-	    memset(&ipAddr, 0, sizeof(SlNetCfgIpV4Args_t));
-	    rc = sl_NetCfgSet(SL_NETCFG_IPV4_STA_ADDR_MODE, SL_NETCFG_ADDR_STATIC, sizeof(SlNetCfgIpV4Args_t), (_u8 *) &ipAddr);
-        if (rc >= 0)
-        {
-              SlWlanRxFilterSysFiltersMask_t  FilterSysIdMask;
-              _u16 len = sizeof(SlWlanRxFilterSysFiltersMask_t);
-              _u16  config_opt = SL_WLAN_RX_FILTER_SYS_STATE;
-
-              memset(FilterSysIdMask, 0, sizeof(FilterSysIdMask));
-              rc = sl_WlanGet(SL_WLAN_RX_FILTERS_ID, &config_opt, &len, (_u8*)FilterSysIdMask); // FilterSysIdMask[0] should be 0xF8
-              assert(rc == 0); 
-              FilterSysIdMask[0] &= ~(1 << (7 - SL_WLAN_RX_FILTER_MULTICASTSIPV6_SYS_FILTERS));
-              FilterSysIdMask[0] &= ~(1 << (7 - SL_WLAN_RX_FILTER_MULTICASTSIPV4_SYS_FILTERS));
-              rc = sl_WlanSet(SL_WLAN_RX_FILTERS_ID, config_opt, len, (_u8*)FilterSysIdMask);
-              assert(rc == 0);        
-       }
-
-    #if 1
-	    if (rc >= 0)
-	    {
-		    // disable network applications
-		    rc = sl_NetAppStop(SL_NETAPP_HTTP_SERVER_ID | SL_NETAPP_DHCP_SERVER_ID | SL_NETAPP_MDNS_ID);
-		    rc = sl_NetAppStart(SL_NETAPP_MDNS_ID);
-	    }
- 	#endif
-	    if(rc == 0)
-	    {
-		SlWlanRxFilterIdMask_t FilterIdMask;
-		_u16 len = sizeof(SlWlanRxFilterIdMask_t);
-		memset(FilterIdMask, 0, sizeof(FilterIdMask));
-		rc = sl_WlanSet(SL_WLAN_RX_FILTERS_ID, SL_WLAN_RX_FILTER_STATE, len, (_u8 *) FilterIdMask);
-		if(rc == 0)
-		{
-		    if(m_ctx.slRawSocket == -1)
-		    {
-		        m_ctx.slRawSocket = sl_Socket(SL_AF_PACKET, SL_SOCK_RAW, 0);
-		        if(m_ctx.slRawSocket >= 0)
-		        {
-		            OS_createTask(7, 0x400, ReceivePacket_Task, m_ctx.hStaNetif, PTHREAD_CREATE_DETACHED); // thread is terminated upon exit
-		            bEnabled = true;
-                }
-		    }
-		}
-
-	    }
-    }
-    else if(!bEnableCmd && bEnabled)
-    {
-       rc = sl_NetCfgSet(SL_NETCFG_IPV4_STA_ADDR_MODE,SL_NETCFG_ADDR_DHCP_LLA,0,0);
-       bEnabled = false;
-    }
-    LOG_INFO("Configure N/W Bypass mode (%d)", rc);
-    return rc;
-}
-
-/*********************** SimpleLink Event Handlers ***************************
- *****************************************************************************
+/*****************************************************************************
           SimpleLink Callback Functions :WLAN, NETAPP and GENERAL EVENTS
           are served here. They are used internally by SlWifiConn (as lib
           registration) and are available here only for debug prints.
- *****************************************************************************
- */
+ *****************************************************************************/
 
 //*****************************************************************************
 //
@@ -627,16 +436,9 @@ __attribute__((weak)) void SimpleLinkNetAppRequestMemFreeEventHandler(uint8_t * 
     /* Unused in this application */
 }
 
-/****************** Connection Manager Event Handlers ************************
- *****************************************************************************
-          SlNetConn + SlWifiConn provisioning and connection events
- *****************************************************************************
- */
-
 //*****************************************************************************
 //
-//! \brief  Connection Manager (SlNetConn) Events Handler
-//!   Connection (MAC/IP/INTERNET) and disconnection events
+//! \brief  SlWifiConn Event Handler
 //!
 //*****************************************************************************
 void SlNetConnEventHandler(uint32_t ifID, SlNetConnStatus_e netStatus, void * data)
@@ -648,9 +450,7 @@ void SlNetConnEventHandler(uint32_t ifID, SlNetConnStatus_e netStatus, void * da
         NetworkBypass(true);
         TCPIP_IF_notifyLinkChange(m_ctx.hStaNetif, E_TCPIP_LINK_UP);
         Notify(WIFI_STATUS_CONNECTED);
-#ifdef WIFI_LED_HANDLE
-        LED_setOn(WIFI_LED_HANDLE, LED_BRIGHTNESS_MAX);
-#endif
+        LED_setOn(gLedBlueHandle, LED_BRIGHTNESS_MAX);
         cc32xxLog("[SlNetConnEventHandler] I/F %d - CONNECTED (MAC LEVEL)!\n\r", ifID);
         break;
     case SLNETCONN_STATUS_CONNECTED_IP:
@@ -667,9 +467,7 @@ void SlNetConnEventHandler(uint32_t ifID, SlNetConnStatus_e netStatus, void * da
     case SLNETCONN_STATUS_WAITING_FOR_CONNECTION:
     case SLNETCONN_STATUS_DISCONNECTED:
         m_ctx.isConnected = 0;
-#ifdef WIFI_LED_HANDLE
-        LED_setOff(WIFI_LED_HANDLE);
-#endif
+        LED_setOff(gLedBlueHandle);
         cc32xxLog("[SlNetConnEventHandler] I/F %d - DISCONNECTED!\n\r", ifID);
         break;
     default:
@@ -678,13 +476,208 @@ void SlNetConnEventHandler(uint32_t ifID, SlNetConnStatus_e netStatus, void * da
     }
 }
 
+
+static unsigned char rxbuff[WIFI_BUFF_SIZE];
+static void *ReceivePacket_Task(void * hNetIf)
+{
+    int rc = 0;
+
+    /* Start listening */
+    LOG_INFO("%s:: starting Rx Task",  __func__);
+
+
+    while (1) 
+    {
+        while (m_ctx.isConnected) 
+        {
+#ifdef TCPIP_IF_ZERO_COPY
+            void *pbuf = NULL;
+            // Allocate an LwIP pbuf to hold the inbound packet.
+            pbuf = TCPIP_IF_pktAlloc(WIFI_BUFF_SIZE);
+            if (pbuf)
+            {
+                void *pPayload = TCPIP_IF_pktPayload(pbuf); 
+                rc = sl_Recv(m_ctx.slRawSocket, pPayload, WIFI_BUFF_SIZE, 0);
+                if (0 >= rc)
+                {
+                    LOG_ERROR("SL ReceiveLogFrame Error (%d)", rc);
+                }
+                else
+                {
+                    ETHERNET_logFrame(LOG_RX, "WIFI", rc, pPayload);
+                    rc = TCPIP_IF_receive(pbuf, rc, hNetIf);
+                    if (rc != 0)
+                    {
+                        // If an error occurred, make sure the pbuf gets freed.
+                        LOG_ERROR("LWIP Receive Error (%d)", rc);
+                    }
+                }
+                //TCPIP_IF_pktFree(pbuf);
+            }
+#else
+
+            rc = sl_Recv(m_ctx.slRawSocket, rxbuff, WIFI_BUFF_SIZE, 0);
+            if (0 >= rc)
+            {
+                LOG_ERROR("SL ReceiveLogFrame Error (%d)", rc);
+            }
+            else
+            {
+                ETHERNET_logFrame(LOG_RX, "WIFI", rc, rxbuff);
+                rc = TCPIP_IF_receive(rxbuff, rc, hNetIf);
+                if (rc != 0)
+                {
+                    // If an error occurred, make sure the pbuf gets freed.
+                    LOG_ERROR("LWIP Receive Error (%d)", rc);
+                }
+            }
+#endif //  TCPIP_IF_ZERO_COPY
+       }
+        usleep(10);
+    }
+    pthread_exit(NULL);
+    return NULL;
+}
+
+static void Notify(WifiConnStatus_e wifiConnStatus)
+{
+    connRequest_t *pConnReq = m_ctx.pConnRequests;
+    while(pConnReq)
+    {
+    	if(pConnReq->handler)
+    	   pConnReq->handler(wifiConnStatus);
+    	pConnReq = pConnReq->pNext;
+    }
+
+} 
+
+static void TcpipEventHandler(void *pNetif, TcpipStatue_e status, void * pParams)
+{
+    LOG_INFO("TcpipEventHandler(%d)\n\r", status);
+    switch (status)
+    {
+    case E_TCPIP_STATUS_IP_ACQUIRED:
+        Notify(WIFI_STATUS_CONNECTED_IP);
+        break;
+    case E_TCPIP_STATUS_IP_LOST:
+        Notify(WIFI_STATUS_CONNECTED);
+        break;
+    default:
+        break;
+    }
+}
+
+//*****************************************************************************
+//                 Local Functions
+//*****************************************************************************
+
+
 //*****************************************************************************
 //
-//! \brief  Wi-Fi Connection Manager (SlWifiConn) Events Handler 
-//!   Supports Wi-Fi specific indications such as Device Power changes, 
-//!   and Provisioning Start/Stop 
-//!   
-//!//*****************************************************************************
+//! \brief  Configure static profile based on hard coded setting or
+//!         a configuration file
+//!
+//*****************************************************************************
+int ConfigureLocalNetwork()
+{
+    int retVal = 0;
+    uint8_t *pBuf = NULL;
+    char *pSSID = NULL;
+    SlWlanSecParams_t  secParams = {SL_WLAN_SEC_TYPE_OPEN, NULL, 0};
+    if (AP_SSID != NULL)
+    {
+        /* AP_SSID is not NULL - it will be set as a static profile
+         * This should be used in development
+         */
+        pSSID = AP_SSID;
+        if(AP_PASSWORD != NULL)
+        {
+            secParams.Type = SL_WLAN_SEC_TYPE_WPA_WPA2;
+            secParams.Key = (int8_t*)AP_PASSWORD;
+            secParams.KeyLen = strlen((char*)secParams.Key);
+        }
+    }
+    else if(AP_CFG_FILENAME != NULL)
+    {
+        int len;
+        /* Read Network credential from a file (if exists) */
+        pBuf  = (uint8_t *)malloc(AP_CFG_MAX_SIZE);
+        if(pBuf)
+        {
+            len = FILE_read((int8_t*)AP_CFG_FILENAME, AP_CFG_MAX_SIZE, pBuf, AP_CFG_TOKEN);
+            if(len > 0)
+            {
+                int i;
+                pSSID = (char*)pBuf;
+                for(i=0; i<len; i++)
+                {
+                    if(pBuf[i] == ' ')
+                    {
+                        pBuf[i] = 0;
+                        if(i < len-1)
+                        {
+                            secParams.Type = SL_WLAN_SEC_TYPE_WPA_WPA2;
+                            secParams.Key = (int8_t*)&pBuf[i+1];
+                            secParams.KeyLen = len-(i+1);
+                            break;
+                        }
+                    }
+                }
+                pBuf[len] = 0;
+            }
+        }
+    }
+    if(pSSID)
+    {
+        uint16_t ssidLen = strlen(pSSID);
+        retVal = SlWifiConn_addProfile(pSSID, ssidLen, NULL, &secParams, NULL, 15, SLWIFICONN_PROFILE_FLAG_NON_PERSISTENT);
+    }
+    if(pBuf)
+        free(pBuf);
+
+    return retVal;
+}
+
+//*****************************************************************************
+//
+//! \brief  Thread context for the SlWifiConn
+//!
+//! \note   The SlWifiConn_pocess only returns when the module is destoryed
+//!         (see WIFI_IF_deinit)
+//!
+//*****************************************************************************
+static void *SlWifiConnTask(void *pvParameters)
+{
+    void* retVal = SlWifiConn_process(pvParameters);
+    pthread_exit(NULL);
+    return retVal;
+}
+
+
+//*****************************************************************************
+//
+//! \brief  Thread context for the external provisioning method (e.g. WAC)
+//!
+//! \note   The start_f should return upon
+//!
+//*****************************************************************************
+static void *WifiExtProvisioingTask(void* pvParameters)
+{
+    if (gfExtProvStart)
+    {
+        gfExtProvStart(gpExtProvHandle);
+    }
+    pthread_detach(pthread_self());
+    pthread_exit(NULL);
+    return NULL;
+}
+
+
+//*****************************************************************************
+//
+//! \brief  SlWifiConn Event Handler
+//!
+//*****************************************************************************
 static void SlWifiConnEventHandler(WifiConnEventId_e eventId , WifiConnEventData_u *pData)
 {
     uint8_t  simpleLinkMac[SL_MAC_ADDR_LEN];
@@ -748,29 +741,6 @@ static void SlWifiConnEventHandler(WifiConnEventId_e eventId , WifiConnEventData
     }
 }
 
-/****************** Netowk Stack (TCPIP_IF) Event Handlers ************************
- *****************************************************************************
-          Network Ready (after MAC Connection), 
-          IP Acquisition/Loss Inidcations,
-          TX/RX Handling   
- *****************************************************************************
- */
-static void TcpipEventHandler(void *pNetif, TcpipStatue_e status, void * pParams)
-{
-    LOG_INFO("TcpipEventHandler(%d)\n\r", status);
-    switch (status)
-    {
-    case E_TCPIP_STATUS_IP_ACQUIRED:
-        Notify(WIFI_STATUS_CONNECTED_IP);
-        break;
-    case E_TCPIP_STATUS_IP_LOST:
-        Notify(WIFI_STATUS_CONNECTED);
-        break;
-    default:
-        break;
-    }
-}
-
 static int TcpipCB_send(void *hNetif, uint8_t *pPayload, int16_t payloadLen, uint32_t flags)
 {
     int rc = sl_Send(m_ctx.slRawSocket, pPayload, payloadLen, (int16_t)flags);
@@ -785,70 +755,112 @@ static int TcpipCB_send(void *hNetif, uint8_t *pPayload, int16_t payloadLen, uin
     return 0;
 } 
 
-
-#ifndef TCPIP_IF_ZERO_COPY
-static unsigned char rxbuff[WIFI_BUFF_SIZE];
-#endif
-static void *ReceivePacket_Task(void * hNetIf)
+static int NetworkBypass(bool bEnableCmd)
 {
-    int rc = 0;
-
-    /* Start listening */
-    LOG_INFO("%s:: starting Rx Task",  __func__);
-
-
-    while (1) 
+    int rc;
+    static bool bEnabled = 0;
+    
+    if(bEnableCmd && !bEnabled)
     {
-        while (m_ctx.isConnected) 
-        {
-#ifdef TCPIP_IF_ZERO_COPY
-            void *pbuf = NULL;
-            // Allocate an LwIP pbuf to hold the inbound packet.
-            pbuf = TCPIP_IF_pktAlloc(WIFI_BUFF_SIZE);
-            if (pbuf)
-            {
-                void *pPayload = TCPIP_IF_pktPayload(pbuf); 
-                rc = sl_Recv(m_ctx.slRawSocket, pPayload, WIFI_BUFF_SIZE, 0);
-                if (0 >= rc)
-                {
-                    LOG_ERROR("SL ReceiveLogFrame Error (%d)", rc);
-                }
-                else
-                {
-                    ETHERNET_logFrame(LOG_RX, "WIFI", rc, pPayload);
-                    rc = TCPIP_IF_receive(pbuf, rc, hNetIf);
-                    if (rc != 0)
-                    {
-                        // If an error occurred, make sure the pbuf gets freed.
-                        LOG_ERROR("LWIP Receive Error (%d)", rc);
-                    }
-                }
-                //TCPIP_IF_pktFree(pbuf);
-            }
-#else
+	    /* The following will set IP Address to 0.0.0.0 - for bypass mode */
+	    SlNetCfgIpV4Args_t ipAddr = { 0 };
+	    memset(&ipAddr, 0, sizeof(SlNetCfgIpV4Args_t));
+	    rc = sl_NetCfgSet(SL_NETCFG_IPV4_STA_ADDR_MODE, SL_NETCFG_ADDR_STATIC, sizeof(SlNetCfgIpV4Args_t), (_u8 *) &ipAddr);
+	    if(rc == 0)
+	    {
+	        SlNetCfgIpV6Args_t ipAddr6 = { 0 };
+	        memset(&ipAddr6, 0, sizeof(SlNetCfgIpV6Args_t));
+  	        //rc = sl_NetCfgSet(SL_NETCFG_IPV6_ADDR_LOCAL, SL_NETCFG_ADDR_STATIC, sizeof(SlNetCfgIpV6Args_t), (_u8 *) &ipAddr6);
+                if(rc == 0)
+		{
+    	             //rc = sl_NetCfgSet(SL_NETCFG_IPV6_ADDR_GLOBAL, SL_NETCFG_ADDR_STATIC, sizeof(SlNetCfgIpV6Args_t), (_u8 *) &ipAddr6);
+	  	}
+  	    }
 
-            rc = sl_Recv(m_ctx.slRawSocket, rxbuff, WIFI_BUFF_SIZE, 0);
-            if (0 >= rc)
-            {
-                LOG_ERROR("SL ReceiveLogFrame Error (%d)", rc);
-            }
-            else
-            {
-                ETHERNET_logFrame(LOG_RX, "WIFI", rc, rxbuff);
-                rc = TCPIP_IF_receive(rxbuff, rc, hNetIf);
-                if (rc != 0)
-                {
-                    // If an error occurred, make sure the pbuf gets freed.
-                    LOG_ERROR("LWIP Receive Error (%d)", rc);
-                }
-            }
-#endif //  TCPIP_IF_ZERO_COPY
+        #if 1
+        if (rc >= 0)
+        {
+              SlWlanRxFilterSysFiltersMask_t  FilterSysIdMask;
+              _u16 len = sizeof(SlWlanRxFilterSysFiltersMask_t);
+              _u16  config_opt = SL_WLAN_RX_FILTER_SYS_STATE;
+
+              memset(FilterSysIdMask, 0, sizeof(FilterSysIdMask));
+              rc = sl_WlanGet(SL_WLAN_RX_FILTERS_ID, &config_opt, &len, (_u8*)FilterSysIdMask); // FilterSysIdMask[0] should be 0xF8
+              assert(rc == 0); 
+              LOG_INFO("FilterSysIdMask(before): %d\n", *(unsigned long*)FilterSysIdMask);
+              
+    
+              FilterSysIdMask[0] &= ~(1 << (7 - SL_WLAN_RX_FILTER_MULTICASTSIPV6_SYS_FILTERS));
+              FilterSysIdMask[0] &= ~(1 << (7 - SL_WLAN_RX_FILTER_MULTICASTSIPV4_SYS_FILTERS));
+              rc = sl_WlanSet(SL_WLAN_RX_FILTERS_ID, config_opt, len, (_u8*)FilterSysIdMask);
+              assert(rc == 0);        
+                  
+              memset(FilterSysIdMask, 0, sizeof(FilterSysIdMask));
+              rc = sl_WlanGet(SL_WLAN_RX_FILTERS_ID, &config_opt, &len, (_u8*)FilterSysIdMask);
+              assert(rc == 0); 
+              LOG_INFO("FilterSysIdMask(after): %d\n", *(unsigned long*)FilterSysIdMask);
+              
        }
-        usleep(10);
+       #endif
+
+    	#if 1
+	    if (rc >= 0)
+	    {
+		// disable network applications
+		rc = sl_NetAppStop(SL_NETAPP_HTTP_SERVER_ID | SL_NETAPP_DHCP_SERVER_ID | SL_NETAPP_MDNS_ID);
+		rc = sl_NetAppStart(SL_NETAPP_MDNS_ID);
+	    }
+       #if 0	    
+	    if (rc >= 0)
+	    {
+		// restart NWP by calling stop then start to init with static IP 0.0.0.0
+		rc = WIFI_IF_reset(1000);
+	    }
+	#endif
+	#endif
+	    if(rc == 0)
+	    {
+		SlWlanRxFilterIdMask_t FilterIdMask;
+		_u16 len = sizeof(SlWlanRxFilterIdMask_t);
+		memset(FilterIdMask, 0, sizeof(FilterIdMask));
+		rc = sl_WlanSet(SL_WLAN_RX_FILTERS_ID, SL_WLAN_RX_FILTER_STATE, len, (_u8 *) FilterIdMask);
+		if(rc == 0)
+		{
+		    if(m_ctx.slRawSocket == -1)
+		    {
+		        m_ctx.slRawSocket = sl_Socket(SL_AF_PACKET, SL_SOCK_RAW, 0);
+		        if(m_ctx.slRawSocket >= 0)
+		        {
+		            OS_createTask(7, 0x400, ReceivePacket_Task, m_ctx.hStaNetif, PTHREAD_CREATE_DETACHED); // thread is terminated upon exit
+		            bEnabled = true;
+                       }
+#if 0
+                       if(rc == 0)
+  	               {
+  	                    SlSockIpV6Mreq_t mreq = {0};
+  	                    mreq.ipv6mr_multiaddr._S6_un._S6_u32[0] = 0xff020000;
+  	                    mreq.ipv6mr_multiaddr._S6_un._S6_u32[1] = 0;
+  	                    mreq.ipv6mr_multiaddr._S6_un._S6_u32[2] = 0;
+  	                    mreq.ipv6mr_multiaddr._S6_un._S6_u32[3] = 0xfb;
+                            rc = sl_SetSockOpt(m_ctx.slRawSocket, SL_IPPROTO_IP, SL_IPV6_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+                            assert(rc == 0);
+                       }
+#endif
+		    }
+		}
+
+	    }
     }
-    pthread_exit(NULL);
-    return NULL;
+    else if(!bEnableCmd && bEnabled)
+    {
+       rc = sl_NetCfgSet(SL_NETCFG_IPV4_STA_ADDR_MODE,SL_NETCFG_ADDR_DHCP_LLA,0,0);
+       bEnabled = false;
+    }
+    LOG_INFO("Configure N/W Bypass mode (%d)", rc);
+    return rc;
 }
+
+
 
 //*****************************************************************************
 //

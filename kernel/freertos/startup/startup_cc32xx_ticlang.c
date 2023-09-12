@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Texas Instruments Incorporated
+ * Copyright (c) 2020-2023, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #if !(defined(__clang__))
-#error "startup_cc32xx_ticlang.c: Unsupported compiler!"
+    #error "startup_cc32xx_ticlang.c: Unsupported compiler!"
 #endif
 
 #include <stdint.h>
@@ -84,30 +84,27 @@ extern void *__stack;
 // the program if located at a start address other than 0.
 //
 //*****************************************************************************
-__attribute__ ((section(".resetVecs"))) __attribute__ ((used))
-static void (* const resetVectors[16])(void) =
-{
+__attribute__((section(".resetVecs"))) __attribute__((used)) static void (*const resetVectors[16])(void) = {
     (void (*)(void))((unsigned long)&__STACK_END),
-                                         // The initial stack pointer
-    resetISR,                            // The reset handler
-    nmiISR,                              // The NMI handler
-    faultISR,                            // The hard fault handler
-    defaultHandler,                      // The MPU fault handler
-    busFaultHandler,                     // The bus fault handler
-    defaultHandler,                      // The usage fault handler
-    0,                                   // Reserved
-    0,                                   // Reserved
-    0,                                   // Reserved
-    0,                                   // Reserved
-    vPortSVCHandler,                     // SVCall handler
-    defaultHandler,                      // Debug monitor handler
-    0,                                   // Reserved
-    xPortPendSVHandler,                  // The PendSV handler
-    xPortSysTickHandler                  // The SysTick handler
+    // The initial stack pointer
+    resetISR,           // The reset handler
+    nmiISR,             // The NMI handler
+    faultISR,           // The hard fault handler
+    defaultHandler,     // The MPU fault handler
+    busFaultHandler,    // The bus fault handler
+    defaultHandler,     // The usage fault handler
+    0,                  // Reserved
+    0,                  // Reserved
+    0,                  // Reserved
+    0,                  // Reserved
+    vPortSVCHandler,    // SVCall handler
+    defaultHandler,     // Debug monitor handler
+    0,                  // Reserved
+    xPortPendSVHandler, // The PendSV handler
+    xPortSysTickHandler // The SysTick handler
 };
 
-__attribute__ ((section(".ramVecs"))) __attribute__ ((used))
-static unsigned long ramVectors[195];
+__attribute__((section(".ramVecs"), aligned(1024))) __attribute__((used)) static unsigned long ramVectors[195];
 
 //*****************************************************************************
 //
@@ -122,14 +119,13 @@ void initVectors(void)
     int i;
 
     /* Disable interrupts */
-    __asm volatile (
-        " mov %0, %1 \n"
-        " msr basepri, %0 \n"
-        " isb \n"
-        " dsb \n"
-        :"=r" (newBasePri)
-        : "i" (configMAX_SYSCALL_INTERRUPT_PRIORITY)
-        : "memory");
+    __asm volatile(" mov %0, %1 \n"
+                   " msr basepri, %0 \n"
+                   " isb \n"
+                   " dsb \n"
+                   : "=r"(newBasePri)
+                   : "i"(configMAX_SYSCALL_INTERRUPT_PRIORITY)
+                   : "memory");
 
 #if configENABLE_ISR_STACK_INIT
     /* Initialize ISR stack to known value for Runtime Object View */
@@ -142,7 +138,7 @@ void initVectors(void)
 #endif
 
     /* Copy from reset vector table into RAM vector table */
-    memcpy(ramVectors, resetVectors, 16*4);
+    memcpy(ramVectors, resetVectors, 16 * 4);
 
     /* fill remaining vectors with default handler */
     for (i = 16; i < 195; i++)
@@ -172,12 +168,11 @@ void resetISR(void)
      * stack when using a debugger since a reset within the debugger will
      * load the stack pointer from the bootloader's vector table at address '0'.
      */
-    __asm__ __volatile__ (
-        " movw r0, #:lower16:resetVectors\n"
-        " movt r0, #:upper16:resetVectors\n"
-        " ldr r0, [r0]\n"
-        " mov sp, r0\n"
-        " bl initVectors");
+    __asm__ __volatile__(" movw r0, #:lower16:resetVectors\n"
+                         " movt r0, #:upper16:resetVectors\n"
+                         " ldr r0, [r0]\n"
+                         " mov sp, r0\n"
+                         " bl initVectors");
 
     /* Jump to the CCS C Initialization Routine. */
     __asm(" .global _c_int00\n"
@@ -191,13 +186,10 @@ void resetISR(void)
 // by a debugger.
 //
 //*****************************************************************************
-static void
-nmiISR(void)
+static void nmiISR(void)
 {
     /* Enter an infinite loop. */
-    while (1)
-    {
-    }
+    while (1) {}
 }
 
 //*****************************************************************************
@@ -207,13 +199,10 @@ nmiISR(void)
 // for examination by a debugger.
 //
 //*****************************************************************************
-static void
-faultISR(void)
+static void faultISR(void)
 {
     /* Enter an infinite loop. */
-    while (1)
-    {
-    }
+    while (1) {}
 }
 
 //*****************************************************************************
@@ -224,13 +213,10 @@ faultISR(void)
 //
 //*****************************************************************************
 
-static void
-busFaultHandler(void)
+static void busFaultHandler(void)
 {
     /* Enter an infinite loop. */
-    while (1)
-    {
-    }
+    while (1) {}
 }
 
 //*****************************************************************************
@@ -240,11 +226,8 @@ busFaultHandler(void)
 // for examination by a debugger.
 //
 //*****************************************************************************
-static void
-defaultHandler(void)
+static void defaultHandler(void)
 {
     /* Enter an infinite loop. */
-    while (1)
-    {
-    }
+    while (1) {}
 }

@@ -35,10 +35,10 @@
  * This must be done before DebugP.h is included.
  */
 #ifndef DebugP_ASSERT_ENABLED
-#define DebugP_ASSERT_ENABLED 0
+    #define DebugP_ASSERT_ENABLED 0
 #endif
 #ifndef DebugP_LOG_ENABLED
-#define DebugP_LOG_ENABLED 0
+    #define DebugP_LOG_ENABLED 0
 #endif
 
 #include <stdint.h>
@@ -64,45 +64,37 @@
 #define PAD_RESET_STATE 0xC61
 
 #define PinConfigChannel(config) (((config) >> 8) & 0xff)
-#define PinConfigPin(config) ((config) & 0xff)
+#define PinConfigPin(config)     ((config)&0xff)
 
 void ADCCC32XX_close(ADC_Handle handle);
 int_fast16_t ADCCC32XX_control(ADC_Handle handle, uint_fast16_t cmd, void *arg);
 int_fast16_t ADCCC32XX_convert(ADC_Handle handle, uint16_t *value);
-int_fast16_t ADCCC32XX_convertChain(ADC_Handle *handleList,
-                                    uint16_t *dataBuffer,
-                                    uint8_t channelCount);
-uint32_t ADCCC32XX_convertToMicroVolts(ADC_Handle handle,
-    uint16_t adcValue);
+int_fast16_t ADCCC32XX_convertChain(ADC_Handle *handleList, uint16_t *dataBuffer, uint8_t channelCount);
+uint32_t ADCCC32XX_convertToMicroVolts(ADC_Handle handle, uint16_t adcValue);
 void ADCCC32XX_init(ADC_Handle handle);
 ADC_Handle ADCCC32XX_open(ADC_Handle handle, ADC_Params *params);
 
 /* ADC function table for ADCCC32XX implementation */
-const ADC_FxnTable ADCCC32XX_fxnTable = {
-    ADCCC32XX_close,
-    ADCCC32XX_control,
-    ADCCC32XX_convert,
-    ADCCC32XX_convertChain,
-    ADCCC32XX_convertToMicroVolts,
-    ADCCC32XX_init,
-    ADCCC32XX_open
-};
+const ADC_FxnTable ADCCC32XX_fxnTable = {ADCCC32XX_close,
+                                         ADCCC32XX_control,
+                                         ADCCC32XX_convert,
+                                         ADCCC32XX_convertChain,
+                                         ADCCC32XX_convertToMicroVolts,
+                                         ADCCC32XX_init,
+                                         ADCCC32XX_open};
 
 /* Internal ADC status structure */
-static ADCCC32XX_State state = {
-    .baseAddr = ADC_BASE,
-    .numOpenChannels = 0
-};
+static ADCCC32XX_State state = {.baseAddr = ADC_BASE, .numOpenChannels = 0};
 
 /*
  *  ======== ADCCC32XX_close ========
  */
 void ADCCC32XX_close(ADC_Handle handle)
 {
-    uintptr_t         key;
-    uint32_t          pin;
-    uint32_t          padRegister;
-    ADCCC32XX_Object *object = handle->object;
+    uintptr_t key;
+    uint32_t pin;
+    uint32_t padRegister;
+    ADCCC32XX_Object *object           = handle->object;
     ADCCC32XX_HWAttrsV1 const *hwAttrs = handle->hwAttrs;
 
     pin = PinConfigChannel(hwAttrs->adcPin);
@@ -112,7 +104,8 @@ void ADCCC32XX_close(ADC_Handle handle)
     MAP_ADCChannelDisable(state.baseAddr, pin);
     state.numOpenChannels--;
 
-    if (state.numOpenChannels == 0) {
+    if (state.numOpenChannels == 0)
+    {
         MAP_ADCDisable(state.baseAddr);
     }
 
@@ -122,7 +115,7 @@ void ADCCC32XX_close(ADC_Handle handle)
     pin = PinConfigPin(hwAttrs->adcPin);
     MAP_PinConfigSet(pin, PAD_RESET_DRIVE, PAD_RESET_TYPE);
     /* Set reset state for the pad register */
-    padRegister = (PinToPadGet(pin)<<2) + PAD_CONFIG_BASE;
+    padRegister        = (PinToPadGet(pin) << 2) + PAD_CONFIG_BASE;
     HWREG(padRegister) = PAD_RESET_STATE;
 
     object->isOpen = false;
@@ -144,16 +137,17 @@ int_fast16_t ADCCC32XX_control(ADC_Handle handle, uint_fast16_t cmd, void *arg)
  */
 int_fast16_t ADCCC32XX_convert(ADC_Handle handle, uint16_t *value)
 {
-    uintptr_t                  key;
-    uint16_t                   adcSample = 0;
-    uint_fast16_t              adcChannel;
+    uintptr_t key;
+    uint16_t adcSample = 0;
+    uint_fast16_t adcChannel;
     ADCCC32XX_HWAttrsV1 const *hwAttrs = handle->hwAttrs;
 
     adcChannel = PinConfigChannel(hwAttrs->adcPin);
-    key = HwiP_disable();
+    key        = HwiP_disable();
 
     /* Wait until the FIFO is not empty */
-    while (MAP_ADCFIFOLvlGet(state.baseAddr, adcChannel) == 0) {
+    while (MAP_ADCFIFOLvlGet(state.baseAddr, adcChannel) == 0)
+    {
         HwiP_restore(key);
         key = HwiP_disable();
     }
@@ -171,13 +165,12 @@ int_fast16_t ADCCC32XX_convert(ADC_Handle handle, uint16_t *value)
 /*
  *  ======== ADCCC32XX_convertChain ========
  */
-int_fast16_t ADCCC32XX_convertChain(ADC_Handle *handleList,
-                                    uint16_t *dataBuffer,
-                                    uint8_t channelCount)
+int_fast16_t ADCCC32XX_convertChain(ADC_Handle *handleList, uint16_t *dataBuffer, uint8_t channelCount)
 {
     uint8_t i = 0;
 
-    for (i = 0; i < channelCount; i++) {
+    for (i = 0; i < channelCount; i++)
+    {
         ADCCC32XX_convert(handleList[i], &dataBuffer[i]);
     }
     return (ADC_STATUS_SUCCESS);
@@ -186,8 +179,7 @@ int_fast16_t ADCCC32XX_convertChain(ADC_Handle *handleList,
 /*
  *  ======== ADCCC32XX_convertToMicroVolts ========
  */
-uint32_t ADCCC32XX_convertToMicroVolts(ADC_Handle handle,
-    uint16_t adcValue)
+uint32_t ADCCC32XX_convertToMicroVolts(ADC_Handle handle, uint16_t adcValue)
 {
     /* Internal voltage reference is 1.467V (1467000 uV) */
     return ((uint_fast32_t)(adcValue * (1467000.0 / 4095.0)));
@@ -199,7 +191,7 @@ uint32_t ADCCC32XX_convertToMicroVolts(ADC_Handle handle,
 void ADCCC32XX_init(ADC_Handle handle)
 {
     /* Mark the object as available */
-    ((ADCCC32XX_Object *) handle->object)->isOpen = false;
+    ((ADCCC32XX_Object *)handle->object)->isOpen = false;
 }
 
 /*
@@ -207,18 +199,19 @@ void ADCCC32XX_init(ADC_Handle handle)
  */
 ADC_Handle ADCCC32XX_open(ADC_Handle handle, ADC_Params *params)
 {
-    uintptr_t                  key;
-    uint32_t                   pin;
-    ADCCC32XX_Object          *object = handle->object;
+    uintptr_t key;
+    uint32_t pin;
+    ADCCC32XX_Object *object           = handle->object;
     ADCCC32XX_HWAttrsV1 const *hwAttrs = handle->hwAttrs;
-    uint32_t                   i;
+    uint32_t i;
 
     key = HwiP_disable();
 
-    if (object->isOpen) {
+    if (object->isOpen)
+    {
         HwiP_restore(key);
 
-        DebugP_log1("ADC: (%p) already opened", (uintptr_t) handle);
+        DebugP_log1("ADC: (%p) already opened", (uintptr_t)handle);
         return (NULL);
     }
 
@@ -237,13 +230,13 @@ ADC_Handle ADCCC32XX_open(ADC_Handle handle, ADC_Params *params)
     MAP_ADCChannelEnable(state.baseAddr, pin);
 
     /* Empty 5 samples from the FIFO */
-    for (i = 0; i < 5; i++) {
-        while (MAP_ADCFIFOLvlGet(state.baseAddr, pin) == 0){
-        }
+    for (i = 0; i < 5; i++)
+    {
+        while (MAP_ADCFIFOLvlGet(state.baseAddr, pin) == 0) {}
         MAP_ADCFIFORead(state.baseAddr, pin);
     }
 
-    DebugP_log1("ADC: (%p) instance opened.", (uintptr_t) handle);
+    DebugP_log1("ADC: (%p) instance opened.", (uintptr_t)handle);
 
     return (handle);
 }

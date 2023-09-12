@@ -1,0 +1,42 @@
+cmake_minimum_required(VERSION 3.21.3)
+include(${CMAKE_CURRENT_LIST_DIR}/CMakeSources_common.cmake)
+
+set(SOURCES_CC32XX
+    ${SOURCES_COMMON}
+    ADC.c
+    adc/ADCCC32XX.c
+    Camera.c
+    camera/CameraCC32XXDMA.c
+    Capture.c
+    capture/CaptureCC32XX.c
+    crypto/CryptoCC32XX.c
+    cryptoutils/utils/CryptoUtils.c
+    dma/UDMACC32XX.c
+    GPIO.c
+    gpio/GPIOCC32XX.c
+    I2C.c
+    i2c/I2CCC32XX.c
+    I2S.c
+    i2s/I2SCC32XX.c
+    ITM.c
+    itm/ITMCC32XX.c
+    NVS.c
+    nvs/NVSRAM.c
+    nvs/NVSSPI25X.c
+    power/PowerCC32XX.c
+    power/PowerCC32XX_${TI_TOOLCHAIN_NAME}.asm
+    PWM.c
+    pwm/PWMTimerCC32XX.c
+    SD.c
+    sd/SDHostCC32XX.c
+    sd/SDSPI.c
+    SDFatFS.c
+    SPI.c
+    spi/SPICC32XXDMA.c
+    Timer.c
+    timer/TimerCC32XX.c
+    UART2.c
+    uart2/UART2CC32XX.c
+    Watchdog.c
+    watchdog/WatchdogCC32XX.c
+)

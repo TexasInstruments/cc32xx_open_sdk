@@ -51,10 +51,10 @@
             "connections": {
                 /* 7:  BoosterPack standard: SPI CLK */
                 "SCLK"    : 7,
-                /* 15: BoosterPack standard: SPI MOSI */
-                "MOSI"   : 15,
-                /* 14: BoosterPack standard: SPI MISO */
-                "MISO"   : 14
+                /* 15: BoosterPack standard: SPI PICO */
+                "PICO"   : 15,
+                /* 14: BoosterPack standard: SPI POCI */
+                "POCI"   : 14
             }
         },
 
@@ -71,12 +71,12 @@
                     "link": "MSP430BOOST_SHARP96_SPI"
                 },
                 "SELECT": {
-                    "displayName": "Sharp96 LCD SPI Slave Select",
-                    "description": "Sharp 96x96 SPI slave select pin",
-                    "longDescription": "Sharp 96x96 SPI slave select pin",
+                    "displayName": "Sharp96 LCD SPI Chip Select",
+                    "description": "Sharp 96x96 SPI chip select pin",
+                    "longDescription": "Sharp 96x96 SPI chip select pin",
                     "definition"  : "/ti/boards/components/spiSelect.json",
                     "connections" : {
-                        "SS": 6
+                        "CSN": 6
                     }
                 },
                 "POWER": {

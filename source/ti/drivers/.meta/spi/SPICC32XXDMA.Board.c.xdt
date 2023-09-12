@@ -1,6 +1,6 @@
 %%{
 /*
- * Copyright (c) 2018-2020, Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2018-2023, Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -110,73 +110,73 @@ const SPICC32XXDMA_HWAttrsV1 spiCC32XXDMAHWAttrs[`countDef`] = {
         .rxChannelIndex = UDMA_CH12_LSPI_RX,
         .txChannelIndex = UDMA_CH13_LSPI_TX,
         .minDmaTransferSize = 100,
-        .mosiPin = SPICC32XXDMA_PIN_NO_CONFIG,
-        .misoPin = SPICC32XXDMA_PIN_NO_CONFIG,
+        .picoPin = SPICC32XXDMA_PIN_NO_CONFIG,
+        .pociPin = SPICC32XXDMA_PIN_NO_CONFIG,
         .clkPin  = SPICC32XXDMA_PIN_NO_CONFIG,
-        .csPin  = SPICC32XXDMA_PIN_NO_CONFIG
+        .csnPin  = SPICC32XXDMA_PIN_NO_CONFIG
     },
     % }
     % for (let i = 0; i < instances.length; i++) {
     % let inst = instances[i];
     %
-    % /* resources is a hash of resources assigned to inst: CLK, MISO, MOSI ... */
+    % /* resources is a hash of resources assigned to inst: CLK, POCI, PICO ... */
     % let spi = inst.spi;
     % let name = spi.sclkPin.$solution.peripheralPinName.substring(0,4); /* GSPI, LSPI */
     % let mode = inst.mode === "Three Pin" ? "3PIN" : "4PIN";
-    % let ctl = inst.ssControl;
+    % let ctl = inst.csnControl;
     % let csPol = inst.mode.match("High") ? "HIGH" : "LOW";
     % let trbo = inst.turboMode ? "ON" : "OFF";
     % let rdmach = "NULL";
     % let tdmach = "NULL";
-    % let mosiPin = "SPICC32XXDMA_PIN_";
-    % let misoPin = "SPICC32XXDMA_PIN_";
+    % let picoPin = "SPICC32XXDMA_PIN_";
+    % let pociPin = "SPICC32XXDMA_PIN_";
     % let sclkPin = "SPICC32XXDMA_PIN_";
     % sclkPin += convertPinName(spi.sclkPin.$solution.packagePinName) + "_CLK";
     % if (inst.duplex == "Full") {
-    %     mosiPin += convertPinName(spi.mosiPin.$solution.packagePinName);
-    %     mosiPin += "_MOSI";
-    %     misoPin += convertPinName(spi.misoPin.$solution.packagePinName);
-    %     misoPin += "_MISO";
+    %     picoPin += convertPinName(spi.picoPin.$solution.packagePinName);
+    %     picoPin += "_PICO";
+    %     pociPin += convertPinName(spi.pociPin.$solution.packagePinName);
+    %     pociPin += "_POCI";
     %     rdmach = spi.dmaRxChannel.$solution.devicePinName.substring(7);
     %     rdmach = "UDMA_CH" + rdmach + "_" + name + "_RX";
     %     tdmach = spi.dmaTxChannel.$solution.devicePinName.substring(7);
     %     tdmach = "UDMA_CH" + tdmach + "_" + name + "_TX";
     % }
-    % else if (inst.duplex == "Master RX Only") {
-    %     misoPin += convertPinName(spi.misoPin.$solution.packagePinName);
-    %     misoPin += "_MISO";
+    % else if (inst.duplex == "Controller RX Only") {
+    %     pociPin += convertPinName(spi.pociPin.$solution.packagePinName);
+    %     pociPin += "_POCI";
     %     rdmach = spi.dmaRxChannel.$solution.devicePinName.substring(7);
     %     rdmach = "UDMA_CH" + rdmach + "_" + name + "_RX";
-    %     mosiPin += "NO_CONFIG";
+    %     picoPin += "NO_CONFIG";
     % }
-    % else if (inst.duplex == "Master TX Only") {
-    %     mosiPin += convertPinName(spi.mosiPin.$solution.packagePinName);
-    %     mosiPin += "_MOSI";
+    % else if (inst.duplex == "Controller TX Only") {
+    %     picoPin += convertPinName(spi.picoPin.$solution.packagePinName);
+    %     picoPin += "_PICO";
     %     tdmach = spi.dmaTxChannel.$solution.devicePinName.substring(7);
     %     tdmach = "UDMA_CH" + tdmach + "_" + name + "_TX";
-    %     misoPin += "NO_CONFIG";
+    %     pociPin += "NO_CONFIG";
     % }
-    % else if (inst.duplex == "Slave TX Only") {
-    %     misoPin += convertPinName(spi.misoPin.$solution.packagePinName);
-    %     misoPin += "_MISO";
+    % else if (inst.duplex == "Peripheral TX Only") {
+    %     pociPin += convertPinName(spi.pociPin.$solution.packagePinName);
+    %     pociPin += "_POCI";
     %     tdmach = spi.dmaTxChannel.$solution.devicePinName.substring(7);
     %     tdmach = "UDMA_CH" + tdmach + "_" + name + "_TX";
-    %     mosiPin += "NO_CONFIG";
+    %     picoPin += "NO_CONFIG";
     % }
-    % else if (inst.duplex == "Slave RX Only") {
-    %     mosiPin += convertPinName(spi.mosiPin.$solution.packagePinName);
-    %     mosiPin += "_MOSI";
+    % else if (inst.duplex == "Peripheral RX Only") {
+    %     picoPin += convertPinName(spi.picoPin.$solution.packagePinName);
+    %     picoPin += "_PICO";
     %     rdmach = spi.dmaRxChannel.$solution.devicePinName.substring(7);
     %     rdmach = "UDMA_CH" + rdmach + "_" + name + "_RX";
-    %     misoPin += "NO_CONFIG";
+    %     pociPin += "NO_CONFIG";
     % }
     %
-    % let ssPin = "SPICC32XXDMA_PIN_";
+    % let csnPin = "SPICC32XXDMA_PIN_";
     % if (inst.mode !== "Three Pin") {
-    %     ssPin += convertPinName(spi.ssPin.$solution.packagePinName) + "_CS";
+    %     csnPin += convertPinName(spi.csnPin.$solution.packagePinName) + "_CS";
     % }
     % else {
-    %     ssPin += "NO_CONFIG";
+    %     csnPin += "NO_CONFIG";
     % }
     /* `name` */
     % if (inst.$hardware) {
@@ -198,10 +198,10 @@ const SPICC32XXDMA_HWAttrsV1 spiCC32XXDMAHWAttrs[`countDef`] = {
         .rxChannelIndex = `rdmach`,
         .txChannelIndex = `tdmach`,
         .minDmaTransferSize = `inst.minDmaTransferSize`,
-        .mosiPin = `mosiPin`,
-        .misoPin = `misoPin`,
+        .picoPin = `picoPin`,
+        .pociPin = `pociPin`,
         .clkPin  = `sclkPin`,
-        .csPin  = `ssPin`
+        .csnPin  = `csnPin`
     },
     % }
 };

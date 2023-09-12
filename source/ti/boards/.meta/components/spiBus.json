@@ -39,17 +39,17 @@
     "type": ["SPI_BUS"],
     "displayName": "SPI Bus",
     "description": "Serial Peripheral Interface (SPI) Bus",
-    "longDescription": "Generic 3 wire Serial Peripheral Interface (SPI) bus.",
+    "longDescription": "Generic 3-wire Serial Peripheral Interface (SPI) bus.",
     "isBus": true,
     "signals": {
         "SCLK": {
             "type": "SPI_SCLK"
         },
-        "MOSI": {
-            "type": "SPI_MOSI"
+        "PICO": {
+            "type": "SPI_PICO"
         },
-        "MISO": {
-            "type": "SPI_MISO"
+        "POCI": {
+            "type": "SPI_POCI"
         }
     }
 }

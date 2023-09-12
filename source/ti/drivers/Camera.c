@@ -45,20 +45,18 @@ extern const Camera_Config Camera_config[];
 extern const uint_least8_t Camera_count;
 
 /* Default Camera parameters structure */
-const Camera_Params Camera_defaultParams = {
-     Camera_MODE_BLOCKING,               /* captureMode */
-     24000000,                           /* outputClock */
-     Camera_HSYNC_POLARITY_HIGH,         /* hsyncPolarity */
-     Camera_VSYNC_POLARITY_HIGH,         /* vsyncPolarity */
-     Camera_PCLK_CONFIG_RISING_EDGE,     /* pixelClkConfig */
-     Camera_BYTE_ORDER_NORMAL,           /* byteOrder */
-     Camera_INTERFACE_SYNC_ON,           /* interfaceSync */
-     Camera_STOP_CAPTURE_FRAME_END,      /* stopConfig */
-     Camera_START_CAPTURE_FRAME_START,   /* startConfig */
-     Camera_WAIT_FOREVER,                /* captureTimeout */
-     NULL,                               /* captureCallback */
-     NULL
-};
+const Camera_Params Camera_defaultParams = {Camera_MODE_BLOCKING,             /* captureMode */
+                                            24000000,                         /* outputClock */
+                                            Camera_HSYNC_POLARITY_HIGH,       /* hsyncPolarity */
+                                            Camera_VSYNC_POLARITY_HIGH,       /* vsyncPolarity */
+                                            Camera_PCLK_CONFIG_RISING_EDGE,   /* pixelClkConfig */
+                                            Camera_BYTE_ORDER_NORMAL,         /* byteOrder */
+                                            Camera_INTERFACE_SYNC_ON,         /* interfaceSync */
+                                            Camera_STOP_CAPTURE_FRAME_END,    /* stopConfig */
+                                            Camera_START_CAPTURE_FRAME_START, /* startConfig */
+                                            Camera_WAIT_FOREVER,              /* captureTimeout */
+                                            NULL,                             /* captureCallback */
+                                            NULL};
 
 static bool isInitialized = false;
 
@@ -88,12 +86,14 @@ void Camera_init(void)
 
     key = HwiP_disable();
 
-    if (!isInitialized) {
-        isInitialized = (bool) true;
+    if (!isInitialized)
+    {
+        isInitialized = (bool)true;
 
         /* Call each driver's init function */
-        for (i = 0; i < Camera_count; i++) {
-            Camera_config[i].fxnTablePtr->initFxn((Camera_Handle)&(Camera_config[i]));
+        for (i = 0; i < Camera_count; i++)
+        {
+            Camera_config[i].fxnTablePtr->initFxn((Camera_Handle) & (Camera_config[i]));
         }
     }
 
@@ -105,17 +105,19 @@ void Camera_init(void)
  */
 Camera_Handle Camera_open(uint_least8_t index, Camera_Params *params)
 {
-    Camera_Handle         handle = NULL;
+    Camera_Handle handle = NULL;
 
     /* Verify driver index and state */
-    if (isInitialized && (index < Camera_count)) {
+    if (isInitialized && (index < Camera_count))
+    {
         /* If params are NULL use defaults. */
-        if (params == NULL) {
+        if (params == NULL)
+        {
             params = (Camera_Params *)&Camera_defaultParams;
         }
 
         /* Get handle for this driver instance */
-        handle = (Camera_Handle)&(Camera_config[index]);
+        handle = (Camera_Handle) & (Camera_config[index]);
         handle = handle->fxnTablePtr->openFxn(handle, params);
     }
 
@@ -133,8 +135,7 @@ void Camera_Params_init(Camera_Params *params)
 /*
  *  ======== Camera_capture ========
  */
-int_fast16_t Camera_capture(Camera_Handle handle, void *buffer,
-    size_t bufferlen, size_t *frameLen)
+int_fast16_t Camera_capture(Camera_Handle handle, void *buffer, size_t bufferlen, size_t *frameLen)
 {
     return (handle->fxnTablePtr->captureFxn(handle, buffer, bufferlen, frameLen));
 }

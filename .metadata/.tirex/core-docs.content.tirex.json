@@ -5,8 +5,8 @@
                 "Documents"
             ]
         ],
-        "location": "../../release_notes_simplelink_cc32xx_sdk_6_10_00_05.html",
-        "name": "SimpleLink CC32xx SDK 6.10.00.05 Release Notes",
+        "location": "../../release_notes_simplelink_cc32xx_sdk_7_10_00_13.html",
+        "name": "SimpleLink CC32xx SDK 7.10.00.13 Release Notes",
         "resourceType": "file"
     },
     {
@@ -31,7 +31,7 @@
     },
     {
         "resourceType": "file",
-        "location": "../../docs/simplelink_mcu_sdk/release_notes_coresdk_cc32xx_6_10_00_13.html",
+        "location": "../../docs/simplelink_mcu_sdk/release_notes_coresdk_cc32xx_7_10_01_03.html",
         "name": "SimpleLink MCU Release Notes",
         "categories": [
             [

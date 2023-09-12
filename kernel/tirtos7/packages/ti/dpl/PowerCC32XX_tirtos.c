@@ -55,13 +55,12 @@
  * macro to resolve RTC count when reading from 40MHz domain (need to read 3
  * times and compare values to ensure proper sync with RTC running at 32786Hz)
  */
-#define COUNT_WITHIN_TRESHOLD(a, b, c, th) \
-        ((((b) - (a)) <= (th)) ? (b) : (c))
+#define COUNT_WITHIN_TRESHOLD(a, b, c, th) ((((b) - (a)) <= (th)) ? (b) : (c))
 
 /* macros for enabling RTC */
-#define HWREG(x) (*((volatile unsigned long *)(x)))
-#define HIB3P3_BASE                        0x4402F800
-#define HIB3P3_O_MEM_HIB_RTC_TIMER_ENABLE  0x00000004
+#define HWREG(x)                          (*((volatile unsigned long *)(x)))
+#define HIB3P3_BASE                       0x4402F800
+#define HIB3P3_O_MEM_HIB_RTC_TIMER_ENABLE 0x00000004
 
 static uint64_t getCountsRTC(void);
 
@@ -101,7 +100,8 @@ void PowerCC32XX_sleepPolicy(void)
     constraintMask = Power_getConstraintMask();
 
     /* check if there is a constraint to disallow LPDS */
-    if ((constraintMask & LPDS_DISALLOWED) == 0) {
+    if ((constraintMask & LPDS_DISALLOWED) == 0)
+    {
 
         /* query Clock for the next tick that has a scheduled timeout */
         deltaTick = Clock_getTicksUntilTimeout();
@@ -111,7 +111,8 @@ void PowerCC32XX_sleepPolicy(void)
 
         /* check if there is enough time to transition to/from LPDS */
         latency = Power_getTransitionLatency(PowerCC32XX_LPDS, Power_TOTAL);
-        if (deltaTime > latency) {
+        if (deltaTime > latency)
+        {
 
             /* decision is now made, going to transition to LPDS ... */
 
@@ -134,7 +135,8 @@ void PowerCC32XX_sleepPolicy(void)
             remain = (deltaTime * 32768) / 1000000;
 
             /* if necessary clip the interval to a max 32-bit value */
-            if (remain > 0xFFFFFFFF) {
+            if (remain > 0xFFFFFFFF)
+            {
                 remain = 0xFFFFFFFF;
             }
 
@@ -157,9 +159,8 @@ void PowerCC32XX_sleepPolicy(void)
             wakeRTC = getCountsRTC();
 
             /* compute delta Clock ticks spent in LPDS */
-            temp64 = (((wakeRTC - beforeRTC) * 1000000) /
-                (32768 * Clock_tickPeriod));
-            deltaTicksPerRTC = (uint32_t) temp64;
+            temp64           = (((wakeRTC - beforeRTC) * 1000000) / (32768 * Clock_tickPeriod));
+            deltaTicksPerRTC = (uint32_t)temp64;
 
             /* compute resulting 'new' tick count */
             newTick = beforeTick + deltaTicksPerRTC;
@@ -178,12 +179,14 @@ void PowerCC32XX_sleepPolicy(void)
             newDelta = newTick - beforeTick;
 
             /* first, handle normal case of early wake (before workTick) ... */
-            if (newDelta < deltaTick) {
+            if (newDelta < deltaTick)
+            {
                 /* just set count to newTick */
                 Clock_setTicks(newTick);
             }
             /* else, if woke on workTick or later */
-            else {
+            else
+            {
                 /*
                  * update tick count, trigger Clock Swi to run ASAP
                  *  1. set tick count to workTick - 1
@@ -194,7 +197,8 @@ void PowerCC32XX_sleepPolicy(void)
                  *     catch up for ticks that weren't serviced on time]
                  */
                 Clock_setTicks(workTick - 1);
-                for (i = 0; i < (newDelta - deltaTick + 1); i++) {
+                for (i = 0; i < (newDelta - deltaTick + 1); i++)
+                {
                     ti_sysbios_knl_Clock_doTick(0);
                 }
             }
@@ -209,7 +213,8 @@ void PowerCC32XX_sleepPolicy(void)
     }
 
     /* sleep, but only if did not invoke a sleep state above */
-    if (!(slept)) {
+    if (!(slept))
+    {
         /* Flush any remaining log messages in the ITM */
         ITM_flush();
         MAP_PRCMSleepEnter();
@@ -239,8 +244,8 @@ void PowerCC32XX_initPolicy(void)
      * check that the Clock module configuration is compatible with this
      * policy; if it is not, declare a constraint to prohibit LPDS
      */
-    if ((Clock_tickSource != Clock_TickSource_TIMER) ||
-        (Clock_tickMode != Clock_TickMode_PERIODIC)) {
+    if ((Clock_tickSource != Clock_TickSource_TIMER) || (Clock_tickMode != Clock_TickMode_PERIODIC))
+    {
         Power_setConstraint(PowerCC32XX_DISALLOW_LPDS);
     }
 }
@@ -260,21 +265,26 @@ void ti_sysbios_family_arm_lm4_Timer_disableCC32XX__I(int32_t id)
 
     key = Hwi_disable();
 
-    switch (id) {
-       case 0: Power_releaseDependency(PowerCC32XX_PERIPH_TIMERA0);
-                break;
+    switch (id)
+    {
+        case 0:
+            Power_releaseDependency(PowerCC32XX_PERIPH_TIMERA0);
+            break;
 
-        case 1: Power_releaseDependency(PowerCC32XX_PERIPH_TIMERA1);
-                break;
+        case 1:
+            Power_releaseDependency(PowerCC32XX_PERIPH_TIMERA1);
+            break;
 
-        case 2: Power_releaseDependency(PowerCC32XX_PERIPH_TIMERA2);
-                break;
+        case 2:
+            Power_releaseDependency(PowerCC32XX_PERIPH_TIMERA2);
+            break;
 
-        case 3: Power_releaseDependency(PowerCC32XX_PERIPH_TIMERA3);
-                break;
+        case 3:
+            Power_releaseDependency(PowerCC32XX_PERIPH_TIMERA3);
+            break;
 
         default:
-                break;
+            break;
     }
 
     /* release the disallow LPDS constraint when the GP timer is disabled */
@@ -298,21 +308,26 @@ void ti_sysbios_family_arm_lm4_Timer_enableCC32XX__I(int32_t id)
 
     key = Hwi_disable();
 
-    switch (id) {
-        case 0: Power_setDependency(PowerCC32XX_PERIPH_TIMERA0);
-                break;
+    switch (id)
+    {
+        case 0:
+            Power_setDependency(PowerCC32XX_PERIPH_TIMERA0);
+            break;
 
-        case 1: Power_setDependency(PowerCC32XX_PERIPH_TIMERA1);
-                break;
+        case 1:
+            Power_setDependency(PowerCC32XX_PERIPH_TIMERA1);
+            break;
 
-        case 2: Power_setDependency(PowerCC32XX_PERIPH_TIMERA2);
-                break;
+        case 2:
+            Power_setDependency(PowerCC32XX_PERIPH_TIMERA2);
+            break;
 
-        case 3: Power_setDependency(PowerCC32XX_PERIPH_TIMERA3);
-                break;
+        case 3:
+            Power_setDependency(PowerCC32XX_PERIPH_TIMERA3);
+            break;
 
         default:
-                break;
+            break;
     }
 
     /* declare the disallow LPDS constraint while GP timer is in use */
@@ -335,7 +350,8 @@ static uint64_t getCountsRTC(void)
      *  fast interface the count must be read three times, and then
      *  the value that matches on at least two of the reads is chosen
      */
-    for (i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++)
+    {
         count[i] = MAP_PRCMSlowClkCtrFastGet();
     }
     curr = COUNT_WITHIN_TRESHOLD(count[0], count[1], count[2], 1);

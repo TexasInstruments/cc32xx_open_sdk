@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017, Texas Instruments Incorporated
+ * Copyright (c) 2016-2023, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,14 +30,13 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 //*****************************************************************************
 //
 // Check if compiler is GNU Compiler
 //
 //*****************************************************************************
 #if !(defined(__GNUC__))
-#error "startup_cc32xx_gcc.c: Unsupported compiler!"
+    #error "startup_cc32xx_gcc.c: Unsupported compiler!"
 #endif
 
 #include <stdint.h>
@@ -94,30 +93,27 @@ extern unsigned long _stack_end;
 // ensure that it ends up at physical address 0x0000.0000.
 //
 //*****************************************************************************
-__attribute__ ((section(".resetVecs"))) __attribute__ ((used))
-static void (* const resetVectors[16])(void) =
-{
+__attribute__((section(".resetVecs"))) __attribute__((used)) static void (*const resetVectors[16])(void) = {
     (void (*)(void))((uint32_t)&_stack_end),
-                                         // The initial stack pointer
-    resetISR,                            // The reset handler
-    nmiISR,                              // The NMI handler
-    faultISR,                            // The hard fault handler
-    defaultHandler,                      // The MPU fault handler
-    busFaultHandler,                     // The bus fault handler
-    defaultHandler,                      // The usage fault handler
-    0,                                   // Reserved
-    0,                                   // Reserved
-    0,                                   // Reserved
-    0,                                   // Reserved
-    defaultHandler,                      // SVCall handler
-    defaultHandler,                      // Debug monitor handler
-    0,                                   // Reserved
-    defaultHandler,                      // The PendSV handler
-    ClockP_sysTickHandler                // The SysTick handler
+    // The initial stack pointer
+    resetISR,             // The reset handler
+    nmiISR,               // The NMI handler
+    faultISR,             // The hard fault handler
+    defaultHandler,       // The MPU fault handler
+    busFaultHandler,      // The bus fault handler
+    defaultHandler,       // The usage fault handler
+    0,                    // Reserved
+    0,                    // Reserved
+    0,                    // Reserved
+    0,                    // Reserved
+    defaultHandler,       // SVCall handler
+    defaultHandler,       // Debug monitor handler
+    0,                    // Reserved
+    defaultHandler,       // The PendSV handler
+    ClockP_sysTickHandler // The SysTick handler
 };
 
-__attribute__ ((section(".ramVecs")))
-static unsigned long ramVectors[195];
+__attribute__((section(".ramVecs"), aligned(1024))) static unsigned long ramVectors[195];
 
 //*****************************************************************************
 //
@@ -125,16 +121,15 @@ static unsigned long ramVectors[195];
 // be called during startup to initialize global objects.
 //
 //*****************************************************************************
-extern void (*__init_array_start []) (void);
-extern void (*__init_array_end []) (void);
+extern void (*__init_array_start[])(void);
+extern void (*__init_array_end[])(void);
 
 //*****************************************************************************
 //
 // The following global variable is required for C++ support.
 //
 //*****************************************************************************
-void * __dso_handle = (void *) &__dso_handle;
-
+void *__dso_handle = (void *)&__dso_handle;
 
 //*****************************************************************************
 //
@@ -155,30 +150,33 @@ extern uint32_t __data_load__, __data_start__, __data_end__;
 //
 //*****************************************************************************
 //
-void localProgramStart(void)
+__attribute__((used)) void localProgramStart(void)
 {
-    uint32_t * bs;
-    uint32_t * be;
-    uint32_t * dl;
-    uint32_t * ds;
-    uint32_t * de;
+    uint32_t *bs;
+    uint32_t *be;
+    uint32_t *dl;
+    uint32_t *ds;
+    uint32_t *de;
     uint32_t count;
     uint32_t i;
 
     /* initiailize .bss to zero */
-    bs = & __bss_start__;
-    be = & __bss_end__;
-    while (bs < be) {
+    bs = &__bss_start__;
+    be = &__bss_end__;
+    while (bs < be)
+    {
         *bs = 0;
         bs++;
     }
 
     /* relocate the .data section */
-    dl = & __data_load__;
-    ds = & __data_start__;
-    de = & __data_end__;
-    if (dl != ds) {
-        while (ds < de) {
+    dl = &__data_load__;
+    ds = &__data_start__;
+    de = &__data_end__;
+    if (dl != ds)
+    {
+        while (ds < de)
+        {
             *ds = *dl;
             dl++;
             ds++;
@@ -187,15 +185,16 @@ void localProgramStart(void)
 
     /* Run any constructors */
     count = (uint32_t)(__init_array_end - __init_array_start);
-    for (i = 0; i < count; i++) {
+    for (i = 0; i < count; i++)
+    {
         __init_array_start[i]();
     }
 
     /* Copy from reset vector table into RAM vector table */
-    memcpy(ramVectors, resetVectors, 16*4);
+    memcpy(ramVectors, resetVectors, 16 * 4);
 
     /* fill remaining vectors with default handler */
-    for (i=16; i < 195; i++)
+    for (i = 16; i < 195; i++)
     {
         ramVectors[i] = (unsigned long)defaultHandler;
     }
@@ -224,13 +223,11 @@ void __attribute__((naked)) resetISR(void)
 {
     MAP_IntMasterDisable();
 
-    __asm__ __volatile__ (
-        " movw r0, #:lower16:resetVectors\n"
-        " movt r0, #:upper16:resetVectors\n"
-        " ldr r0, [r0]\n"
-        " mov sp, r0\n"
-        " bl localProgramStart"
-    );
+    __asm__ __volatile__(" movw r0, #:lower16:resetVectors\n"
+                         " movt r0, #:upper16:resetVectors\n"
+                         " ldr r0, [r0]\n"
+                         " mov sp, r0\n"
+                         " bl localProgramStart");
 }
 
 //*****************************************************************************
@@ -240,13 +237,10 @@ void __attribute__((naked)) resetISR(void)
 // by a debugger.
 //
 //*****************************************************************************
-static void
-nmiISR(void)
+static void nmiISR(void)
 {
     /* Enter an infinite loop. */
-    while(1)
-    {
-    }
+    while (1) {}
 }
 
 //*****************************************************************************
@@ -256,13 +250,10 @@ nmiISR(void)
 // for examination by a debugger.
 //
 //*****************************************************************************
-static void
-faultISR(void)
+static void faultISR(void)
 {
     /* Enter an infinite loop. */
-    while(1)
-    {
-    }
+    while (1) {}
 }
 
 //*****************************************************************************
@@ -272,14 +263,10 @@ faultISR(void)
 // for examination by a debugger.
 //
 //*****************************************************************************
-
-static void
-busFaultHandler(void)
+static void busFaultHandler(void)
 {
     /* Enter an infinite loop. */
-    while(1)
-    {
-    }
+    while (1) {}
 }
 
 //*****************************************************************************
@@ -289,13 +276,10 @@ busFaultHandler(void)
 // for examination by a debugger.
 //
 //*****************************************************************************
-static void
-defaultHandler(void)
+static void defaultHandler(void)
 {
     /* Enter an infinite loop. */
-    while(1)
-    {
-    }
+    while (1) {}
 }
 
 //*****************************************************************************

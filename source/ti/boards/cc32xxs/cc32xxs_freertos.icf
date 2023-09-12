@@ -2,7 +2,7 @@
 //
 // IAR Linker configuration file.
 //
-// Copyright (C) 2018-2020 Texas Instruments Incorporated - http://www.ti.com/
+// Copyright (C) 2018-2023 Texas Instruments Incorporated - http://www.ti.com/
 // All rights reserved.
 //
 //  Redistribution and use in source and binary forms, with or without
@@ -90,20 +90,21 @@ initialize by copy { readwrite };
 //-----------------------------------------------------------
 
 //-----------------------------------------------------------
-place at start of SRAM { readonly section .intvec };
+place at start of SRAM { readonly section .resetVecs };
 //-----------------------------------------------------------
 
 //
-// Place the remainder of the read-only items into flash.
+// Place the remainder of the read-only items into SRAM.
 //
 place in RWSRAM { readonly };
 
 //
-// Place the RAM vector table at the start of SRAM.
+// Place the RAM vector table into SRAM.
 //
 
 //-----------------------------------------------------------
-place in RWSRAM { section VTABLE };
+place in RWSRAM { section .ramVecs };
+do not initialize { section .ramVecs};
 //------------------------------------------------------------
 
 //
@@ -120,4 +121,8 @@ place in RWSRAM { readwrite};
  * https://developer.arm.com/documentation/ddi0337/e/memory-map/about-the-memory-map
  */
 define region LOG_DATA = mem:[from 0x90000000 to 0x9003FFFF];
-".log_data": place noload in LOG_DATA { readonly section .log_data };
+define region LOG_PTR = mem:[from 0x94000008 to 0x94040007];
+define block LOG_DATA  with size = 0x40000 { readonly section .log_data  };
+define block LOG_PTR   with size = 0x40000 { readonly section .log_ptr* };
+".log_data": place noload in LOG_DATA { block LOG_DATA };
+".log_ptr": place noload in LOG_PTR { block LOG_PTR };

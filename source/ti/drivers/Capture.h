@@ -135,8 +135,7 @@
 #include <stdint.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /*!
@@ -150,7 +149,7 @@ extern "C"
  * #define CaptureXYZ_CMD_COMMAND1      Capture_CMD_RESERVED + 1
  * @endcode
  */
-#define Capture_CMD_RESERVED             (32)
+#define Capture_CMD_RESERVED (32)
 
 /*!
  * Common Capture_control status code reservation offset.
@@ -163,17 +162,17 @@ extern "C"
  * #define CaptureXYZ_STATUS_ERROR1     Capture_STATUS_RESERVED - 1
  * @endcode
  */
-#define Capture_STATUS_RESERVED         (-32)
+#define Capture_STATUS_RESERVED (-32)
 
 /*!
  * @brief   Successful status code.
  */
-#define Capture_STATUS_SUCCESS          (0)
+#define Capture_STATUS_SUCCESS (0)
 
 /*!
  * @brief   Generic error status code.
  */
-#define Capture_STATUS_ERROR            (-1)
+#define Capture_STATUS_ERROR (-1)
 
 /*!
  * @brief   An error status code returned by Capture_control() for undefined
@@ -182,13 +181,12 @@ extern "C"
  * Capture_control() returns Capture_STATUS_UNDEFINEDCMD if the control code is
  * not recognized by the driver implementation.
  */
-#define Capture_STATUS_UNDEFINEDCMD     (-2)
+#define Capture_STATUS_UNDEFINEDCMD (-2)
 
 /*!
  *  @brief      A handle that is returned from a Capture_open() call.
  */
 typedef struct Capture_Config_ *Capture_Handle;
-
 
 /*!
  *  @brief Capture mode settings
@@ -199,17 +197,18 @@ typedef struct Capture_Config_ *Capture_Handle;
  *  Some modes are not available on all devices. Check the device specific
  *  implementations to see which modes are allowed.
  */
-typedef enum {
-    Capture_RISING_EDGE,     /*!< Capture is triggered on rising edges. */
-    Capture_FALLING_EDGE,    /*!< Capture is triggered on falling edges. */
-    Capture_ANY_EDGE,         /*!< Capture is triggered on both rising and
-                                  falling edges. */
-    Capture_RISING_EDGE_FALLING_EDGE,  /*!< Start capture is triggered on rising
-                                            edge and stop capture is triggered
-                                            on falling edge */
-    Capture_FALLING_EDGE_RISING_EDGE,  /*!< Start capture is triggered on
-                                            falling edge and stop capture is
-                                            triggered on rising edge */
+typedef enum
+{
+    Capture_RISING_EDGE,              /*!< Capture is triggered on rising edges. */
+    Capture_FALLING_EDGE,             /*!< Capture is triggered on falling edges. */
+    Capture_ANY_EDGE,                 /*!< Capture is triggered on both rising and
+                                          falling edges. */
+    Capture_RISING_EDGE_FALLING_EDGE, /*!< Start capture is triggered on rising
+                                           edge and stop capture is triggered
+                                           on falling edge */
+    Capture_FALLING_EDGE_RISING_EDGE, /*!< Start capture is triggered on
+                                           falling edge and stop capture is
+                                           triggered on rising edge */
 } Capture_Mode;
 
 /*!
@@ -218,15 +217,15 @@ typedef enum {
  *  This enum defines the units that may be specified for the period
  *  in #Capture_Params.
  */
-typedef enum {
-    Capture_PERIOD_US,       /*!< Period specified in micro seconds. */
-    Capture_PERIOD_HZ,       /*!< Period specified in hertz; interrupts per
-                                  second. */
-    Capture_PERIOD_COUNTS,    /*!< Period specified in timer ticks. Varies
-                                  by board. */
-    Capture_PERIOD_NS,       /*!< Period specified in nano seconds. */
+typedef enum
+{
+    Capture_PERIOD_US,     /*!< Period specified in micro seconds. */
+    Capture_PERIOD_HZ,     /*!< Period specified in hertz; interrupts per
+                                second. */
+    Capture_PERIOD_COUNTS, /*!< Period specified in timer ticks. Varies
+                               by board. */
+    Capture_PERIOD_NS,     /*!< Period specified in nano seconds. */
 } Capture_PeriodUnits;
-
 
 /*!
  *  @brief  Capture callback function
@@ -241,8 +240,7 @@ typedef enum {
  *                             #Capture_PeriodUnits
  *  @param[in]  status         Status of Capture interrupt
  */
-typedef void (*Capture_CallBackFxn)(Capture_Handle handle, uint32_t interval,
-                                    int_fast16_t status);
+typedef void (*Capture_CallBackFxn)(Capture_Handle handle, uint32_t interval, int_fast16_t status);
 
 /*!
  *  @brief Capture Parameters
@@ -251,15 +249,16 @@ typedef void (*Capture_CallBackFxn)(Capture_Handle handle, uint32_t interval,
  *  these parameters are set using Capture_Params_init().
  *
  */
-typedef struct {
+typedef struct
+{
     /*! Mode to be used by the timer driver. */
-    Capture_Mode           mode;
+    Capture_Mode mode;
 
     /*! Callback function called when a trigger event occurs. */
-    Capture_CallBackFxn    callbackFxn;
+    Capture_CallBackFxn callbackFxn;
 
     /*! Units used to specify the interval. */
-    Capture_PeriodUnits    periodUnit;
+    Capture_PeriodUnits periodUnit;
 } Capture_Params;
 
 /*!
@@ -272,8 +271,7 @@ typedef void (*Capture_CloseFxn)(Capture_Handle handle);
  *  @brief      A function pointer to a driver specific implementation of
  *              Capture_control().
  */
-typedef int_fast16_t (*Capture_ControlFxn)(Capture_Handle handle,
-    uint_fast16_t cmd, void *arg);
+typedef int_fast16_t (*Capture_ControlFxn)(Capture_Handle handle, uint_fast16_t cmd, void *arg);
 
 /*!
  *  @brief      A function pointer to a driver specific implementation of
@@ -285,8 +283,7 @@ typedef void (*Capture_InitFxn)(Capture_Handle handle);
  *  @brief      A function pointer to a driver specific implementation of
  *              Capture_open().
  */
-typedef Capture_Handle (*Capture_OpenFxn)(Capture_Handle handle,
-    Capture_Params *params);
+typedef Capture_Handle (*Capture_OpenFxn)(Capture_Handle handle, Capture_Params *params);
 
 /*!
  *  @brief      A function pointer to a driver specific implementation of
@@ -305,7 +302,8 @@ typedef void (*Capture_StopFxn)(Capture_Handle handle);
  *              required set of functions to control a specific capture driver
  *              implementation.
  */
-typedef struct {
+typedef struct
+{
     /*! Function to close the specified peripheral. */
     Capture_CloseFxn closeFxn;
 
@@ -336,16 +334,17 @@ typedef struct {
  *
  *  @sa     Capture_init()
  */
-typedef struct Capture_Config_ {
+typedef struct Capture_Config_
+{
     /*! Pointer to a table of driver-specific implementations of capture
         APIs. */
     Capture_FxnTable const *fxnTablePtr;
 
     /*! Pointer to a driver specific data object. */
-    void                   *object;
+    void *object;
 
     /*! Pointer to a driver specific hardware attributes structure. */
-    void             const *hwAttrs;
+    void const *hwAttrs;
 } Capture_Config;
 
 /*!
@@ -379,8 +378,7 @@ extern void Capture_close(Capture_Handle handle);
  *
  *  @sa     Capture_open()
  */
-extern int_fast16_t Capture_control(Capture_Handle handle, uint_fast16_t cmd,
-    void *arg);
+extern int_fast16_t Capture_control(Capture_Handle handle, uint_fast16_t cmd, void *arg);
 
 /*!
  *  @brief  Function to initialize the capture driver. This function will go

@@ -60,25 +60,22 @@
  * multiplied by two because there are two bits in the timerState.bitMask for
  * each timer. The value returned is used for the logical shift.
  */
-#define timerMaskShift(baseAddress) ((((baseAddress) & 0XF000) >> 12) * 2)
+#define timerMaskShift(baseAddress) ((((baseAddress)&0XF000) >> 12) * 2)
 
 /* Internal static Functions */
 static void initHw(Timer_Handle handle);
 static void getPrescaler(Timer_Handle handle);
 static uint32_t getPowerMgrId(uint32_t baseAddress);
-static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg,
-    uintptr_t clientArg);
+static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg);
 static void TimerCC32XX_hwiIntFunction(uintptr_t arg);
 
 extern uint_least8_t Timer_count;
 
 /* Default Parameters */
-static const Timer_Params defaultParams = {
-    .timerMode     = Timer_ONESHOT_BLOCKING,
-    .periodUnits   = Timer_PERIOD_COUNTS,
-    .timerCallback = NULL,
-    .period        = (uint16_t) ~0
-};
+static const Timer_Params defaultParams = {.timerMode     = Timer_ONESHOT_BLOCKING,
+                                           .periodUnits   = Timer_PERIOD_COUNTS,
+                                           .timerCallback = NULL,
+                                           .period        = (uint16_t)~0};
 
 /*
  * Internal Timer status structure
@@ -94,7 +91,8 @@ static const Timer_Params defaultParams = {
  *  | Reserved | Timer3 | Timer2 | Timer1 | Timer0 |
  *  ------------------------------------------------
  */
-static struct {
+static struct
+{
     uint32_t bitMask;
 } timerState;
 
@@ -104,25 +102,29 @@ static struct {
 static void initHw(Timer_Handle handle)
 {
     TimerCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    TimerCC32XX_Object  const *object = handle->object;
+    TimerCC32XX_Object const *object   = handle->object;
 
     /* Ensure the timer is disabled */
     TimerDisable(hwAttrs->baseAddress, object->timer);
 
-    if (object->timer == TIMER_A) {
+    if (object->timer == TIMER_A)
+    {
 
         HWREG(hwAttrs->baseAddress + TIMER_O_TAMR) = TIMER_TAMR_TAMR_PERIOD;
     }
-    else {
+    else
+    {
 
         HWREG(hwAttrs->baseAddress + TIMER_O_TBMR) = TIMER_TBMR_TBMR_PERIOD;
     }
 
-    if (hwAttrs->subTimer == TimerCC32XX_timer32) {
+    if (hwAttrs->subTimer == TimerCC32XX_timer32)
+    {
 
         HWREG(hwAttrs->baseAddress + TIMER_O_CFG) = TIMER_CFG_32_BIT_TIMER;
     }
-    else {
+    else
+    {
 
         HWREG(hwAttrs->baseAddress + TIMER_O_CFG) = TIMER_CFG_16_BIT;
     }
@@ -151,18 +153,20 @@ static void initHw(Timer_Handle handle)
  */
 static void getPrescaler(Timer_Handle handle)
 {
-    TimerCC32XX_Object        *object = handle->object;
-    uint32_t                   bestDiff = ~0, bestPsr = 0, bestIload = 0;
-    uint32_t                   diff, intervalLoad, prescaler;
+    TimerCC32XX_Object *object = handle->object;
+    uint32_t bestDiff = ~0, bestPsr = 0, bestIload = 0;
+    uint32_t diff, intervalLoad, prescaler;
 
     /* Loop over the 8-bit prescaler */
-    for (prescaler = 1; prescaler < 256; prescaler++) {
+    for (prescaler = 1; prescaler < 256; prescaler++)
+    {
 
         /* Calculate timer interval load */
         intervalLoad = object->period / (prescaler + 1);
 
         /* Will this fit in 16-bits? */
-        if (intervalLoad > (uint16_t) ~0) {
+        if (intervalLoad > (uint16_t)~0)
+        {
             continue;
         }
 
@@ -170,25 +174,27 @@ static void getPrescaler(Timer_Handle handle)
         diff = object->period - intervalLoad * (prescaler + 1);
 
         /* If it is closer to what we want */
-        if (diff <= bestDiff) {
+        if (diff <= bestDiff)
+        {
 
             /* If its a perfect match */
-            if (diff == 0) {
-                object->period = intervalLoad;
+            if (diff == 0)
+            {
+                object->period    = intervalLoad;
                 object->prescaler = prescaler;
 
                 return;
             }
 
             /* Snapshot in case we don't find something better */
-            bestDiff = diff;
-            bestPsr = prescaler;
+            bestDiff  = diff;
+            bestPsr   = prescaler;
             bestIload = intervalLoad;
         }
     }
 
     /* Never found a perfect match, settle for the best */
-    object->period = bestIload;
+    object->period    = bestIload;
     object->prescaler = bestPsr;
 }
 
@@ -197,7 +203,8 @@ static void getPrescaler(Timer_Handle handle)
  */
 static uint32_t getPowerMgrId(uint32_t baseAddress)
 {
-    switch (baseAddress) {
+    switch (baseAddress)
+    {
 
         case TIMERA0_BASE:
 
@@ -217,7 +224,7 @@ static uint32_t getPowerMgrId(uint32_t baseAddress)
 
         default:
 
-            return ((uint32_t) -1);
+            return ((uint32_t)-1);
     }
 }
 
@@ -226,10 +233,9 @@ static uint32_t getPowerMgrId(uint32_t baseAddress)
  *  This functions is called when a transition from LPDS mode is made.
  *  clientArg should be a handle of a previously opened Timer instance.
  */
-static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg,
-    uintptr_t clientArg)
+static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg)
 {
-    initHw((Timer_Handle) clientArg);
+    initHw((Timer_Handle)clientArg);
 
     return (Power_NOTIFYDONE);
 }
@@ -237,17 +243,17 @@ static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg,
 /*
  *  ======== TimerCC32XX_allocateTimerResource ========
  */
-bool TimerCC32XX_allocateTimerResource(uint32_t baseAddress,
-    TimerCC32XX_SubTimer subTimer)
+bool TimerCC32XX_allocateTimerResource(uint32_t baseAddress, TimerCC32XX_SubTimer subTimer)
 {
     uintptr_t key;
-    uint32_t  mask;
-    uint32_t  powerMgrId;
-    bool      status;
+    uint32_t mask;
+    uint32_t powerMgrId;
+    bool status;
 
     powerMgrId = getPowerMgrId(baseAddress);
 
-    if (powerMgrId == (uint32_t) -1) {
+    if (powerMgrId == (uint32_t)-1)
+    {
 
         return (false);
     }
@@ -256,15 +262,17 @@ bool TimerCC32XX_allocateTimerResource(uint32_t baseAddress,
 
     key = HwiP_disable();
 
-    if (timerState.bitMask & mask) {
+    if (timerState.bitMask & mask)
+    {
 
         status = false;
     }
-    else {
+    else
+    {
 
         Power_setDependency(powerMgrId);
         timerState.bitMask = timerState.bitMask | mask;
-        status = true;
+        status             = true;
     }
 
     HwiP_restore(key);
@@ -277,7 +285,7 @@ bool TimerCC32XX_allocateTimerResource(uint32_t baseAddress,
  */
 void Timer_close(Timer_Handle handle)
 {
-    TimerCC32XX_Object        *object = handle->object;
+    TimerCC32XX_Object *object         = handle->object;
     TimerCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
 
     /* Stopping the Timer before closing it */
@@ -285,14 +293,16 @@ void Timer_close(Timer_Handle handle)
 
     Power_unregisterNotify(&(object->notifyObj));
 
-    if (object->hwiHandle) {
+    if (object->hwiHandle)
+    {
 
         HwiP_clearInterrupt(hwAttrs->intNum);
         HwiP_delete(object->hwiHandle);
         object->hwiHandle = NULL;
     }
 
-    if (object->semHandle) {
+    if (object->semHandle)
+    {
 
         SemaphoreP_destruct(&(object->semStruct));
         object->semHandle = NULL;
@@ -304,8 +314,7 @@ void Timer_close(Timer_Handle handle)
 /*
  *  ======== Timer_control ========
  */
-int_fast16_t Timer_control(Timer_Handle handle,
-        uint_fast16_t cmd, void *arg)
+int_fast16_t Timer_control(Timer_Handle handle, uint_fast16_t cmd, void *arg)
 {
     return (Timer_STATUS_UNDEFINEDCMD);
 }
@@ -313,11 +322,10 @@ int_fast16_t Timer_control(Timer_Handle handle,
 /*
  *  ======== TimerCC32XX_freeTimerResource ========
  */
-void TimerCC32XX_freeTimerResource(uint32_t baseAddress,
-    TimerCC32XX_SubTimer subTimer)
+void TimerCC32XX_freeTimerResource(uint32_t baseAddress, TimerCC32XX_SubTimer subTimer)
 {
     uintptr_t key;
-    uint32_t  mask;
+    uint32_t mask;
 
     mask = subTimer << timerMaskShift(baseAddress);
 
@@ -336,13 +344,15 @@ void TimerCC32XX_freeTimerResource(uint32_t baseAddress,
 uint32_t Timer_getCount(Timer_Handle handle)
 {
     TimerCC32XX_HWAttrs const *hWAttrs = handle->hwAttrs;
-    TimerCC32XX_Object  const *object = handle->object;
-    uint32_t                   count;
+    TimerCC32XX_Object const *object   = handle->object;
+    uint32_t count;
 
-    if (object->timer == TIMER_A) {
+    if (object->timer == TIMER_A)
+    {
         count = HWREG(hWAttrs->baseAddress + TIMER_O_TAR);
     }
-    else {
+    else
+    {
         count = HWREG(hWAttrs->baseAddress + TIMER_O_TBR);
     }
 
@@ -357,21 +367,23 @@ uint32_t Timer_getCount(Timer_Handle handle)
  */
 static void TimerCC32XX_hwiIntFunction(uintptr_t arg)
 {
-    Timer_Handle handle = (Timer_Handle) arg;
+    Timer_Handle handle                = (Timer_Handle)arg;
     TimerCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    TimerCC32XX_Object  const *object  = handle->object;
-    uint32_t                   interruptMask;
+    TimerCC32XX_Object const *object   = handle->object;
+    uint32_t interruptMask;
 
     /* Only clear the interrupt for this->object->timer */
     interruptMask = object->timer & (TIMER_TIMA_TIMEOUT | TIMER_TIMB_TIMEOUT);
     TimerIntClear(hwAttrs->baseAddress, interruptMask);
 
     /* Hwi is not created when using Timer_FREE_RUNNING */
-    if (object->mode != Timer_CONTINUOUS_CALLBACK) {
+    if (object->mode != Timer_CONTINUOUS_CALLBACK)
+    {
         Timer_stop(handle);
     }
 
-    if (object-> mode != Timer_ONESHOT_BLOCKING) {
+    if (object->mode != Timer_ONESHOT_BLOCKING)
+    {
         object->callBack(handle, Timer_STATUS_SUCCESS);
     }
 }
@@ -381,22 +393,24 @@ static void TimerCC32XX_hwiIntFunction(uintptr_t arg)
  */
 Timer_Handle Timer_open(uint_least8_t index, Timer_Params *params)
 {
-    Timer_Handle               handle = NULL;
-    TimerCC32XX_Object        *object;
+    Timer_Handle handle = NULL;
+    TimerCC32XX_Object *object;
     TimerCC32XX_HWAttrs const *hwAttrs;
-    HwiP_Params                hwiParams;
-    ClockP_FreqHz              clockFreq;
+    HwiP_Params hwiParams;
+    ClockP_FreqHz clockFreq;
 
     /* Verify driver index and state */
-    if (index < Timer_count) {
+    if (index < Timer_count)
+    {
         /* If parameters are NULL use defaults */
-        if (params == NULL) {
-            params = (Timer_Params *) &defaultParams;
+        if (params == NULL)
+        {
+            params = (Timer_Params *)&defaultParams;
         }
 
         /* Get handle for this driver instance */
-        handle = (Timer_Handle) &(Timer_config[index]);
-        object = handle->object;
+        handle  = (Timer_Handle) & (Timer_config[index]);
+        object  = handle->object;
         hwAttrs = handle->hwAttrs;
     }
     else
@@ -405,61 +419,64 @@ Timer_Handle Timer_open(uint_least8_t index, Timer_Params *params)
     }
 
     /* Check for valid parameters */
-    if (((params->timerMode == Timer_ONESHOT_CALLBACK ||
-          params->timerMode == Timer_CONTINUOUS_CALLBACK) &&
-          params->timerCallback == NULL) ||
-          params->period == 0) {
+    if (((params->timerMode == Timer_ONESHOT_CALLBACK || params->timerMode == Timer_CONTINUOUS_CALLBACK) &&
+         params->timerCallback == NULL) ||
+        params->period == 0)
+    {
 
         return (NULL);
     }
 
-    if (!TimerCC32XX_allocateTimerResource(hwAttrs->baseAddress,
-        hwAttrs->subTimer)) {
+    if (!TimerCC32XX_allocateTimerResource(hwAttrs->baseAddress, hwAttrs->subTimer))
+    {
 
         return (NULL);
     }
 
-    Power_registerNotify(&(object->notifyObj), PowerCC32XX_AWAKE_LPDS,
-            postNotifyFxn, (uintptr_t) handle);
+    Power_registerNotify(&(object->notifyObj), PowerCC32XX_AWAKE_LPDS, postNotifyFxn, (uintptr_t)handle);
 
-    object->mode = params->timerMode;
+    object->mode      = params->timerMode;
     object->isRunning = false;
-    object->callBack = params->timerCallback;
-    object->period = params->period;
+    object->callBack  = params->timerCallback;
+    object->period    = params->period;
     object->prescaler = 0;
 
-    if (hwAttrs->subTimer == TimerCC32XX_timer16B) {
+    if (hwAttrs->subTimer == TimerCC32XX_timer16B)
+    {
 
         object->timer = TIMER_B;
     }
-    else {
+    else
+    {
 
         object->timer = TIMER_A;
     }
 
-    if (object->mode != Timer_FREE_RUNNING) {
+    if (object->mode != Timer_FREE_RUNNING)
+    {
 
         HwiP_Params_init(&hwiParams);
-        hwiParams.arg = (uintptr_t) handle;
+        hwiParams.arg      = (uintptr_t)handle;
         hwiParams.priority = hwAttrs->intPriority;
-        object->hwiHandle = HwiP_create(hwAttrs->intNum,
-            TimerCC32XX_hwiIntFunction, &hwiParams);
+        object->hwiHandle  = HwiP_create(hwAttrs->intNum, TimerCC32XX_hwiIntFunction, &hwiParams);
 
-        if (object->hwiHandle == NULL) {
+        if (object->hwiHandle == NULL)
+        {
 
             Timer_close(handle);
 
             return (NULL);
         }
-
     }
 
     /* Creating the semaphore if mode is blocking */
-    if (params->timerMode == Timer_ONESHOT_BLOCKING) {
+    if (params->timerMode == Timer_ONESHOT_BLOCKING)
+    {
 
         object->semHandle = SemaphoreP_constructBinary(&(object->semStruct), 0);
 
-        if (object->semHandle == NULL) {
+        if (object->semHandle == NULL)
+        {
 
             Timer_close(handle);
 
@@ -470,10 +487,12 @@ Timer_Handle Timer_open(uint_least8_t index, Timer_Params *params)
     /* Formality; CC32XX System Clock fixed to 80.0 MHz */
     ClockP_getCpuFreq(&clockFreq);
 
-    if (params->periodUnits == Timer_PERIOD_US) {
+    if (params->periodUnits == Timer_PERIOD_US)
+    {
 
         /* Checks if the calculated period will fit in 32-bits */
-        if (object->period >= ((uint32_t) ~0) / (clockFreq.lo / 1000000)) {
+        if (object->period >= ((uint32_t)~0) / (clockFreq.lo / 1000000))
+        {
 
             Timer_close(handle);
 
@@ -482,10 +501,12 @@ Timer_Handle Timer_open(uint_least8_t index, Timer_Params *params)
 
         object->period = object->period * (clockFreq.lo / 1000000);
     }
-    else if (params->periodUnits == Timer_PERIOD_HZ) {
+    else if (params->periodUnits == Timer_PERIOD_HZ)
+    {
 
         /* If (object->period) > clockFreq */
-        if ((object->period = clockFreq.lo / object->period) == 0) {
+        if ((object->period = clockFreq.lo / object->period) == 0)
+        {
 
             Timer_close(handle);
 
@@ -494,12 +515,15 @@ Timer_Handle Timer_open(uint_least8_t index, Timer_Params *params)
     }
 
     /* If using a half timer */
-    if (hwAttrs->subTimer != TimerCC32XX_timer32) {
+    if (hwAttrs->subTimer != TimerCC32XX_timer32)
+    {
 
-        if (object->period > 0xFFFF) {
+        if (object->period > 0xFFFF)
+        {
 
             /* 24-bit resolution for the half timer */
-            if (object->period >= (1 << 24)) {
+            if (object->period >= (1 << 24))
+            {
 
                 Timer_close(handle);
 
@@ -521,8 +545,8 @@ Timer_Handle Timer_open(uint_least8_t index, Timer_Params *params)
 void TimerSupport_timerDisable(Timer_Handle handle)
 {
     TimerCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    TimerCC32XX_Object        *object = handle->object;
-    uint32_t                   interruptMask;
+    TimerCC32XX_Object *object         = handle->object;
+    uint32_t interruptMask;
 
     interruptMask = object->timer & (TIMER_TIMB_TIMEOUT | TIMER_TIMA_TIMEOUT);
 
@@ -537,12 +561,13 @@ void TimerSupport_timerDisable(Timer_Handle handle)
 void TimerSupport_timerEnable(Timer_Handle handle)
 {
     TimerCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    TimerCC32XX_Object        *object = handle->object;
-    uint32_t                   interruptMask;
+    TimerCC32XX_Object *object         = handle->object;
+    uint32_t interruptMask;
 
     interruptMask = object->timer & (TIMER_TIMB_TIMEOUT | TIMER_TIMA_TIMEOUT);
 
-    if (object->hwiHandle) {
+    if (object->hwiHandle)
+    {
 
         TimerIntEnable(hwAttrs->baseAddress, interruptMask);
     }
@@ -550,10 +575,12 @@ void TimerSupport_timerEnable(Timer_Handle handle)
     Power_setConstraint(PowerCC32XX_DISALLOW_LPDS);
 
     /* Reload the timer */
-    if (object->timer == TIMER_A) {
+    if (object->timer == TIMER_A)
+    {
         HWREG(hwAttrs->baseAddress + TIMER_O_TAMR) |= TIMER_TAMR_TAILD;
     }
-    else {
+    else
+    {
         HWREG(hwAttrs->baseAddress + TIMER_O_TBMR) |= TIMER_TBMR_TBILD;
     }
 
@@ -581,9 +608,10 @@ bool TimerSupport_timerFullWidth(Timer_Handle handle)
 void TimerSupport_timerLoad(Timer_Handle handle)
 {
     TimerCC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
-    TimerCC32XX_Object        *object = handle->object;
+    TimerCC32XX_Object *object         = handle->object;
 
-    if (hwAttrs->subTimer != TimerCC32XX_timer32) {
+    if (hwAttrs->subTimer != TimerCC32XX_timer32)
+    {
         getPrescaler(handle);
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2021, Texas Instruments Incorporated
+ * Copyright (c) 2015-2022, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #if defined(__IAR_SYSTEMS_ICC__)
-#include <intrinsics.h>
+    #include <intrinsics.h>
 #endif
 
 /*
@@ -41,10 +41,10 @@
  * This must be done before DebugP.h is included.
  */
 #ifndef DebugP_ASSERT_ENABLED
-#define DebugP_ASSERT_ENABLED 0
+    #define DebugP_ASSERT_ENABLED 0
 #endif
 #ifndef DebugP_LOG_ENABLED
-#define DebugP_LOG_ENABLED 0
+    #define DebugP_LOG_ENABLED 0
 #endif
 
 #include <ti/drivers/GPIO.h>
@@ -68,39 +68,70 @@
 
 /* Mask values for defines stored in GPIO_PinConfig
  * Used to strip down values when passing into driverlib */
-#define GPIO_PIN_STRENGTH_M     0x060
-#define GPIO_PIN_TYPE_M         0x210
-#define GPIO_INTERRUPT_M        0x007
+#define GPIO_PIN_STRENGTH_M 0x060
+#define GPIO_PIN_TYPE_M     0x210
+#define GPIO_INTERRUPT_M    0x007
 
 /* Table of pin numbers (physical device pins) for use with PinTypeGPIO()
  * driverlib call. Indexed by GPIO number (0-31).
  */
-#define PIN_XX  0xFF
+#define PIN_XX 0xFF
 static const uint8_t pinTable[] = {
     /* 00     01      02      03      04      05      06      07  */
-    PIN_50, PIN_55, PIN_57, PIN_58, PIN_59, PIN_60, PIN_61, PIN_62,
+    PIN_50,
+    PIN_55,
+    PIN_57,
+    PIN_58,
+    PIN_59,
+    PIN_60,
+    PIN_61,
+    PIN_62,
     /* 08     09      10      11      12      13      14      15  */
-    PIN_63, PIN_64, PIN_01, PIN_02, PIN_03, PIN_04, PIN_05, PIN_06,
+    PIN_63,
+    PIN_64,
+    PIN_01,
+    PIN_02,
+    PIN_03,
+    PIN_04,
+    PIN_05,
+    PIN_06,
     /* 16     17      18      19      20      21      22      23  */
-    PIN_07, PIN_08, PIN_XX, PIN_XX, PIN_XX, PIN_XX, PIN_15, PIN_16,
+    PIN_07,
+    PIN_08,
+    PIN_XX,
+    PIN_XX,
+    PIN_XX,
+    PIN_XX,
+    PIN_15,
+    PIN_16,
     /* 24     25      26      27      28      29      30      31  */
-    PIN_17, PIN_21, PIN_29, PIN_30, PIN_18, PIN_20, PIN_53, PIN_45,
+    PIN_17,
+    PIN_21,
+    PIN_29,
+    PIN_30,
+    PIN_18,
+    PIN_20,
+    PIN_53,
+    PIN_45,
     /* 32 */
-    PIN_52
-};
+    PIN_52};
 
-#define NUM_PORTS            5
-#define NUM_PORTS_MASK       0x7
-#define NUM_PINS_PER_PORT    8
+#define NUM_PORTS         5
+#define NUM_PINS_PER_PORT 8
 
 /* Defines used by PinConfigSet() to set GPIO pin in tristate mode */
-#define GPIOCC32XX_TRISTATE         PIN_TYPE_ANALOG
-#define GPIOCC32XX_DUMMY_STRENGTH   0x0
+#define GPIOCC32XX_TRISTATE       PIN_TYPE_ANALOG
+#define GPIOCC32XX_DUMMY_STRENGTH 0x0
 
 /* Returns the GPIO port number or config struct */
-#define indexToPortId(pinIndex)     (pinIndex / NUM_PINS_PER_PORT)
-/* The mask is here to keep static analysis happy; it counts as a range check for out-of-bounds access */
-#define indexToPortConfig(pinIndex) (portConfigs[indexToPortId(pinIndex) & NUM_PORTS_MASK])
+#define indexToPortId(pinIndex) (pinIndex / NUM_PINS_PER_PORT)
+
+#if __KLOCWORK__
+    /* The modulo is here to keep static analysis happy; it counts as a range check for out-of-bounds access */
+    #define indexToPortConfig(pinIndex) (portConfigs[indexToPortId(pinIndex) % NUM_PORTS])
+#else
+    #define indexToPortConfig(pinIndex) (portConfigs[indexToPortId(pinIndex)])
+#endif
 
 /* Generates a per-port mask for a pin, e.g. the second pin in a port should be 0x10 */
 #define indexToPortMask(pinIndex) (1 << (pinIndex % NUM_PINS_PER_PORT))
@@ -112,7 +143,8 @@ static const uint8_t pinTable[] = {
  * Used by port interrupt function to locate callback assigned
  * to a pin.
  */
-typedef struct {
+typedef struct
+{
     const uint8_t interruptNum;
     const uint8_t powerResource;
     const uint32_t baseAddress;
@@ -120,12 +152,12 @@ typedef struct {
 
 /* Port information, including dynamic callback data. */
 static const PortConfig portConfigs[NUM_PORTS] = {
-    { INT_GPIOA0, PowerCC32XX_PERIPH_GPIOA0, GPIOA0_BASE },
-    { INT_GPIOA1, PowerCC32XX_PERIPH_GPIOA1, GPIOA1_BASE },
-    { INT_GPIOA2, PowerCC32XX_PERIPH_GPIOA2, GPIOA2_BASE },
-    { INT_GPIOA3, PowerCC32XX_PERIPH_GPIOA3, GPIOA3_BASE },
+    {INT_GPIOA0, PowerCC32XX_PERIPH_GPIOA0, GPIOA0_BASE},
+    {INT_GPIOA1, PowerCC32XX_PERIPH_GPIOA1, GPIOA1_BASE},
+    {INT_GPIOA2, PowerCC32XX_PERIPH_GPIOA2, GPIOA2_BASE},
+    {INT_GPIOA3, PowerCC32XX_PERIPH_GPIOA3, GPIOA3_BASE},
     /* There is no listed interrupt value for Port 4 (which contains only one pin) */
-    { 0xFF,       PowerCC32XX_PERIPH_GPIOA4, GPIOA4_BASE },
+    {0xFF, PowerCC32XX_PERIPH_GPIOA4, GPIOA4_BASE},
 };
 
 /* Bit mask used to determine if a Hwi has been created/constructed
@@ -141,7 +173,7 @@ extern const uint_least8_t GPIO_pinUpperBound;
 /* Notification for going into and waking up from LPDS */
 static Power_NotifyObj powerNotifyObj;
 
-__attribute__((weak))extern const GPIO_Config GPIO_config;
+__attribute__((weak)) extern const GPIO_Config GPIO_config;
 
 static int powerNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg);
 
@@ -155,11 +187,9 @@ void GPIO_clearInt(uint_least8_t index)
     /* Clear GPIO interrupt flag */
     MAP_GPIOIntClear(indexToPortConfig(index).baseAddress, indexToPortMask(index));
 
-    DebugP_log2(
-        "GPIO: port 0x%x, pin 0x%x interrupt flag cleared",
-        indexToPortConfig(index).baseAddress,
-        indexToPortMask(index)
-    );
+    DebugP_log2("GPIO: port 0x%x, pin 0x%x interrupt flag cleared",
+                indexToPortConfig(index).baseAddress,
+                indexToPortMask(index));
 }
 
 /*
@@ -175,11 +205,9 @@ void GPIO_disableInt(uint_least8_t index)
 
     HwiP_restore(key);
 
-    DebugP_log2(
-        "GPIO: port 0x%x, pin 0x%x interrupts disabled",
-        indexToPortConfig(index).baseAddress,
-        indexToPortMask(index)
-    );
+    DebugP_log2("GPIO: port 0x%x, pin 0x%x interrupts disabled",
+                indexToPortConfig(index).baseAddress,
+                indexToPortMask(index));
 }
 
 /*
@@ -196,11 +224,9 @@ void GPIO_enableInt(uint_least8_t index)
     MAP_GPIOIntEnable(indexToPortConfig(index).baseAddress, indexToPortMask(index));
     HwiP_restore(key);
 
-    DebugP_log2(
-        "GPIO: port 0x%x, pin 0x%x interrupts enabled",
-        indexToPortConfig(index).baseAddress,
-        indexToPortMask(index)
-    );
+    DebugP_log2("GPIO: port 0x%x, pin 0x%x interrupts enabled",
+                indexToPortConfig(index).baseAddress,
+                indexToPortMask(index));
 }
 
 /*
@@ -229,7 +255,8 @@ void GPIO_hwiIntFxn(uintptr_t portIndex)
     MAP_GPIOIntClear(portBase, eventMask);
 
     /* Match the interrupt to its corresponding callback function */
-    while (eventMask) {
+    while (eventMask)
+    {
         /* Note MASK_TO_PIN only detects the highest set bit */
         flagIndex = GPIO_MASK_TO_PIN(eventMask);
         eventMask &= ~GPIO_PIN_TO_MASK(flagIndex);
@@ -258,26 +285,35 @@ void GPIO_init(void)
     sem = SemaphoreP_createBinary(1);
 
     /* There is no way to inform user of this fatal error. */
-    if (sem == NULL) return;
+    if (sem == NULL)
+    {
+        return;
+    }
 
     hwiKey = HwiP_disable();
 
-    if (initSem == NULL) {
+    if (initSem == NULL)
+    {
         initSem = sem;
         HwiP_restore(hwiKey);
     }
-    else {
+    else
+    {
         /* init already called */
         HwiP_restore(hwiKey);
         /* delete unused Semaphore */
-        if (sem) SemaphoreP_delete(sem);
+        if (sem)
+        {
+            SemaphoreP_delete(sem);
+        }
     }
 
     /* now use the semaphore to protect init code */
     SemaphoreP_pend(initSem, SemaphoreP_WAIT_FOREVER);
 
     /* Only perform init once */
-    if (initCalled) {
+    if (initCalled)
+    {
         SemaphoreP_post(initSem);
         return;
     }
@@ -290,12 +326,10 @@ void GPIO_init(void)
         GPIO_setConfig(i, GPIO_config.configs[i]);
     }
 
-    Power_registerNotify(
-        &powerNotifyObj,
-        PowerCC32XX_ENTERING_LPDS | PowerCC32XX_AWAKE_LPDS,
-        powerNotifyFxn,
-        (uintptr_t) NULL
-    );
+    Power_registerNotify(&powerNotifyObj,
+                         PowerCC32XX_ENTERING_LPDS | PowerCC32XX_AWAKE_LPDS,
+                         powerNotifyFxn,
+                         (uintptr_t)NULL);
 
     initCalled = true;
     SemaphoreP_post(initSem);
@@ -312,14 +346,9 @@ uint_fast8_t GPIO_read(uint_least8_t index)
     DebugP_assert(index != 26 && index != 27);
 
     pinMask = indexToPortMask(index);
-    value = MAP_GPIOPinRead(indexToPortConfig(index).baseAddress, pinMask);
+    value   = MAP_GPIOPinRead(indexToPortConfig(index).baseAddress, pinMask);
 
-    DebugP_log3(
-        "GPIO: port 0x%x, pin 0x%x read 0x%x",
-        getPort(config->port),
-        config->pin,
-        value
-    );
+    DebugP_log3("GPIO: port 0x%x, pin 0x%x read 0x%x", getPort(config->port), config->pin, value);
 
     return value ? 1 : 0;
 }
@@ -329,42 +358,45 @@ uint_fast8_t GPIO_read(uint_least8_t index)
  */
 int_fast16_t GPIO_setConfig(uint_least8_t index, GPIO_PinConfig pinConfig)
 {
-    uintptr_t      key;
-    uint32_t       pinMask;
-    uint32_t       pin;
-    uint32_t       portBase;
-    uint32_t       portIndex;
-    uint32_t       portBitMask;
-    uint16_t       strength;
-    uint16_t       pinType;
-    HwiP_Handle    hwiHandle;
-    HwiP_Params    hwiParams;
+    uintptr_t key;
+    uint32_t pinMask;
+    uint32_t pin;
+    uint32_t portBase;
+    uint32_t portIndex;
+    uint32_t portBitMask;
+    uint16_t strength;
+    uint16_t pinType;
+    HwiP_Handle hwiHandle;
+    HwiP_Params hwiParams;
 
     DebugP_assert(initCalled && index <= GPIO_pinUpperBound);
     /* Pin 26 and pin 27 can only be configured as outputs */
     DebugP_assert((pinConfig & PIN_DIR_MODE_OUT) || (index != 26 && index != 27));
 
-    if (pinConfig & GPIOCC32XX_DO_NOT_CONFIG) {
+    if (pinConfig & GPIOCC32XX_DO_NOT_CONFIG)
+    {
         return GPIO_STATUS_SUCCESS;
     }
 
     /* These pins are not configurable on this device. It's easier having
      * the logic once here than in multiple places like init and power wakeup
      */
-    if (index >= 18 && index <= 21) {
+    if (index >= 18 && index <= 21)
+    {
         return GPIO_STATUS_ERROR;
     }
 
     key = HwiP_disable();
 
-    pin = pinTable[index];
-    pinMask = indexToPortMask(index);
+    pin      = pinTable[index];
+    pinMask  = indexToPortMask(index);
     portBase = indexToPortConfig(index).baseAddress;
     strength = pinConfig & GPIO_PIN_STRENGTH_M;
-    pinType = pinConfig & GPIO_PIN_TYPE_M;
+    pinType  = pinConfig & GPIO_PIN_TYPE_M;
 
     /* The default pin strength is nonzero, so add a catch for failing to set it */
-    if (!strength) {
+    if (!strength)
+    {
         strength = PIN_STRENGTH_2MA;
     }
 
@@ -377,13 +409,15 @@ int_fast16_t GPIO_setConfig(uint_least8_t index, GPIO_PinConfig pinConfig)
 
     HwiP_restore(key);
 
-    if ((pinConfig & GPIO_INTERRUPT_M) != GPIO_CFG_INT_NONE_INTERNAL) {
-        portIndex = indexToPortId(index);
+    if ((pinConfig & GPIO_INTERRUPT_M) != GPIO_CFG_INT_NONE_INTERNAL)
+    {
+        portIndex   = indexToPortId(index);
         portBitMask = 1 << portIndex;
 
         /* if Hwi has not already been created, do so */
         key = HwiP_disable();
-        if ((portHwiCreatedBitMask & portBitMask) == 0) {
+        if ((portHwiCreatedBitMask & portBitMask) == 0)
+        {
             portHwiCreatedBitMask |= portBitMask;
             HwiP_restore(key);
 
@@ -393,13 +427,15 @@ int_fast16_t GPIO_setConfig(uint_least8_t index, GPIO_PinConfig pinConfig)
 
             hwiHandle = HwiP_create(indexToPortConfig(index).interruptNum, GPIO_hwiIntFxn, &hwiParams);
 
-            if (hwiHandle == NULL) {
+            if (hwiHandle == NULL)
+            {
                 /* Error creating Hwi */
                 DebugP_log1("GPIO: Error constructing Hwi for GPIO Port %d", getPort(pinConfig->port));
                 return (GPIO_STATUS_ERROR);
             }
         }
-        else {
+        else
+        {
             HwiP_restore(key);
         }
     }
@@ -407,16 +443,21 @@ int_fast16_t GPIO_setConfig(uint_least8_t index, GPIO_PinConfig pinConfig)
     key = HwiP_disable();
 
     /* Configure the GPIO pin */
-    if ((pinConfig & PIN_DIR_MODE_IN) == PIN_DIR_MODE_IN) {
+    if ((pinConfig & PIN_DIR_MODE_IN) == PIN_DIR_MODE_IN)
+    {
         MAP_GPIODirModeSet(portBase, pinMask, GPIO_DIR_MODE_IN);
     }
-    else {
+    else
+    {
         MAP_GPIODirModeSet(portBase, pinMask, GPIO_DIR_MODE_OUT);
 
         /* Set output value */
-        if (pinConfig & GPIO_CFG_OUT_HIGH) {
+        if (pinConfig & GPIO_CFG_OUT_HIGH)
+        {
             MAP_GPIOPinWrite(portBase, pinMask, pinMask);
-        } else {
+        }
+        else
+        {
             MAP_GPIOPinWrite(portBase, pinMask, 0x0);
         }
     }
@@ -449,7 +490,7 @@ int_fast16_t GPIO_setConfig(uint_least8_t index, GPIO_PinConfig pinConfig)
  */
 void GPIO_setInterruptConfig(uint_least8_t index, GPIO_PinConfig config)
 {
-    uint32_t pinMask = indexToPortMask(index);
+    uint32_t pinMask  = indexToPortMask(index);
     uint32_t portBase = indexToPortConfig(index).baseAddress;
 
     if ((config & GPIO_INTERRUPT_M) != GPIO_CFG_IN_INT_NONE)
@@ -483,12 +524,12 @@ void GPIO_setInterruptConfig(uint_least8_t index, GPIO_PinConfig config)
 void GPIO_toggle(uint_least8_t index)
 {
     uintptr_t key;
-    uint32_t  value, portBase, portPinMask;
+    uint32_t value, portBase, portPinMask;
 
     DebugP_assert(initCalled && index < GPIO_config.numberOfPinConfigs);
     DebugP_assert((GPIO_config.configs[index] & GPIO_CFG_INPUT) == GPIO_CFG_OUTPUT);
 
-    portBase = indexToPortConfig(index).baseAddress;
+    portBase    = indexToPortConfig(index).baseAddress;
     portPinMask = indexToPortMask(index);
 
     /* Make atomic update */
@@ -503,11 +544,7 @@ void GPIO_toggle(uint_least8_t index)
 
     HwiP_restore(key);
 
-    DebugP_log2(
-        "GPIO: port 0x%x, pin 0x%x toggled",
-        indexToPortConfig(index),
-        indexToPortMask(index)
-    );
+    DebugP_log2("GPIO: port 0x%x, pin 0x%x toggled", indexToPortConfig(index), indexToPortMask(index));
 }
 
 /*
@@ -516,12 +553,12 @@ void GPIO_toggle(uint_least8_t index)
 void GPIO_write(uint_least8_t index, unsigned int value)
 {
     uintptr_t key;
-    uint32_t  portBase, portPinMask;
+    uint32_t portBase, portPinMask;
 
     DebugP_assert(initCalled && index <= GPIO_pinUpperBound);
     DebugP_assert((GPIO_config.configs[index] & GPIO_CFG_INPUT) == GPIO_CFG_OUTPUT);
 
-    portBase = indexToPortConfig(index).baseAddress;
+    portBase    = indexToPortConfig(index).baseAddress;
     portPinMask = indexToPortMask(index);
 
     key = HwiP_disable();
@@ -539,12 +576,7 @@ void GPIO_write(uint_least8_t index, unsigned int value)
 
     HwiP_restore(key);
 
-    DebugP_log3(
-        "GPIO: port 0x%x, pin 0x%x wrote 0x%x",
-        portBase,
-        portPinMask,
-        value
-    );
+    DebugP_log3("GPIO: port 0x%x, pin 0x%x wrote 0x%x", portBase, portPinMask, value);
 }
 
 /*
@@ -552,18 +584,22 @@ void GPIO_write(uint_least8_t index, unsigned int value)
  */
 static int powerNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg)
 {
-    uint32_t                i;
-    GPIO_PinConfig          config;
+    uint32_t i;
+    GPIO_PinConfig config;
 
-    if (eventType == PowerCC32XX_AWAKE_LPDS) {
-        for (i = 0; i <= GPIO_pinUpperBound; i++) {
-            if (!(GPIO_config.configs[i] & GPIOCC32XX_DO_NOT_CONFIG)) {
+    if (eventType == PowerCC32XX_AWAKE_LPDS)
+    {
+        for (i = 0; i <= GPIO_pinUpperBound; i++)
+        {
+            if (!(GPIO_config.configs[i] & GPIOCC32XX_DO_NOT_CONFIG))
+            {
                 /* setConfig takes care of enabling interrupts for us */
                 GPIO_setConfig(i, GPIO_config.configs[i]);
             }
         }
     }
-    else {
+    else
+    {
         /* Entering LPDS
          * For pins configured as GPIO output, if the GPIOCC32XX_CFG_USE_STATIC
          * configuration flag is *not* set, get the current pin state, and
@@ -573,8 +609,9 @@ static int powerNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t 
          * will be parked in the state statically defined in
          * PowerCC32XX_config.pinParkDefs[] in the board file.
          */
-        for (i = 0; i < GPIO_pinUpperBound; i++) {
-            config =  GPIO_config.configs[i];
+        for (i = 0; i < GPIO_pinUpperBound; i++)
+        {
+            config = GPIO_config.configs[i];
 
             /* Only configure configured OUTPUT pins */
             if (!(config & GPIOCC32XX_DO_NOT_CONFIG) && (config & PIN_DIR_MODE_IN) != PIN_DIR_MODE_IN)
@@ -582,10 +619,7 @@ static int powerNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t 
                 if (!(config & GPIOCC32XX_CFG_USE_STATIC))
                 {
                     /* Set the new park state */
-                    PowerCC32XX_setParkState(
-                        (PowerCC32XX_Pin)pinTable[i],
-                        config & GPIO_CFG_OUT_HIGH
-                    );
+                    PowerCC32XX_setParkState((PowerCC32XX_Pin)pinTable[i], config & GPIO_CFG_OUT_HIGH);
                 }
             }
         }

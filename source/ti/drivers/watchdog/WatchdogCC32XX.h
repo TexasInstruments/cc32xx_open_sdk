@@ -150,8 +150,7 @@ extern "C" {
  *  @b *arg contains @c true if the watchdog timer is enabled,
  *  else @c false if it is not.
  */
-#define WatchdogCC32XX_CMD_IS_TIMER_ENABLE          (Watchdog_CMD_RESERVED + 0)
-
+#define WatchdogCC32XX_CMD_IS_TIMER_ENABLE (Watchdog_CMD_RESERVED + 0)
 
 /*!
  *  @brief Command used by Watchdog_control
@@ -160,8 +159,7 @@ extern "C" {
  *  With this command code, @b arg is a pointer to an @a integer.
  *  @b *arg contains the current value of the watchdog timer.
  */
-#define WatchdogCC32XX_CMD_GET_TIMER_VALUE          (Watchdog_CMD_RESERVED + 1)
-
+#define WatchdogCC32XX_CMD_GET_TIMER_VALUE (Watchdog_CMD_RESERVED + 1)
 
 /*!
  *  @brief Command used by Watchdog_control to determines
@@ -171,8 +169,7 @@ extern "C" {
  *  @b *arg contains @c true if the watchdog timer is locked,
  *  else @c false if it is not.
  */
-#define WatchdogCC32XX_CMD_IS_TIMER_LOCKED          (Watchdog_CMD_RESERVED + 2)
-
+#define WatchdogCC32XX_CMD_IS_TIMER_LOCKED (Watchdog_CMD_RESERVED + 2)
 
 /*!
  *  @brief Command used by Watchdog_control
@@ -182,8 +179,7 @@ extern "C" {
  *  @b *arg contains the current value loaded into the watchdog timer when
  *  the count reaches zero for the first time.
  */
-#define WatchdogCC32XX_CMD_GET_TIMER_RELOAD_VALUE   (Watchdog_CMD_RESERVED + 3)
-
+#define WatchdogCC32XX_CMD_GET_TIMER_RELOAD_VALUE (Watchdog_CMD_RESERVED + 3)
 
 /** @}*/
 
@@ -203,11 +199,12 @@ extern const Watchdog_FxnTable WatchdogCC32XX_fxnTable;
  *  interrupt priority in an OS specific way.  In the case of the SYS/BIOS
  *  port, intPriority is passed unmodified to Hwi_create().
  */
-typedef struct {
-    unsigned int baseAddr;       /*!< Base address for Watchdog */
-    unsigned int intNum;         /*!< WDT interrupt number */
-    unsigned int intPriority;    /*!< WDT interrupt priority */
-    uint32_t     reloadValue;    /*!< Reload value for Watchdog */
+typedef struct
+{
+    unsigned int baseAddr;    /*!< Base address for Watchdog */
+    unsigned int intNum;      /*!< WDT interrupt number */
+    unsigned int intPriority; /*!< WDT interrupt priority */
+    uint32_t reloadValue;     /*!< Reload value for Watchdog */
 } WatchdogCC32XX_HWAttrs;
 
 /*!
@@ -215,15 +212,16 @@ typedef struct {
  *
  *  Not to be accessed by the user.
  */
-typedef struct {
-    Power_NotifyObj     notifyObj;
+typedef struct
+{
+    Power_NotifyObj notifyObj;
     /*
      * The reload value can be set at runtime; therefore we can't rely
      * on the reload value supplied in the HWAttrs after a LPDS transition.
      */
-    uint32_t            reloadValue;
-    Watchdog_DebugMode  debugMode;
-    bool                isOpen;
+    uint32_t reloadValue;
+    Watchdog_DebugMode debugMode;
+    bool isOpen;
 } WatchdogCC32XX_Object;
 
 #ifdef __cplusplus

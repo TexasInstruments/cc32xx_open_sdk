@@ -65,12 +65,10 @@
                     "name"   : "3V3"
                 },
 
-                // Header pin 2 is not connected by default. modification of
-                // the LaunchPad is required to get the mapping to device pin
-                //  below.
+                // Header pin 2 is not connected by default. modification of the
+                // LaunchPad is required to get the mapping to device pin below.
                 //
-                // Header pin 2 is aliased to the same device pin as Header
-                // Pin 25.
+                // Header pin 2 is aliased to the same device pin as Header Pin 25.
                 {
                     "number" : 2,
                     "ball"   : "48",
@@ -101,7 +99,7 @@
                 // Header Pin 6 is an alias of Header Pin 26
                 {
                     "number" : 6,
-                    //"ball"   : "49",
+                    // "ball"   : "49",
                     "name"   : "P59*"
                 },
                 {
@@ -192,10 +190,9 @@
                     "name"   : "P50"
                 },
 
-                // Header pin 40 is not connected by default. modification of
-                // the LaunchPad is required to get the mapping to device pin
-                // below.  Uncomment the "ball" member to connect this header
-                // pin.
+                // Header pin 40 is not connected by default. modification of the
+                // LaunchPad is required to get the mapping to device pin below.
+                // Uncomment the "ball" member to connect this header pin.
                 //
                 // Header Pin 40 is an alias of Header Pin 10 and the Green LED
                 {
@@ -204,10 +201,9 @@
                     "name"   : "P02*"
                 },
 
-                // Header pin 39 is not connected by default. modification of
-                // the LaunchPad is required to get the mapping to device pin
-                // below.  Uncomment the "ball" member to connect this header
-                // pin.
+                // Header pin 39 is not connected by default. modification of the
+                // LaunchPad is required to get the mapping to device pin below.
+                // Uncomment the "ball" member to connect this header pin.
                 //
                 // Header Pin 39 is an alias of Header Pin 9 and the Red LED
                 {
@@ -216,10 +212,9 @@
                     "name"   : "P01*"
                 },
 
-                // Header pin 38 is not connected by default. modification of
-                // the LaunchPad is required to get the mapping to device pin
-                // below.  Uncomment the "ball" member to connect this header
-                // pin.
+                // Header pin 38 is not connected by default. modification of the
+                // LaunchPad is required to get the mapping to device pin below.
+                // Uncomment the "ball" member to connect this header pin.
                 //
                 // Header Pin 38 is an alias of Header Pin 31
                 {
@@ -228,10 +223,9 @@
                     "name"   : "P17*"
                 },
 
-                // Header pin 37 is not connected by default. modification of
-                // the LaunchPad is required to get the mapping to device pin
-                // below.  Uncomment the "ball" member to connect this header
-                // pin.
+                // Header pin 37 is not connected by default. modification of the
+                // LaunchPad is required to get the mapping to device pin below.
+                // Uncomment the "ball" member to connect this header pin.
                 //
                 // Header Pin 37 is an alias of Header Pin 29 and the Red LED
                 {
@@ -240,10 +234,9 @@
                     "name"   : "P64*"
                 },
 
-                // Header pin 36 is not connected by default. modification of
-                // the LaunchPad is required to get the mapping to device pin
-                // below.  Uncomment the "ball" member to connect this header
-                // pin.
+                // Header pin 36 is not connected by default. modification of the
+                // LaunchPad is required to get the mapping to device pin below.
+                // Uncomment the "ball" member to connect this header pin.
                 //
                 // Header Pin 36 is an alias of Header Pin 13
                 {
@@ -252,10 +245,9 @@
                     "name"   : "P21*"
                 },
 
-                // Header pin 35 is not connected by default. modification of
-                // the LaunchPad is required to get the mapping to device pin
-                // below.  Uncomment the "ball" member to connect this header
-                // pin.
+                // Header pin 35 is not connected by default. modification of the
+                // LaunchPad is required to get the mapping to device pin below.
+                // Uncomment the "ball" member to connect this header pin.
                 //
                 // Header Pin 35 is an alias of Header Pin 19
                 {
@@ -264,20 +256,18 @@
                     "name"   : "P18*"
                 },
 
-                // Header pin 34 is not connected by default. modification of
-                // the LaunchPad is required to get the mapping to device pin
-                // below.  Uncomment the "ball" member to connect this header
-                // pin.
+                // Header pin 34 is not connected by default. modification of the
+                // LaunchPad is required to get the mapping to device pin below.
+                // Uncomment the "ball" member to connect this header pin.
                 {
                     "number" : 34,
                     // "ball"  : "52",
                     "name"   : "P62*"
                 },
 
-                // Header pin 33 is not connected by default. modification of
-                // the LaunchPad is required to get the mapping to device pin
-                // below.  Uncomment the "ball" member to connect this header
-                // pin.
+                // Header pin 33 is not connected by default. modification of the
+                // LaunchPad is required to get the mapping to device pin below.
+                // Uncomment the "ball" member to connect this header pin.
                 //
                 // Header Pin 33 is an alias of Header Pin 24
                 {
@@ -331,17 +321,16 @@
                     "number" : 15,
                     "ball"   : "7",
                     "name"   : "P07",
-                    "preferredType" : ["SPI_MOSI"]
+                    "preferredType" : ["SPI_PICO"]
                 },
                 {
                     "number" : 14,
                     "ball"   : "6",
                     "name"   : "P06",
-                    "preferredType" : ["SPI_MISO"]
+                    "preferredType" : ["SPI_POCI"]
                 },
 
-                // Header pin 13 is an alias of the device Pin Sense of
-                // Power 2 (SOP2).
+                // Header pin 13 is an alias of the device Pin Sense of Power 2 (SOP2).
                 {
                     "number" : 13,
                     "ball"   : "23",
@@ -457,7 +446,7 @@
         },
 
         "SW2": {
-            "displayName" : "LaunchPad User Button SW2 (left)",
+            "displayName" : "LaunchPad User Button SW2 (Left)",
             "definition"  : "/ti/boards/components/button.json",
             "longDescription" : "SW2 (Left) LaunchPad button with an external pull-down.",
             /* See schematic linked at top of file */
@@ -472,7 +461,7 @@
             }
         },
         "SW3": {
-            "displayName" : "LaunchPad User Button SW3 (right)",
+            "displayName" : "LaunchPad User Button SW3 (Right)",
             "definition"  : "/ti/boards/components/button.json",
             "longDescription" : "SW3 (Right) LaunchPad button with an external pull-down.",
             /* See schematic linked at top of file */

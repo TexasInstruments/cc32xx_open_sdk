@@ -47,22 +47,21 @@
 
 extern const UDMACC32XX_Config UDMACC32XX_config[];
 
-static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg,
-        uintptr_t clientArg);
+static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg);
 
 static bool dmaInitialized = false;
-static Power_NotifyObj postNotifyObj;    /* LPDS wake-up notify object */
+static Power_NotifyObj postNotifyObj; /* LPDS wake-up notify object */
 
 /* Reference count for open calls */
-static uint32_t          refCount = 0;
+static uint32_t refCount = 0;
 
 /*
  *  ======== UDMACC32XX_close ========
  */
 void UDMACC32XX_close(UDMACC32XX_Handle handle)
 {
-    UDMACC32XX_Object    *object = handle->object;
-    uintptr_t             key;
+    UDMACC32XX_Object *object = handle->object;
+    uintptr_t key;
 
     Power_releaseDependency(PowerCC32XX_PERIPH_UDMA);
 
@@ -70,7 +69,8 @@ void UDMACC32XX_close(UDMACC32XX_Handle handle)
 
     refCount--;
 
-    if (refCount == 0) {
+    if (refCount == 0)
+    {
         Power_unregisterNotify(&postNotifyObj);
         object->isOpen = false;
     }
@@ -83,24 +83,26 @@ void UDMACC32XX_close(UDMACC32XX_Handle handle)
  */
 void UDMACC32XX_init(void)
 {
-    HwiP_Params           hwiParams;
-    UDMACC32XX_Handle     handle = (UDMACC32XX_Handle)&(UDMACC32XX_config[0]);
-    UDMACC32XX_HWAttrs    const *hwAttrs = handle->hwAttrs;
-    UDMACC32XX_Object    *object = handle->object;
+    HwiP_Params hwiParams;
+    UDMACC32XX_Handle handle          = (UDMACC32XX_Handle) & (UDMACC32XX_config[0]);
+    UDMACC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
+    UDMACC32XX_Object *object         = handle->object;
 
-    if (!dmaInitialized) {
+    if (!dmaInitialized)
+    {
         object->isOpen = false;
 
         HwiP_Params_init(&hwiParams);
         hwiParams.priority = hwAttrs->intPriority;
 
         /* Will check in UDMACC32XX_open() if this failed */
-        object->hwiHandle = HwiP_create(hwAttrs->intNum, hwAttrs->dmaErrorFxn,
-                &hwiParams);
-        if (object->hwiHandle == NULL) {
+        object->hwiHandle = HwiP_create(hwAttrs->intNum, hwAttrs->dmaErrorFxn, &hwiParams);
+        if (object->hwiHandle == NULL)
+        {
             DebugP_log0("Failed to create uDMA error Hwi!!\n");
         }
-        else {
+        else
+        {
             dmaInitialized = true;
         }
     }
@@ -111,12 +113,13 @@ void UDMACC32XX_init(void)
  */
 UDMACC32XX_Handle UDMACC32XX_open(void)
 {
-    UDMACC32XX_Handle     handle = (UDMACC32XX_Handle)&(UDMACC32XX_config);
-    UDMACC32XX_Object    *object = handle->object;
-    UDMACC32XX_HWAttrs    const *hwAttrs = handle->hwAttrs;
-    uintptr_t             key;
+    UDMACC32XX_Handle handle          = (UDMACC32XX_Handle) & (UDMACC32XX_config);
+    UDMACC32XX_Object *object         = handle->object;
+    UDMACC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
+    uintptr_t key;
 
-    if (!dmaInitialized) {
+    if (!dmaInitialized)
+    {
         return (NULL);
     }
 
@@ -128,14 +131,14 @@ UDMACC32XX_Handle UDMACC32XX_open(void)
      *  If the UDMA has not been opened yet, create the error Hwi
      *  and initialize the control table base address.
      */
-    if (object->isOpen == false) {
+    if (object->isOpen == false)
+    {
         MAP_PRCMPeripheralReset(PRCM_UDMA);
 
         MAP_uDMAEnable();
         MAP_uDMAControlBaseSet(hwAttrs->controlBaseAddr);
 
-        Power_registerNotify(&postNotifyObj, PowerCC32XX_AWAKE_LPDS,
-                postNotifyFxn, (uintptr_t)handle);
+        Power_registerNotify(&postNotifyObj, PowerCC32XX_AWAKE_LPDS, postNotifyFxn, (uintptr_t)handle);
 
         object->isOpen = true;
     }
@@ -151,10 +154,9 @@ UDMACC32XX_Handle UDMACC32XX_open(void)
  *  ======== postNotifyFxn ========
  *  Called by Power module when waking up from LPDS.
  */
-static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg,
-        uintptr_t clientArg)
+static int postNotifyFxn(unsigned int eventType, uintptr_t eventArg, uintptr_t clientArg)
 {
-    UDMACC32XX_Handle handle = (UDMACC32XX_Handle)clientArg;
+    UDMACC32XX_Handle handle          = (UDMACC32XX_Handle)clientArg;
     UDMACC32XX_HWAttrs const *hwAttrs = handle->hwAttrs;
 
     MAP_uDMAEnable();

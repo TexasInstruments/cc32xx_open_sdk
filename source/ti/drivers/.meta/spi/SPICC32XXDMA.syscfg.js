@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2020 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2018-2023 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -59,17 +59,18 @@ let devSpecific = {
             default: false
         },
         {
-            name: "ssControl",
-            displayName: "SS Control",
-            description: "The Slave Select (SS) line can be controlled by the"
+            name: "csnControl",
+            legacyNames: ["ssControl"],
+            displayName: "CSN Control",
+            description: "The Chip Select (CSN) line can be controlled by the"
                 + " driver (SW) or the hardware (HW). Only applicable in"
                 + " 4 pin mode.",
-            longDescription: "In HW mode the SPI HW will control the SS line"
+            longDescription: "In HW mode the SPI HW will control the CSN line"
                 + " automatically to follow the frame format specified. In"
-                + " some cases it may be desirable for the SS to stay asserted"
+                + " some cases it may be desirable for the CSN to stay asserted"
                 + " for the entire transfer regardless of the format used."
-                + " In SW mode the driver will assert the SS before the"
-                + " transfer starts and de-assert the SS when the transfer"
+                + " In SW mode the driver will assert the CSN before the"
+                + " transfer starts and de-assert the CSN when the transfer"
                 + " completes.",
             options : [
                 /* Implementation note: the board template uses the names
@@ -115,7 +116,7 @@ let devSpecific = {
 /*
  *  ======== onChangeSsOptions ========
  *  onChange callback function for mode config
- *  We selectively hide or show the ssControl option
+ *  We selectively hide or show the csnControl option
  *
  *  param inst  - Instance containing the config that changed
  *  param ui    - The User Interface object
@@ -125,11 +126,11 @@ function onChangeSsOptions(inst, ui)
 {
     if (inst.mode === "Three Pin") {
         /* Set three pin mode to SW control */
-        inst.ssControl = "SW";
-        ui.ssControl.hidden = true;
+        inst.csnControl = "SW";
+        ui.csnControl.hidden = true;
     }
     else {
-        ui.ssControl.hidden = false;
+        ui.csnControl.hidden = false;
     }
 }
 
@@ -164,28 +165,28 @@ function moduleInstances(modStatic)
 function _getPinResources(inst)
 {
     let pin;
-    let mosi = "Unassigned";
-    let miso = "Unassigned";
+    let pico = "Unassigned";
+    let poci = "Unassigned";
     let sclk;
-    let ss;
+    let csn;
 
     if (inst.spi) {
-        if (inst.spi.mosiPin) {
-            mosi = "P" + convertPinName(inst.spi.mosiPin.$solution.packagePinName);
+        if (inst.spi.picoPin) {
+            pico = "P" + convertPinName(inst.spi.picoPin.$solution.packagePinName);
         }
-        if (inst.spi.misoPin) {
-            miso = "P" + convertPinName(inst.spi.misoPin.$solution.packagePinName);
+        if (inst.spi.pociPin) {
+            poci = "P" + convertPinName(inst.spi.pociPin.$solution.packagePinName);
         }
 
-        pin = "\nMOSI: " + mosi + "\nMISO: " + miso;
+        pin = "\nPICO: " + pico + "\nPOCI: " + poci;
 
         if (inst.spi.sclkPin) {
             sclk = "P" + convertPinName(inst.spi.sclkPin.$solution.packagePinName);
             pin += "\nSCLK: " + sclk;
         }
-        if (inst.spi.ssPin) {
-            ss = "P" + convertPinName(inst.spi.ssPin.$solution.packagePinName);
-            pin += "\nSS: " + ss;
+        if (inst.spi.csnPin) {
+            csn = "P" + convertPinName(inst.spi.csnPin.$solution.packagePinName);
+            pin += "\nCSN: " + csn;
         }
 
         if (inst.$hardware && inst.$hardware.displayName) {
@@ -215,34 +216,34 @@ function lspiFilter(iface, peripheralPin)
  */
 function pinmuxRequirements(inst)
 {
-    let misoRequired = false;
-    let mosiRequired = false;
+    let pociRequired = false;
+    let picoRequired = false;
     let txRequired   = true;
     let rxRequired   = true;
 
     switch (inst.duplex) {
         case "Full":
-            misoRequired = true;
-            mosiRequired = true;
+            pociRequired = true;
+            picoRequired = true;
             break;
-        case "Master TX Only":
-            misoRequired = false;
-            mosiRequired = true;
+        case "Controller TX Only":
+            pociRequired = false;
+            picoRequired = true;
             rxRequired   = false;
             break;
-        case "Slave RX Only":
-            misoRequired = false;
-            mosiRequired = true;
+        case "Peripheral RX Only":
+            pociRequired = false;
+            picoRequired = true;
             txRequired   = false;
             break;
-        case "Master RX Only":
-            misoRequired = true;
-            mosiRequired = false;
+        case "Controller RX Only":
+            pociRequired = true;
+            picoRequired = false;
             txRequired   = false;
             break;
-        case "Slave TX Only":
-            misoRequired = true;
-            mosiRequired = false;
+        case "Peripheral TX Only":
+            pociRequired = true;
+            picoRequired = false;
             rxRequired   = false;
             break;
     }
@@ -263,28 +264,31 @@ function pinmuxRequirements(inst)
         ]
     };
 
-    if (misoRequired) {
+    if (pociRequired) {
         spi.resources.push({
-            name: "misoPin",
-            displayName: "MISO Pin",
-            description: "Master Input Slave Output pin",
+            name: "pociPin",
+            legacyNames: ["misoPin"],
+            displayName: "POCI Pin",
+            description: "Peripheral Output Controller Input pin",
             interfaceNames: ["DIN"]});
     }
 
-    if (mosiRequired) {
+    if (picoRequired) {
         spi.resources.push({
-            name: "mosiPin",
-            displayName: "MOSI Pin",
-            description: "Master Output Slave Input pin",
+            name: "picoPin",
+            legacyNames: ["mosiPin"],
+            displayName: "PICO Pin",
+            description: "Peripheral Input Controller Output pin",
             interfaceNames: ["DOUT"]});
     }
 
-    /* add SS pin if one of the four pin modes is selected */
+    /* add CS pin if one of the four pin modes is selected */
     if (inst.mode != "Three Pin") {
         spi.resources.push({
-                    name: "ssPin",
-                    displayName: "SS Pin",
-                    description: "Slave Select / Chip Select",
+                    name: "csnPin",
+                    legacyNames: ["ssPin"],
+                    displayName: "CSN Pin",
+                    description: "Chip Select",
                     interfaceNames: ["CS"]
                 });
     }
@@ -307,9 +311,9 @@ function pinmuxRequirements(inst)
 
     spi.signalTypes = {
         sclkPin: ["SPI_SCLK"],
-        mosiPin: ["SPI_MOSI"],
-        misoPin: ["SPI_MISO"],
-        ssPin:   ["DOUT", "SPI_SS"]
+        picoPin: ["SPI_PICO"],
+        pociPin: ["SPI_POCI"],
+        csnPin:  ["DOUT", "SPI_CSN"]
     };
 
     return ([spi]);

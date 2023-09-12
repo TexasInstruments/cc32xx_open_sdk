@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2017 Texas Instruments Incorporated - http://www.ti.com
+ * Copyright (c) 2016-2022 Texas Instruments Incorporated - http://www.ti.com
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,18 +45,13 @@
 #include <time.h>
 #include <errno.h>
 
-/*
- *  ======== ListElem ========
- */
-typedef struct ListElem {
-    struct ListElem *next;
-    struct ListElem *prev;
-} ListElem, List;
+#include "pthread_list.h"
 
 /*
  *  ======== CondElem ========
  */
-typedef struct CondElem {
+typedef struct CondElem
+{
     ListElem qElem;
     SemaphoreHandle_t sem;
 } CondElem;
@@ -64,20 +59,18 @@ typedef struct CondElem {
 /*
  *  ======== pthread_cond_obj ========
  */
-typedef struct {
+typedef struct
+{
     List waitList;
     clockid_t clockId;
 } pthread_cond_obj;
 
-
 /*  Function for obtaining a timeout in Clock ticks from the difference of
  *  an absolute time and the current time.
  */
-extern int _clock_abstime2ticks(clockid_t clockId,
-        const struct timespec *abstime, uint32_t *ticks);
+extern int _clock_abstime2ticks(clockid_t clockId, const struct timespec *abstime, uint32_t *ticks);
 
-static int condWait(pthread_cond_obj *cond, pthread_mutex_t *mutex,
-        uint32_t timeout);
+static int condWait(pthread_cond_obj *cond, pthread_mutex_t *mutex, uint32_t timeout);
 
 /*
  *************************************************************************
@@ -95,8 +88,7 @@ int pthread_condattr_destroy(pthread_condattr_t *attr)
 /*
  *  ======== pthread_condattr_getclock ========
  */
-int pthread_condattr_getclock(const pthread_condattr_t *attr,
-        clockid_t *clock_id)
+int pthread_condattr_getclock(const pthread_condattr_t *attr, clockid_t *clock_id)
 {
     *clock_id = (clockid_t)(*attr);
     return (0);
@@ -114,10 +106,10 @@ int pthread_condattr_init(pthread_condattr_t *attr)
 /*
  *  ======== pthread_condattr_setclock ========
  */
-int pthread_condattr_setclock(pthread_condattr_t *attr,
-        clockid_t clock_id)
+int pthread_condattr_setclock(pthread_condattr_t *attr, clockid_t clock_id)
 {
-    if ((clock_id != CLOCK_REALTIME) && (clock_id != CLOCK_MONOTONIC)) {
+    if ((clock_id != CLOCK_REALTIME) && (clock_id != CLOCK_MONOTONIC))
+    {
         return (EINVAL);
     }
 
@@ -141,9 +133,10 @@ int pthread_cond_broadcast(pthread_cond_t *cond)
     /* disable the scheduler */
     vTaskSuspendAll();
 
-    while (obj->waitList.next != NULL) {
+    while (obj->waitList.next != NULL)
+    {
         /* remove from the queue */
-        condElem = (CondElem *)(obj->waitList.next);
+        condElem           = (CondElem *)(obj->waitList.next);
         obj->waitList.next = condElem->qElem.next;
 
         /* unblock the thread waiting on the condition variable */
@@ -162,7 +155,8 @@ int pthread_cond_destroy(pthread_cond_t *cond)
 {
     pthread_cond_obj *obj = (pthread_cond_obj *)(&cond->freertos);
 
-    if (obj->waitList.next != NULL) {
+    if (obj->waitList.next != NULL)
+    {
         return (EBUSY);
     }
 
@@ -177,14 +171,16 @@ int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr)
     pthread_cond_obj *obj = (pthread_cond_obj *)(&cond->freertos);
 
     /* TODO object size validation */
-//  assert(sizeof(pthread_cond_obj) <= sizeof(pthread_cond_t));
+    //  assert(sizeof(pthread_cond_obj) <= sizeof(pthread_cond_t));
 
     obj->waitList.next = obj->waitList.prev = NULL;
 
-    if (attr != NULL) {
+    if (attr != NULL)
+    {
         obj->clockId = (clockid_t)(*attr);
     }
-    else {
+    else
+    {
         obj->clockId = CLOCK_REALTIME;
     }
 
@@ -206,9 +202,10 @@ int pthread_cond_signal(pthread_cond_t *cond)
     /* disable the scheduler */
     vTaskSuspendAll();
 
-    if (obj->waitList.next != NULL) {
+    if (obj->waitList.next != NULL)
+    {
         /* remove from the queue */
-        elem = (CondElem *)(obj->waitList.next);
+        elem               = (CondElem *)(obj->waitList.next);
         obj->waitList.next = elem->qElem.next;
 
         /* unblock the thread waiting on the condition variable */
@@ -223,14 +220,14 @@ int pthread_cond_signal(pthread_cond_t *cond)
 /*
  *  ======== pthread_cond_timedwait ========
  */
-int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex,
-        const struct timespec *abstime)
+int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime)
 {
     uint32_t timeout;
     pthread_cond_obj *obj = (pthread_cond_obj *)(&cond->freertos);
 
     /* must validate abstime before modifying mutex state */
-    if (_clock_abstime2ticks(obj->clockId, abstime, &timeout) != 0) {
+    if (_clock_abstime2ticks(obj->clockId, abstime, &timeout) != 0)
+    {
         return (EINVAL);
     }
 
@@ -250,8 +247,7 @@ int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex)
 /*
  *  ======== condWait ========
  */
-static int condWait(pthread_cond_obj *cond, pthread_mutex_t *mutex,
-        uint32_t timeout)
+static int condWait(pthread_cond_obj *cond, pthread_mutex_t *mutex, uint32_t timeout)
 {
     CondElem condElem;
     int ret = 0;
@@ -263,7 +259,8 @@ static int condWait(pthread_cond_obj *cond, pthread_mutex_t *mutex,
      */
     condElem.sem = xSemaphoreCreateBinary();
 
-    if (condElem.sem == NULL) {
+    if (condElem.sem == NULL)
+    {
         return (ENOMEM);
     }
 
@@ -279,7 +276,8 @@ static int condWait(pthread_cond_obj *cond, pthread_mutex_t *mutex,
     condElem.qElem.next = cond->waitList.next;
     condElem.qElem.prev = &(cond->waitList);
 
-    if (cond->waitList.next) {
+    if (cond->waitList.next)
+    {
         cond->waitList.next->prev = (ListElem *)&condElem;
     }
     cond->waitList.next = (ListElem *)&condElem;
@@ -289,11 +287,13 @@ static int condWait(pthread_cond_obj *cond, pthread_mutex_t *mutex,
 
     pthread_mutex_unlock(mutex);
 
-    if (xSemaphoreTake(condElem.sem, (TickType_t)timeout) != pdTRUE) {
+    if (xSemaphoreTake(condElem.sem, (TickType_t)timeout) != pdTRUE)
+    {
         /* disable the scheduler */
         vTaskSuspendAll();
 
-        if (condElem.qElem.next) {
+        if (condElem.qElem.next)
+        {
             condElem.qElem.next->prev = condElem.qElem.prev;
         }
         condElem.qElem.prev->next = condElem.qElem.next;

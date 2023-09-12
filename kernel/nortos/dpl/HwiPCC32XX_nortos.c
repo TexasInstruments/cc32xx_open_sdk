@@ -49,13 +49,15 @@
 
 #define MAX_INTERRUPTS 195
 
-typedef struct _HwiP_Obj {
+typedef struct _HwiP_Obj
+{
     uint32_t intNum;
     HwiP_Fxn fxn;
     uintptr_t arg;
 } HwiP_Obj;
 
-typedef struct Hwi_NVIC {
+typedef struct Hwi_NVIC
+{
     uint32_t RES_00;
     uint32_t ICTR;
     uint32_t RES_08;
@@ -133,13 +135,10 @@ typedef struct Hwi_NVIC {
 
 static Hwi_NVIC *Hwi_nvic = (Hwi_NVIC *)0xE000E000;
 
-static HwiP_Obj* HwiP_dispatchTable[MAX_INTERRUPTS] = {
-    0
-};
-uintptr_t HwiP_key = 0;
+static HwiP_Obj *HwiP_dispatchTable[MAX_INTERRUPTS] = {0};
+uintptr_t HwiP_key                                  = 0;
 
 int HwiP_swiPIntNum = FAULT_PENDSV;
-
 
 /*
  *  ======== HwiP_enable ========
@@ -162,7 +161,8 @@ uintptr_t HwiP_disable(void)
  */
 void HwiP_restore(uintptr_t alreadyDisabled)
 {
-    if (!alreadyDisabled) {
+    if (!alreadyDisabled)
+    {
         MAP_IntMasterEnable();
     }
 }
@@ -213,8 +213,9 @@ void HwiP_dispatch(void)
 
     /* Determine which interrupt has fired */
     uint32_t intNum = (Hwi_nvic->ICSR & 0x000000ff);
-    HwiP_Obj* obj = HwiP_dispatchTable[intNum];
-    if (obj) {
+    HwiP_Obj *obj   = HwiP_dispatchTable[intNum];
+    if (obj)
+    {
         (obj->fxn)(obj->arg);
     }
 }
@@ -242,40 +243,43 @@ bool HwiP_interruptsEnabled(void)
 /*
  *  ======== HwiP_construct ========
  */
-HwiP_Handle HwiP_construct(HwiP_Struct *handle, int interruptNum,
-                           HwiP_Fxn hwiFxn, HwiP_Params *params)
+HwiP_Handle HwiP_construct(HwiP_Struct *handle, int interruptNum, HwiP_Fxn hwiFxn, HwiP_Params *params)
 {
     HwiP_Params defaultParams;
     HwiP_Obj *obj = (HwiP_Obj *)handle;
 
-    if (handle != NULL) {
-        if (params == NULL) {
+    if (handle != NULL)
+    {
+        if (params == NULL)
+        {
             params = &defaultParams;
             HwiP_Params_init(&defaultParams);
         }
 
-        if ((params->priority & 0xFF) == 0xFF) {
+        if ((params->priority & 0xFF) == 0xFF)
+        {
             /* SwiP_nortos.c uses INT_PRIORITY_LVL_7 as its scheduler */
             params->priority = INT_PRIORITY_LVL_6;
         }
 
-        if (interruptNum != HwiP_swiPIntNum &&
-            params->priority == INT_PRIORITY_LVL_7) {
+        if (interruptNum != HwiP_swiPIntNum && params->priority == INT_PRIORITY_LVL_7)
+        {
             DebugP_log0("HwiP_construct: can't use reserved INT_PRIORITY_LVL_7");
 
             handle = NULL;
         }
-        else {
+        else
+        {
             HwiP_dispatchTable[interruptNum] = obj;
-            obj->fxn = hwiFxn;
-            obj->arg = params->arg;
-            obj->intNum = (uint32_t)interruptNum;
+            obj->fxn                         = hwiFxn;
+            obj->arg                         = params->arg;
+            obj->intNum                      = (uint32_t)interruptNum;
 
-            MAP_IntRegister((unsigned long)interruptNum,
-                            (void(*)(void))HwiP_dispatch);
+            MAP_IntRegister((unsigned long)interruptNum, (void (*)(void))HwiP_dispatch);
             MAP_IntPrioritySet((unsigned long)interruptNum, params->priority);
 
-            if (params->enableInt) {
+            if (params->enableInt)
+            {
                 MAP_IntEnable((unsigned long)interruptNum);
             }
         }
@@ -300,10 +304,11 @@ HwiP_Handle HwiP_create(int interruptNum, HwiP_Fxn hwiFxn, HwiP_Params *params)
      * that construct failed with non-NULL pointer and that we need to
      * free the handle.
      */
-    if (handle != NULL) {
-        retHandle = HwiP_construct((HwiP_Struct *)handle, interruptNum, hwiFxn,
-                                   params);
-        if (retHandle == NULL) {
+    if (handle != NULL)
+    {
+        retHandle = HwiP_construct((HwiP_Struct *)handle, interruptNum, hwiFxn, params);
+        if (retHandle == NULL)
+        {
             free(handle);
             handle = NULL;
         }
@@ -317,9 +322,10 @@ HwiP_Handle HwiP_create(int interruptNum, HwiP_Fxn hwiFxn, HwiP_Params *params)
  */
 void HwiP_Params_init(HwiP_Params *params)
 {
-    if (params != NULL) {
-        params->arg = 0;
-        params->priority = ~0;
+    if (params != NULL)
+    {
+        params->arg       = 0;
+        params->priority  = ~0;
         params->enableInt = true;
     }
 }
@@ -329,7 +335,7 @@ void HwiP_Params_init(HwiP_Params *params)
  */
 void HwiP_plug(int interruptNum, void *fxn)
 {
-    MAP_IntRegister((unsigned long)interruptNum, (void(*)(void))fxn);
+    MAP_IntRegister((unsigned long)interruptNum, (void (*)(void))fxn);
 }
 
 /*
@@ -362,10 +368,12 @@ bool HwiP_inISR(void)
 {
     bool stat;
 
-    if ((Hwi_nvic->ICSR & 0x000000ff) == 0) {
+    if ((Hwi_nvic->ICSR & 0x000000ff) == 0)
+    {
         stat = false;
     }
-    else {
+    else
+    {
         stat = true;
     }
 
@@ -377,8 +385,9 @@ bool HwiP_inISR(void)
  */
 bool HwiP_inSwi(void)
 {
-    uint32_t intNum  = Hwi_nvic->ICSR & 0x000000ff;
-    if (intNum == HwiP_swiPIntNum) {
+    uint32_t intNum = Hwi_nvic->ICSR & 0x000000ff;
+    if (intNum == HwiP_swiPIntNum)
+    {
         /* Currently in a Swi */
         return (true);
     }

@@ -1,5 +1,5 @@
 /*
- * copyright (c) 2018-2020, texas instruments incorporated
+ * copyright (c) 2018-2023, texas instruments incorporated
  * all rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,6 +38,11 @@
 #define SRAM0_BASE 0x20000000
 
 --stack_size=1024   /* C stack is also used for ISR stack */
+--retain "*(.resetVecs)"
+
+/* Set severity of diagnostics to Remark instead of Warning                  */
+/* - 10068: Warning about no matching log_ptr* sections                      */
+--diag_remark=10068
 
 HEAPSIZE = 0x8000;  /* Size of heap buffer used by HeapMem */
 
@@ -51,13 +56,11 @@ MEMORY
      * ARM memory map can be found here:
      * https://developer.arm.com/documentation/ddi0337/e/memory-map/about-the-memory-map
      */
-    LOG_DATA (R) : origin = 0x90000000, length = 0x40000
+    LOG_DATA (R) : origin = 0x90000000, length = 0x40000        /* 256 KB */
+    LOG_PTR  (R) : origin = 0x94000008, length = 0x40000        /* 256 KB */
 }
 
 /* Section allocation in memory */
-
---retain "*(.resetVecs)"
-
 SECTIONS
 {
     .resetVecs  : > 0x20004000
@@ -68,7 +71,7 @@ SECTIONS
     .const      : > SRAM
     .rodata     : > SRAM
 
-    .vecs       : > 0x20000000
+    .ramVecs    : > SRAM, type = NOLOAD, ALIGN(1024)
     .sysmem     : > SRAM
     .cinit      : > SRAM
     .pinit      : > SRAM
@@ -83,11 +86,10 @@ SECTIONS
 
     .stack      : > SRAM0(HIGH)
     .log_data   : > LOG_DATA, type = COPY
+    .log_ptr        : { *(.log_ptr*) } > LOG_PTR align 4, type = COPY
 }
 
 --symbol_map __TI_STACK_SIZE=__STACK_SIZE
 --symbol_map __TI_STACK_BASE=__stack
 
 -u_c_int00
---retain "*(.resetVecs)"
---retain "*(.vecs)"

@@ -26,7 +26,7 @@ bsd/arpa/inet.h
 .meta/Config.c.xdt
 package.bld
 package/package.cfg.xdc.inc
-lib/ccs/m4/slnetsock_debug.a
+lib/ticlang/m4/slnetsock_debug.a
 package/package_ti.net.c
 slnetsock.c
 slnetconn.c
@@ -35,8 +35,6 @@ slnetif.c
 bsd/netdb.c
 bsd/socket.c
 bsd/errnoutil.c
-lib/ccs/m4/slnetsock_release.a
-lib/ticlang/m4/slnetsock_debug.a
 lib/ticlang/m4/slnetsock_release.a
 lib/gcc/m4/slnetsock_debug.a
 lib/gcc/m4/slnetsock_release.a

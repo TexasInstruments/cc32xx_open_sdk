@@ -74,8 +74,7 @@
 #include <ti/devices/cc32xx/inc/hw_ocp_shared.h>
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 /*! \cond */
@@ -97,14 +96,14 @@ extern "C"
  *  The CC32XX has fixed GPIO assignments and pin modes for a given pin.
  *  A Capture pin mode for a given pin has a fixed timer/timer-half.
  */
-#define CaptureCC32XX_T0A    (0x10000000 | (INT_TIMERA0A << 20))
-#define CaptureCC32XX_T0B    (0x20000000 | (INT_TIMERA0B << 20))
-#define CaptureCC32XX_T1A    (0x50000000 | (INT_TIMERA1A << 20))
-#define CaptureCC32XX_T1B    (0x60000000 | (INT_TIMERA1B << 20))
-#define CaptureCC32XX_T2A    (0x90000000 | (INT_TIMERA2A << 20))
-#define CaptureCC32XX_T2B    (0xA0000000 | (INT_TIMERA2B << 20))
-#define CaptureCC32XX_T3A    (0xD0000000 | (INT_TIMERA3A << 20))
-#define CaptureCC32XX_T3B    (0xE0000000 | (INT_TIMERA3B << 20))
+#define CaptureCC32XX_T0A (0x10000000 | (INT_TIMERA0A << 20))
+#define CaptureCC32XX_T0B (0x20000000 | (INT_TIMERA0B << 20))
+#define CaptureCC32XX_T1A (0x50000000 | (INT_TIMERA1A << 20))
+#define CaptureCC32XX_T1B (0x60000000 | (INT_TIMERA1B << 20))
+#define CaptureCC32XX_T2A (0x90000000 | (INT_TIMERA2A << 20))
+#define CaptureCC32XX_T2B (0xA0000000 | (INT_TIMERA2B << 20))
+#define CaptureCC32XX_T3A (0xD0000000 | (INT_TIMERA3A << 20))
+#define CaptureCC32XX_T3B (0xE0000000 | (INT_TIMERA3B << 20))
 
 #define CaptureCC32XX_GPIO0  (0x00000000 | (OCP_SHARED_O_GPIO_PAD_CONFIG_0 << 4))
 #define CaptureCC32XX_GPIO1  (0x00000000 | (OCP_SHARED_O_GPIO_PAD_CONFIG_1 << 4))
@@ -134,103 +133,103 @@ extern "C"
  *  @name PIN 01, GPIO10, uses Timer0B for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_01  CaptureCC32XX_T0B | CaptureCC32XX_GPIO10 | 0xC /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_01 CaptureCC32XX_T0B | CaptureCC32XX_GPIO10 | 0xC /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 02, GPIO11, uses Timer1A for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_02  CaptureCC32XX_T1A | CaptureCC32XX_GPIO11 | 0xC /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_02 CaptureCC32XX_T1A | CaptureCC32XX_GPIO11 | 0xC /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 03, GPIO12, uses Timer1B for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_03  CaptureCC32XX_T1B | CaptureCC32XX_GPIO12 | 0xC /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_03 CaptureCC32XX_T1B | CaptureCC32XX_GPIO12 | 0xC /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 04, GPIO13, uses Timer2A for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_04  CaptureCC32XX_T2A | CaptureCC32XX_GPIO13 | 0xC /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_04 CaptureCC32XX_T2A | CaptureCC32XX_GPIO13 | 0xC /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 05, GPIO14, uses Timer2B for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_05  CaptureCC32XX_T2B | CaptureCC32XX_GPIO14 | 0xC /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_05 CaptureCC32XX_T2B | CaptureCC32XX_GPIO14 | 0xC /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 06, GPIO15, uses Timer3A for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_06  CaptureCC32XX_T3A | CaptureCC32XX_GPIO15 | 0xD /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_06 CaptureCC32XX_T3A | CaptureCC32XX_GPIO15 | 0xD /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 07, GPIO16, uses Timer3B for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_07  CaptureCC32XX_T3B | CaptureCC32XX_GPIO16 | 0xD /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_07 CaptureCC32XX_T3B | CaptureCC32XX_GPIO16 | 0xD /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 15, GPIO22, uses Timer2A for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_15  CaptureCC32XX_T2A | CaptureCC32XX_GPIO22 | 0x5  /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_15 CaptureCC32XX_T2A | CaptureCC32XX_GPIO22 | 0x5 /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 17, GPIO24 (TDO), uses Timer3A for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_17  CaptureCC32XX_T3A | CaptureCC32XX_GPIO24 | 0x4  /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_17 CaptureCC32XX_T3A | CaptureCC32XX_GPIO24 | 0x4 /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 50, GPIO0, uses Timer0A for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_50  CaptureCC32XX_T0A | CaptureCC32XX_GPIO0 | 0x7  /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_50 CaptureCC32XX_T0A | CaptureCC32XX_GPIO0 | 0x7 /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 53, GPIO30, uses Timer2B for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_53  CaptureCC32XX_T2B | CaptureCC32XX_GPIO30 | 0x4  /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_53 CaptureCC32XX_T2B | CaptureCC32XX_GPIO30 | 0x4 /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 55, GPIO1, uses Timer0B for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_55  CaptureCC32XX_T0B | CaptureCC32XX_GPIO1 | 0x7  /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_55 CaptureCC32XX_T0B | CaptureCC32XX_GPIO1 | 0x7 /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 57, GPIO2, uses Timer1A for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_57  CaptureCC32XX_T1A | CaptureCC32XX_GPIO2 | 0x7  /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_57 CaptureCC32XX_T1A | CaptureCC32XX_GPIO2 | 0x7 /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 60, GPIO5, uses Timer2B for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_60  CaptureCC32XX_T2B | CaptureCC32XX_GPIO5 | 0x7  /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_60 CaptureCC32XX_T2B | CaptureCC32XX_GPIO5 | 0x7 /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 61, GPIO6, uses Timer3A for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_61  CaptureCC32XX_T3A | CaptureCC32XX_GPIO6 | 0x7  /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_61 CaptureCC32XX_T3A | CaptureCC32XX_GPIO6 | 0x7 /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 63, GPIO8, uses Timer3A for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_63  CaptureCC32XX_T3A | CaptureCC32XX_GPIO8 | 0xC  /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_63 CaptureCC32XX_T3A | CaptureCC32XX_GPIO8 | 0xC /*!< @hideinitializer */
 /*! @} */
 /*!
  *  @name PIN 64, GPIO9, uses Timer0A for Capture.
  *  @{
  */
-#define CaptureCC32XX_PIN_64  CaptureCC32XX_T0A | CaptureCC32XX_GPIO9 | 0xC  /*!< @hideinitializer */
+#define CaptureCC32XX_PIN_64 CaptureCC32XX_T0A | CaptureCC32XX_GPIO9 | 0xC /*!< @hideinitializer */
 /*! @} */
 /*! @} */
 
@@ -257,16 +256,17 @@ extern const Capture_FxnTable CaptureCC32XX_fxnTable;
  *  };
  *  @endcode
  */
-typedef struct {
+typedef struct
+{
     /*!  Specifies the input pin for the capture event. There are 17
          pins available as inputs for capture functionality. Each
          available pin must map to a specific general purpose timer
          hardware instance. By specifying this attribute, a fixed
          16-bit timer peripheral is used. */
-    uint32_t             capturePin;
+    uint32_t capturePin;
 
     /*! The interrupt priority. */
-    uint32_t             intPriority;
+    uint32_t intPriority;
 } CaptureCC32XX_HWAttrs;
 
 /*!
@@ -274,15 +274,16 @@ typedef struct {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct {
-    HwiP_Handle           hwiHandle;
-    Power_NotifyObj       notifyObj;
-    Capture_CallBackFxn   callBack;
-    Capture_PeriodUnits   periodUnits;
-    uint32_t              mode;
-    uint32_t              timer;
-    uint32_t              previousCount;
-    bool                  isRunning;
+typedef struct
+{
+    HwiP_Handle hwiHandle;
+    Power_NotifyObj notifyObj;
+    Capture_CallBackFxn callBack;
+    Capture_PeriodUnits periodUnits;
+    uint32_t mode;
+    uint32_t timer;
+    uint32_t previousCount;
+    bool isRunning;
 } CaptureCC32XX_Object;
 
 #ifdef __cplusplus

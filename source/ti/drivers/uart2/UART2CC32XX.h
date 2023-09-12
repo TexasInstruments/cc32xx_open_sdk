@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Texas Instruments Incorporated
+ * Copyright (c) 2020-2022, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -70,7 +70,7 @@ extern "C" {
  *  If hardware flow control is not being used, the UART CTS and RTS
  *  pins should be set to UART2CC32XX_PIN_UNASSIGNED.
  */
-#define UART2CC32XX_PIN_UNASSIGNED   0xFFF
+#define UART2CC32XX_PIN_UNASSIGNED 0xFFF
 
 /*!
  * @brief Indicates a DMA channel is not being used
@@ -90,53 +90,37 @@ extern "C" {
  *  value for the pin to operate in the UART mode.  For example, pin 1 is
  *  configured with mode 7 to operate as UART1 TX.
  */
-#define UART2CC32XX_PIN_01_UART1_TX  0x700 /*!< PIN 1 is used for UART1 TX */
-#define UART2CC32XX_PIN_02_UART1_RX  0x701 /*!< PIN 2 is used for UART1 RX */
-#define UART2CC32XX_PIN_03_UART0_TX  0x702 /*!< PIN 3 is used for UART0 TX */
-#define UART2CC32XX_PIN_04_UART0_RX  0x703 /*!< PIN 4 is used for UART0 RX */
-#define UART2CC32XX_PIN_07_UART1_TX  0x506 /*!< PIN 7 is used for UART1 TX */
-#define UART2CC32XX_PIN_08_UART1_RX  0x507 /*!< PIN 8 is used for UART1 RX */
-#define UART2CC32XX_PIN_16_UART1_TX  0x20F /*!< PIN 16 is used for UART1 TX */
-#define UART2CC32XX_PIN_17_UART1_RX  0x210 /*!< PIN 17 is used for UART1 RX */
-#define UART2CC32XX_PIN_45_UART0_RX  0x92C /*!< PIN 45 is used for UART0 RX */
-#define UART2CC32XX_PIN_45_UART1_RX  0x22C /*!< PIN 45 is used for UART1 RX */
-#define UART2CC32XX_PIN_53_UART0_TX  0x934 /*!< PIN 53 is used for UART0 TX */
-#define UART2CC32XX_PIN_55_UART0_TX  0x336 /*!< PIN 55 is used for UART0 TX */
-#define UART2CC32XX_PIN_55_UART1_TX  0x636 /*!< PIN 55 is used for UART1 TX */
-#define UART2CC32XX_PIN_57_UART0_RX  0x338 /*!< PIN 57 is used for UART0 RX */
-#define UART2CC32XX_PIN_57_UART1_RX  0x638 /*!< PIN 57 is used for UART1 RX */
-#define UART2CC32XX_PIN_58_UART1_TX  0x639 /*!< PIN 58 is used for UART1 TX */
-#define UART2CC32XX_PIN_59_UART1_RX  0x63A /*!< PIN 59 is used for UART1 RX */
-#define UART2CC32XX_PIN_62_UART0_TX  0xB3D /*!< PIN 62 is used for UART0 TX */
+#define UART2CC32XX_PIN_01_UART1_TX 0x700 /*!< PIN 1 is used for UART1 TX */
+#define UART2CC32XX_PIN_02_UART1_RX 0x701 /*!< PIN 2 is used for UART1 RX */
+#define UART2CC32XX_PIN_03_UART0_TX 0x702 /*!< PIN 3 is used for UART0 TX */
+#define UART2CC32XX_PIN_04_UART0_RX 0x703 /*!< PIN 4 is used for UART0 RX */
+#define UART2CC32XX_PIN_07_UART1_TX 0x506 /*!< PIN 7 is used for UART1 TX */
+#define UART2CC32XX_PIN_08_UART1_RX 0x507 /*!< PIN 8 is used for UART1 RX */
+#define UART2CC32XX_PIN_16_UART1_TX 0x20F /*!< PIN 16 is used for UART1 TX */
+#define UART2CC32XX_PIN_17_UART1_RX 0x210 /*!< PIN 17 is used for UART1 RX */
+#define UART2CC32XX_PIN_45_UART0_RX 0x92C /*!< PIN 45 is used for UART0 RX */
+#define UART2CC32XX_PIN_45_UART1_RX 0x22C /*!< PIN 45 is used for UART1 RX */
+#define UART2CC32XX_PIN_53_UART0_TX 0x934 /*!< PIN 53 is used for UART0 TX */
+#define UART2CC32XX_PIN_55_UART0_TX 0x336 /*!< PIN 55 is used for UART0 TX */
+#define UART2CC32XX_PIN_55_UART1_TX 0x636 /*!< PIN 55 is used for UART1 TX */
+#define UART2CC32XX_PIN_57_UART0_RX 0x338 /*!< PIN 57 is used for UART0 RX */
+#define UART2CC32XX_PIN_57_UART1_RX 0x638 /*!< PIN 57 is used for UART1 RX */
+#define UART2CC32XX_PIN_58_UART1_TX 0x639 /*!< PIN 58 is used for UART1 TX */
+#define UART2CC32XX_PIN_59_UART1_RX 0x63A /*!< PIN 59 is used for UART1 RX */
+#define UART2CC32XX_PIN_62_UART0_TX 0xB3D /*!< PIN 62 is used for UART0 TX */
 
 /*
  *  Flow control pins.
  */
-#define UART2CC32XX_PIN_50_UART0_CTS  0xC31 /*!< PIN 50 is used for UART0 CTS */
-#define UART2CC32XX_PIN_50_UART0_RTS  0x331 /*!< PIN 50 is used for UART0 RTS */
-#define UART2CC32XX_PIN_50_UART1_RTS  0xA31 /*!< PIN 50 is used for UART1 RTS */
-#define UART2CC32XX_PIN_52_UART0_RTS  0x633 /*!< PIN 52 is used for UART0 RTS */
-#define UART2CC32XX_PIN_61_UART0_RTS  0x53C /*!< PIN 61 is used for UART0 RTS */
-#define UART2CC32XX_PIN_61_UART0_CTS  0x63C /*!< PIN 61 is used for UART0 CTS */
-#define UART2CC32XX_PIN_61_UART1_CTS  0x33C /*!< PIN 61 is used for UART1 CTS */
-#define UART2CC32XX_PIN_62_UART0_RTS  0xA3D /*!< PIN 62 is used for UART0 RTS */
-#define UART2CC32XX_PIN_62_UART1_RTS  0x33D /*!< PIN 62 is used for UART1 RTS */
-
-/*!
- *  @brief    UART TX/RX interrupt FIFO threshold select
- *
- *  Defined FIFO thresholds for generation of both TX interrupt and RX
- *  interrupt.  If the RX and TX FIFO and thresholds are not set in the
- *  HwAttrs, the RX interrupt FIFO threshold is set to 1/8 full, and the
- *  TX interrupt FIFO threshold is set to 1/8 full.
- */
-typedef enum {
-    UART2CC32XX_FIFO_THRESHOLD_1_8 = 0,     /*!< FIFO threshold of 1/8 full */
-    UART2CC32XX_FIFO_THRESHOLD_2_8 = 1,     /*!< FIFO threshold of 2/8 full */
-    UART2CC32XX_FIFO_THRESHOLD_4_8 = 2,     /*!< FIFO threshold of 4/8 full */
-    UART2CC32XX_FIFO_THRESHOLD_6_8 = 3,     /*!< FIFO threshold of 6/8 full */
-    UART2CC32XX_FIFO_THRESHOLD_7_8 = 4      /*!< FIFO threshold of 7/8 full */
-} UART2CC32XX_FifoThreshold;
+#define UART2CC32XX_PIN_50_UART0_CTS 0xC31 /*!< PIN 50 is used for UART0 CTS */
+#define UART2CC32XX_PIN_50_UART0_RTS 0x331 /*!< PIN 50 is used for UART0 RTS */
+#define UART2CC32XX_PIN_50_UART1_RTS 0xA31 /*!< PIN 50 is used for UART1 RTS */
+#define UART2CC32XX_PIN_52_UART0_RTS 0x633 /*!< PIN 52 is used for UART0 RTS */
+#define UART2CC32XX_PIN_61_UART0_RTS 0x53C /*!< PIN 61 is used for UART0 RTS */
+#define UART2CC32XX_PIN_61_UART0_CTS 0x63C /*!< PIN 61 is used for UART0 CTS */
+#define UART2CC32XX_PIN_61_UART1_CTS 0x33C /*!< PIN 61 is used for UART1 CTS */
+#define UART2CC32XX_PIN_62_UART0_RTS 0xA3D /*!< PIN 62 is used for UART0 RTS */
+#define UART2CC32XX_PIN_62_UART1_RTS 0x33D /*!< PIN 62 is used for UART1 RTS */
 
 /*!
  *  @brief      UART2CC32XX Hardware attributes
@@ -180,8 +164,6 @@ typedef enum {
  *          .txPin        = UART2CC32XX_PIN_55_UART0_TX,
  *          .ctsPin       = UART2CC32XX_PIN_UNASSIGNED,
  *          .rtsPin       = UART2CC32XX_PIN_UNASSIGNED,
- *          .txIntFifoThr = UART2CC32XX_FIFO_THRESHOLD_1_8,
- *          .rxIntFifoThr = UART2CC32XX_FIFO_THRESHOLD_4_8,
  *          .rxDmaChannel = UDMA_CH8_UARTA0_RX,
  *          .txDmaChannel = UDMA_CH9_UARTA0_TX,
  *      },
@@ -194,8 +176,6 @@ typedef enum {
  *          .txPin        = UART2CC32XX_PIN_07_UART1_TX,
  *          .ctsPin       = UART2CC32XX_PIN_UNASSIGNED,
  *          .rtsPin       = UART2CC32XX_PIN_UNASSIGNED,
- *          .txIntFifoThr = UART2CC32XX_FIFO_THRESHOLD_1_8,
- *          .rxIntFifoThr = UART2CC32XX_FIFO_THRESHOLD_4_8,
  *          .rxDmaChannel = UDMA_CH10_UARTA1_RX,
  *          .txDmaChannel = UDMA_CH11_UARTA1_TX,
  *      },
@@ -205,17 +185,14 @@ typedef enum {
  *  To enable flow control, the .ctsPin and/or .rtsPin must be assigned.
  *  In addition, .flowControl must be set to UART2_FLOWCTRL_HARDWARE.
  */
-typedef struct {
+typedef struct
+{
     UART2_BASE_HWATTRS
 
-    /*! UART TX interrupt FIFO threshold select */
-    UART2CC32XX_FifoThreshold txIntFifoThr;
-    /*! UART RX interrupt FIFO threshold select */
-    UART2CC32XX_FifoThreshold rxIntFifoThr;
     /*! uDMA channel for RX data */
-    uint32_t  rxDmaChannel;
+    uint32_t rxDmaChannel;
     /*! uDMA channel for TX data */
-    uint32_t  txDmaChannel;
+    uint32_t txDmaChannel;
 } UART2CC32XX_HWAttrs;
 
 /*!
@@ -223,17 +200,18 @@ typedef struct {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct {
+typedef struct
+{
     UART2_BASE_OBJECT
 
-    UDMACC32XX_Handle    udmaHandle;       /* For setting power dependency */
+    UDMACC32XX_Handle udmaHandle; /*!< For setting power dependency */
 
     /* For Power management */
-    Power_NotifyObj       postNotify;
-    PowerCC32XX_ParkState prevParkTX;      /* Previous park state TX pin */
-    uint16_t              txPin;           /* TX pin ID */
-    PowerCC32XX_ParkState prevParkRTS;     /* Previous park state of RTS pin */
-    uint16_t              rtsPin;          /* RTS pin ID */
+    Power_NotifyObj postNotify;
+    PowerCC32XX_ParkState prevParkTX;  /*!< Previous park state TX pin */
+    uint16_t txPin;                    /*!< TX pin ID */
+    PowerCC32XX_ParkState prevParkRTS; /*!< Previous park state of RTS pin */
+    uint16_t rtsPin;                   /*!< RTS pin ID */
 } UART2CC32XX_Object, *UART2CC32XX_Handle;
 
 #ifdef __cplusplus

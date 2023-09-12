@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021, Texas Instruments Incorporated
+ * Copyright (c) 2020-2023, Texas Instruments Incorporated
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -111,7 +111,8 @@
  *
  *  Data written to the software stimulus ports is serialized by the TPIU
  *  and wrapped in the SWIT packet format. This packet format is standardized
- *  by ARM and described in [ARMv7-M Architecture Reference Manual](https://static.docs.arm.com/ddi0403/e/DDI0403E_d_armv7m_arm.pdf)
+ *  by ARM and described in [ARMv7-M Architecture Reference
+ Manual](https://static.docs.arm.com/ddi0403/e/DDI0403E_d_armv7m_arm.pdf)
  *
  *  There are three tiers of access to the stimulus ports. In the table below,
  *  polled access means that the API/macro will poll the port's busy flag
@@ -164,34 +165,35 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <ti/devices/DeviceFamily.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /**
  * @brief Base address of the Instrumentation Trace Macrocell (ITM) module
  *
  */
-#define ITM_BASE_ADDR           (0xE0000000)
+#define ITM_BASE_ADDR (0xE0000000)
 
 /**
  * @brief Base address of the Debug Watchpoint and Trace (DWT) module
  *
  */
-#define ITM_DWT_BASE_ADDR       (0xE0001000)
+#define ITM_DWT_BASE_ADDR (0xE0001000)
 
 /**
  * @brief Base address of the CPU_SCS module
  *
  */
-#define ITM_SCS_BASE_ADDR       (0xE000E000)
+#define ITM_SCS_BASE_ADDR (0xE000E000)
 
 /**
  * @brief Base address of the Trace Port Instrumentation Unit (TPIU) module
  *
  */
-#define ITM_TPIU_BASE_ADDR      (0xE0040000)
+#define ITM_TPIU_BASE_ADDR (0xE0040000)
 
 /**
  * @brief   Value to unlock ARM debug modules. This value should be written to
@@ -199,7 +201,32 @@ extern "C" {
  *          configuration and use
  *
  */
-#define ITM_LAR_UNLOCK          (0xC5ACCE55)
+#define ITM_LAR_UNLOCK (0xC5ACCE55)
+
+/**
+ * @brief   Device-specific values that implement the generic ITM-functions
+ *          in ITM_WatchpointAction
+ *
+ */
+#if (DeviceFamily_PARENT == DeviceFamily_PARENT_CC13X4_CC26X3_CC26X4)
+    #define ITM_FUNCTION_DISABLED                  (0x00)
+    #define ITM_FUNCTION_EMIT_PC                   (0x30 | 0x4)
+    #define ITM_FUNCTION_EMIT_DATA_ON_READ_WRITE   (0x800 | 0x20 | 0xc)
+    #define ITM_FUNCTION_EMIT_PC_ON_READ_WRITE     (0x800 | 0x30 | 0x2)
+    #define ITM_FUNCTION_EMIT_DATA_ON_READ         (0x800 | 0x20 | 0xe)
+    #define ITM_FUNCTION_EMIT_DATA_ON_WRITE        (0x800 | 0x20 | 0xd)
+    #define ITM_FUNCTION_EMIT_PC_AND_DATA_ON_READ  (0x800 | 0x30 | 0xe)
+    #define ITM_FUNCTION_EMIT_PC_AND_DATA_ON_WRITE (0x800 | 0x30 | 0xd)
+#else
+    #define ITM_FUNCTION_DISABLED                  0x00
+    #define ITM_FUNCTION_EMIT_PC                   0x01
+    #define ITM_FUNCTION_EMIT_DATA_ON_READ_WRITE   0x02
+    #define ITM_FUNCTION_EMIT_PC_ON_READ_WRITE     0x03
+    #define ITM_FUNCTION_EMIT_DATA_ON_READ         0x0C
+    #define ITM_FUNCTION_EMIT_DATA_ON_WRITE        0x0D
+    #define ITM_FUNCTION_EMIT_PC_AND_DATA_ON_READ  0x0E
+    #define ITM_FUNCTION_EMIT_PC_AND_DATA_ON_WRITE 0x0F
+#endif
 
 /**
  * @brief Write a 32-bit word to stimulus port n
@@ -207,7 +234,7 @@ extern "C" {
  * @warning This does not does not first poll the port for availability.
  *
  */
-#define ITM_port32(n) (*((volatile unsigned int *)  (ITM_BASE_ADDR +4*n)))
+#define ITM_port32(n) (*((volatile unsigned int *)(ITM_BASE_ADDR + 4 * n)))
 
 /* The do {} while() loops below are to protect the macros so that they're
  * evaluated correctly regardless of the call site. They do not have any
@@ -220,19 +247,20 @@ extern "C" {
  * @warning This macro does not guarantee atomic access between poll and write
  *
  */
-#define ITM_send32Polling(n, x)                                                \
-    do                                                                         \
-    {                                                                          \
-        while(0 == ITM_port32(n));                                             \
-        ITM_port32(n) = x;                                                     \
-    } while(0)
+#define ITM_send32Polling(n, x)    \
+    do                             \
+    {                              \
+        while (0 == ITM_port32(n)) \
+            ;                      \
+        ITM_port32(n) = x;         \
+    } while (0)
 
 /**
  * @brief Write a 16-bit half word to stimulus port n
  *
  * @warning This does not does not first poll the port for availability.
  */
-#define ITM_port16(n) (*((volatile unsigned short *)(ITM_BASE_ADDR +4*n)))
+#define ITM_port16(n) (*((volatile unsigned short *)(ITM_BASE_ADDR + 4 * n)))
 
 /**
  * @brief Write a 16-bit word to stimulus port n with polling
@@ -240,19 +268,20 @@ extern "C" {
  * @warning This macro does not guarantee atomic access between poll and write
  *
  */
-#define ITM_send16Polling(n, x)                                                \
-    do                                                                         \
-    {                                                                          \
-        while(0 == ITM_port16(n));                                             \
-        ITM_port16(n) = x;                                                     \
-    } while(0)
+#define ITM_send16Polling(n, x)    \
+    do                             \
+    {                              \
+        while (0 == ITM_port16(n)) \
+            ;                      \
+        ITM_port16(n) = x;         \
+    } while (0)
 
 /**
  * @brief Write a byte to stimulus port n
  *
  * @warning This does not does not first poll the port for availability.
  */
-#define ITM_port8(n)  (*((volatile unsigned char *) (ITM_BASE_ADDR +4*n)))
+#define ITM_port8(n) (*((volatile unsigned char *)(ITM_BASE_ADDR + 4 * n)))
 
 /**
  * @brief Write a 8-bit word to stimulus port n with polling
@@ -260,18 +289,18 @@ extern "C" {
  * @warning This macro does not guarantee atomic access between poll and write
  *
  */
-#define ITM_send8Polling(n, x)                                                 \
-    do                                                                         \
-    {                                                                          \
-        while(0 == ITM_port8(n));                                              \
-        ITM_port8(n) = x;                                                      \
-    }while(0)
-
+#define ITM_send8Polling(n, x)    \
+    do                            \
+    {                             \
+        while (0 == ITM_port8(n)) \
+            ;                     \
+        ITM_port8(n) = x;         \
+    } while (0)
 
 typedef enum
 {
-    ITM_TPIU_SWO_MANCHESTER     = 0x00000001, /*!< Serial format is manchester */
-    ITM_TPIU_SWO_UART           = 0x00000002, /*!< Serial format is UART */
+    ITM_TPIU_SWO_MANCHESTER = 0x00000001, /*!< Serial format is manchester */
+    ITM_TPIU_SWO_UART       = 0x00000002, /*!< Serial format is UART */
 } ITM_TPIU_PortFormat;
 
 /*! @cond NODOC */
@@ -279,11 +308,11 @@ typedef enum
  * extended by the device specific implementations. This structure defintion
  * must be the first line of any device specific structure
  */
-#define ITM_BASE_HWATTRS                                                        \
-    ITM_TPIU_PortFormat format;         /* Wire interface used by TPIU */       \
-    uint32_t            traceEnable;    /* Bitmask of enabled stimulus ports */ \
-    uint32_t            tpiuPrescaler;  /* Baudrate to be used by the TPIU */   \
-    uint32_t            fullPacketInCycles; /* Cycles in a full word */         \
+#define ITM_BASE_HWATTRS                                                 \
+    ITM_TPIU_PortFormat format;  /* Wire interface used by TPIU */       \
+    uint32_t traceEnable;        /* Bitmask of enabled stimulus ports */ \
+    uint32_t tpiuPrescaler;      /* Baudrate to be used by the TPIU */   \
+    uint32_t fullPacketInCycles; /* Cycles in a full word */             \
 /*! @endcond */
 
 /*!
@@ -302,14 +331,15 @@ typedef struct
  */
 typedef enum
 {
-    ITM_Disabled                        = 0x0, /*!< Disabled */
-    ITM_EmitPc                          = 0x1, /*!< Emit Program Counter */
-    ITM_EmitDataOnReadWrite             = 0x2, /*!< Emit Data on Read or Write */
-    ITM_SamplePcAndEmitDataOnReadWrite  = 0x3, /*!< Emit Program Counter on Read or Write */
-    ITM_SampleDataOnRead                = 0xC, /*!< Sample Data on Read */
-    ITM_SampleDataOnWrite               = 0xD, /*!< Sample Data on Write */
-    ITM_SamplePcAndDataOnRead           = 0xE, /*!< Sample PC and Data on Read */
-    ITM_SamplePcAndDataOnWrite          = 0xF, /*!< Sample PC and Data on Write */
+    ITM_Disabled                       = ITM_FUNCTION_DISABLED,                /*!< Disabled */
+    ITM_EmitPc                         = ITM_FUNCTION_EMIT_PC,                 /*!< Emit Program Counter */
+    ITM_EmitDataOnReadWrite            = ITM_FUNCTION_EMIT_DATA_ON_READ_WRITE, /*!< Emit Data on Read or Write */
+    ITM_SamplePcAndEmitDataOnReadWrite = ITM_FUNCTION_EMIT_PC_ON_READ_WRITE, /*!< Emit Program Counter on Read or Write
+                                                                              */
+    ITM_SampleDataOnRead               = ITM_FUNCTION_EMIT_DATA_ON_READ,     /*!< Sample Data on Read */
+    ITM_SampleDataOnWrite              = ITM_FUNCTION_EMIT_DATA_ON_WRITE,    /*!< Sample Data on Write */
+    ITM_SamplePcAndDataOnRead          = ITM_FUNCTION_EMIT_PC_AND_DATA_ON_READ,  /*!< Sample PC and Data on Read */
+    ITM_SamplePcAndDataOnWrite         = ITM_FUNCTION_EMIT_PC_AND_DATA_ON_WRITE, /*!< Sample PC and Data on Write */
 } ITM_WatchpointAction;
 
 /**
@@ -318,10 +348,10 @@ typedef enum
  */
 typedef enum
 {
-    ITM_TS_DIV_NONE = 0,    /*!< No division */
-    ITM_TS_DIV_4    = 1,    /*!< Divide by 4 */
-    ITM_TS_DIV_16   = 2,    /*!< Divide by 16 */
-    ITM_TS_DIV_64   = 3     /*!< Divide by 64 */
+    ITM_TS_DIV_NONE = 0, /*!< No division */
+    ITM_TS_DIV_4    = 1, /*!< Divide by 4 */
+    ITM_TS_DIV_16   = 2, /*!< Divide by 16 */
+    ITM_TS_DIV_64   = 3  /*!< Divide by 64 */
 } ITM_TimeStampPrescaler;
 /**
  * @brief Synchronous packet generation rate based on cycles of CYCCNT
@@ -365,8 +395,7 @@ extern void ITM_close(void);
  * @param msg    Data to send.
  * @param length length of buffer in bytes
  */
-extern void ITM_sendBufferAtomic(const uint8_t port, const char* msg,
-                                 size_t length);
+extern void ITM_sendBufferAtomic(const uint8_t port, const char *msg, size_t length);
 
 /**
  * @brief Write a 32-bit word to the given stimulus port, polling to ensure the
@@ -461,8 +490,7 @@ extern void ITM_disablePCAndEventSampling(void);
                     false: Asynchronous mode - generate timestamps by dividing
  *                         the TPIU clock.
  */
-extern void ITM_enableTimestamps(ITM_TimeStampPrescaler tsPrescale,
-                                 bool asyncMode);
+extern void ITM_enableTimestamps(ITM_TimeStampPrescaler tsPrescale, bool asyncMode);
 
 /**
  * @brief Enable the generation of synchronization packets from the ITM
@@ -486,8 +514,7 @@ extern void ITM_enableSyncPackets(ITM_SyncPacketRate syncPacketRate);
  * @return true    The watchpoint was successfully set
  * @return false   There was no watchpoint available (all are in use)
  */
-extern bool ITM_enableWatchpoint(ITM_WatchpointAction function,
-                                 const uintptr_t address);
+extern bool ITM_enableWatchpoint(ITM_WatchpointAction function, const uintptr_t address);
 
 /**
  * @brief Flush the ITM in preparation for power off of CPU domain

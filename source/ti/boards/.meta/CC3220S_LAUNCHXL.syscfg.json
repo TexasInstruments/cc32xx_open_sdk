@@ -322,13 +322,13 @@
                     "number" : 15,
                     "ball"   : "7",
                     "name"   : "P07",
-                    "preferredType" : ["SPI_MOSI"]
+                    "preferredType" : ["SPI_PICO"]
                 },
                 {
                     "number" : 14,
                     "ball"   : "6",
                     "name"   : "P06",
-                    "preferredType" : ["SPI_MISO"]
+                    "preferredType" : ["SPI_POCI"]
                 },
 
                 // Header pin 13 is an alias of the device Pin Sense of Power 2 (SOP2).
@@ -522,6 +522,8 @@
 
         "LP_I2C": {
             "displayName" : "LaunchPad I2C",
+            "description" : "Standard BoosterPack header I2C",
+            "longDescription": "Standard BoosterPack header I2C",
             "definition"  : "/ti/boards/components/i2c.json",
             "connections" : {
                 "SCL" : "1", /* device pin number */

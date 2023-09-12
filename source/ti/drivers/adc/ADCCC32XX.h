@@ -61,13 +61,13 @@ extern "C" {
  */
 
 /*!< PIN 57 is used for ADC channel 0 */
-#define ADCCC32XX_PIN_57_CH_0  (ADC_CH_0 << 8) | 0x38
+#define ADCCC32XX_PIN_57_CH_0 (ADC_CH_0 << 8) | 0x38
 /*!< PIN 58 is used for ADC channel 1 */
-#define ADCCC32XX_PIN_58_CH_1  (ADC_CH_1 << 8) | 0x39
+#define ADCCC32XX_PIN_58_CH_1 (ADC_CH_1 << 8) | 0x39
 /*!< PIN 59 is used for ADC channel 2 */
-#define ADCCC32XX_PIN_59_CH_2  (ADC_CH_2 << 8) | 0x3a
+#define ADCCC32XX_PIN_59_CH_2 (ADC_CH_2 << 8) | 0x3a
 /*!< PIN 60 is used for ADC channel 3 */
-#define ADCCC32XX_PIN_60_CH_3  (ADC_CH_3 << 8) | 0x3b
+#define ADCCC32XX_PIN_60_CH_3 (ADC_CH_3 << 8) | 0x3b
 
 /* ADC function table pointer */
 extern const ADC_FxnTable ADCCC32XX_fxnTable;
@@ -88,7 +88,8 @@ extern const ADC_FxnTable ADCCC32XX_fxnTable;
  *  };
  *  @endcode
  */
-typedef struct {
+typedef struct
+{
     uint_fast16_t adcPin;
 } ADCCC32XX_HWAttrsV1;
 
@@ -97,9 +98,10 @@ typedef struct {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct {
-    uint_fast32_t     baseAddr;
-    uint_least8_t     numOpenChannels;
+typedef struct
+{
+    uint_fast32_t baseAddr;
+    uint_least8_t numOpenChannels;
 } ADCCC32XX_State;
 
 /*!
@@ -107,8 +109,9 @@ typedef struct {
  *
  *  The application must not access any member variables of this structure!
  */
-typedef struct {
-    bool              isOpen;
+typedef struct
+{
+    bool isOpen;
 } ADCCC32XX_Object;
 
 #ifdef __cplusplus

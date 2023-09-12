@@ -91,8 +91,6 @@ public class ti_net_mqtt
             sb.append("pkg.packageRepository = xdc.om['ti.net.mqtt$$stat$root'];\n");
         sb.append("}\n");
         sb.append("pkg.build.libraries = [\n");
-            sb.append("'lib/ccs/m4/mqtt_debug.a',\n");
-            sb.append("'lib/ccs/m4/mqtt_release.a',\n");
             sb.append("'lib/ticlang/m4/mqtt_debug.a',\n");
             sb.append("'lib/ticlang/m4/mqtt_release.a',\n");
             sb.append("'lib/gcc/m4/mqtt_debug.a',\n");
@@ -101,8 +99,6 @@ public class ti_net_mqtt
             sb.append("'lib/iar/m4/mqtt_release.a',\n");
         sb.append("];\n");
         sb.append("pkg.build.libDesc = [\n");
-            sb.append("['lib/ccs/m4/mqtt_debug.a', {target: 'ti.targets.arm.elf.M4', suffix: 'em4'}],\n");
-            sb.append("['lib/ccs/m4/mqtt_release.a', {target: 'ti.targets.arm.elf.M4', suffix: 'em4'}],\n");
             sb.append("['lib/ticlang/m4/mqtt_debug.a', {target: 'ti.targets.arm.clang.M4', suffix: 'm4'}],\n");
             sb.append("['lib/ticlang/m4/mqtt_release.a', {target: 'ti.targets.arm.clang.M4', suffix: 'm4'}],\n");
             sb.append("['lib/gcc/m4/mqtt_debug.a', {target: 'gnu.targets.arm.M4', suffix: 'm4g'}],\n");
