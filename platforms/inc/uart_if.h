@@ -34,8 +34,6 @@
 #define __UART_IF_H__
 
 // TI-Driver includes
-#include <ti/drivers/UART.h>
-#include "ti_drivers_config.h"
 
 //Defines
 
@@ -47,7 +45,7 @@
 
 /* API */
 
-UART_Handle InitTerm(void);
+void InitTerm(void);
 
 int Report(const char *pcFormat,
            ...);
