@@ -63,15 +63,15 @@ extern "C" {
 *******************************************************************************/
 
 #if defined (SL_DEVICE)
-#define __dev   1
+#define __sl_dev   1
 #else
-#define __dev   0
+#define __sl_dev   0
 #endif
 
 #if defined (SL_DEVICE) && defined (SL_INC_EXT_API)
-#define __dev__ext    1
+#define __sl_dev__ext    1
 #else
-#define __dev__ext    0
+#define __sl_dev__ext    0
 #endif
 
 
@@ -313,30 +313,30 @@ extern "C" {
 /* device */
 #define _SL_INC_sl_Task                  __int__spwn
 
-#define _SL_INC_sl_Start                 __dev
+#define _SL_INC_sl_Start                 __sl_dev
 
-#define _SL_INC_sl_Stop                  __dev
+#define _SL_INC_sl_Stop                  __sl_dev
 
-#define _SL_INC_sl_StatusGet             __dev
+#define _SL_INC_sl_StatusGet             __sl_dev
 
 #ifdef SL_IF_TYPE_UART  
-#define _SL_INC_sl_DeviceUartSetMode     __dev__ext
+#define _SL_INC_sl_DeviceUartSetMode     __sl_dev__ext
 #endif
 
-#define _SL_INC_sl_DeviceEventMaskGet    __dev__ext
+#define _SL_INC_sl_DeviceEventMaskGet    __sl_dev__ext
 
-#define _SL_INC_sl_DeviceEventMaskSet    __dev__ext
+#define _SL_INC_sl_DeviceEventMaskSet    __sl_dev__ext
 
-#define _SL_INC_sl_DeviceGet             __dev__ext
+#define _SL_INC_sl_DeviceGet             __sl_dev__ext
 
-#define _SL_INC_sl_DeviceSet             __dev__ext
+#define _SL_INC_sl_DeviceSet             __sl_dev__ext
 
 /* netutil */
-#define _SL_INC_sl_NetUtilGet    __dev__ext
+#define _SL_INC_sl_NetUtilGet    __sl_dev__ext
  
-#define _SL_INC_sl_NetUtilSet    __dev__ext
+#define _SL_INC_sl_NetUtilSet    __sl_dev__ext
 
-#define _SL_INC_sl_NetUtilCmd    __dev__ext
+#define _SL_INC_sl_NetUtilCmd    __sl_dev__ext
 
 #ifdef  __cplusplus
 }
